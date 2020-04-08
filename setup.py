@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 # cmdclass = {'build_sphinx': BuildDoc}
 
-NAMEFILE = "pypads/_name.py"
+NAMEFILE = "padrepads/_name.py"
 verstrline = open(NAMEFILE, "rt").read()
 VSRE = r"^__name__ = ['\"]([^'\"]*)['\"]"
 result = re.search(VSRE, verstrline, re.M)
@@ -14,7 +14,7 @@ if result:
 else:
     raise RuntimeError("Unable to find name string in %s." % (NAMEFILE,))
 
-VERSIONFILE = "pypads/_version.py"
+VERSIONFILE = "padrepads/_version.py"
 verstrline = open(VERSIONFILE, "rt").read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 result = re.search(VSRE, verstrline, re.M)
