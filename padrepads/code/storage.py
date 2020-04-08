@@ -2,12 +2,12 @@ import os
 from abc import ABCMeta, abstractmethod
 from logging import warning, info
 
-from pypadsext.util import _is_package_available
+from padrepads.util import _is_package_available
 
 
 def get_run_git():
     from pypads.base import get_current_pads
-    from pypadsext.base import PyPadrePads
+    from padrepads.base import PyPadrePads
     pads: PyPadrePads = get_current_pads()
     run = pads.api.active_run()
     tags = run.data.tags
@@ -55,7 +55,7 @@ def init_git_repo(path, pads=None):
 def check_index(repo, message="", init=False, pads=None):
     if not pads:
         from pypads.base import get_current_pads
-        from pypadsext.base import PyPadrePads
+        from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
     run = pads.api.active_run()
     if init:
@@ -71,8 +71,7 @@ def check_index(repo, message="", init=False, pads=None):
         try:
             orig_branch = repo.active_branch.name
             if len(repo.index.diff('HEAD')) > 0 or len(repo.index.diff(None)) > 0 or repo.untracked_files:
-                warning("There are uncommitted changes, stashing, branching out, "
-                        "committing, reverting back and unstashing...")
+                warning("There are uncommitted changes in your git!")
                 # Save those changes to stash
                 repo.git.stash('push', '--include-untracked')
 
@@ -80,6 +79,8 @@ def check_index(repo, message="", init=False, pads=None):
                 branch, diff = check_existing_branches(repo, ref=orig_branch)
 
                 if not branch:
+                    warning("Stashing, branching out, "
+                            "committing, reverting back and unstashing...")
                     # branch out, apply the stashed changes and commit
                     branch = "PyPads/{}".format(run.info.run_id)
                     repo.git.checkout(orig_branch, b=branch)
@@ -94,6 +95,7 @@ def check_index(repo, message="", init=False, pads=None):
                     repo.create_tag(path=branch, message=diff_raw)
                     _hash = repo.head.object.hexsha
                 else:
+                    warning("Using already existing pypads branch " + branch.name)
                     _hash = branch.object.hexsha
                     branch = branch.name
 

@@ -1,30 +1,8 @@
-import functools
-import hashlib
-import operator
+from types import GeneratorType
 from typing import Tuple, Iterable
 
-import mlflow
-from mlflow.tracking import MlflowClient
-
-
-def _create_ctx(cache):
-    ctx = dict()
-    if "data" in cache.keys():
-        ctx["data"] = cache.get("data")
-    if "shape" in cache.keys():
-        ctx["shape"] = cache.get("shape")
-    if "targets" in cache.keys():
-        ctx["targets"] = cache.get("targets")
-    return ctx
-
-
-def persistent_hash(to_hash, algorithm=hashlib.md5):
-    def add_str(a, b):
-        return operator.add(str(persistent_hash(str(a), algorithm)), str(persistent_hash(str(b), algorithm)))
-
-    if isinstance(to_hash, Tuple):
-        to_hash = functools.reduce(add_str, to_hash)
-    return int(algorithm(to_hash.encode("utf-8")).hexdigest(), 16)
+from pypads.functions.analysis.call_tracker import LoggingEnv
+from pypads.functions.loggers.base_logger import LoggingFunction
 
 
 def split_output_inv(result, fn=None):
@@ -77,21 +55,42 @@ def split_output_inv(result, fn=None):
     return split_info
 
 
-def get_by_tag(tag=None, value=None, experiment_id=None):
-    if not experiment_id:
-        experiment_id = mlflow.active_run().info.experiment_id
-    client = MlflowClient(mlflow.get_tracking_uri())
-    runs = client.list_run_infos(experiment_id)
-    selection = []
-    for run in runs:
-        run = client.get_run(run.run_id)
-        if tag:
-            tags = run.data.tags
-            if value and tag in tags:
-                if tags[tag] == value:
-                    selection.append(run)
-            else:
-                selection.append(run)
+class SplitsTracker(LoggingFunction):
+    """
+    Function that tracks data splits
+    """
+
+    def call_wrapped(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
+        """
+
+        :param ctx:
+        :param args:
+        :param _pypads_result:
+        :param kwargs:
+        :return:
+        """
+        from pypads.base import get_current_pads
+        from padrepads.base import PyPadrePads
+
+        pads: PyPadrePads = get_current_pads()
+
+        result = _pypads_env.callback(*_args, **_kwargs)
+
+        if isinstance(result, GeneratorType):
+            def generator():
+                num = -1
+                for r in result:
+                    num += 1
+                    pads.cache.run_add("current_split", num)
+                    split_info = split_output_inv(r, fn=_pypads_env.callback)
+                    pads.cache.run_add(num, {"split_info": split_info})
+                    yield r
         else:
-            selection.append(run)
-    return selection
+            def generator():
+                split_info = split_output_inv(result, fn=_pypads_env.callback)
+                pads.cache.run_add("current_split", 0)
+                pads.cache.run_add(0, {"split_info": split_info})
+
+                return result
+
+        return generator()

@@ -1,34 +1,38 @@
+import sys
+
 from pypads import util
 from pypads.autolog.mappings import AlgorithmMapping
 from pypads.base import PyPads, PypadsApi, PypadsDecorators, DEFAULT_CONFIG, \
     DEFAULT_INIT_RUN_FNS, DEFAULT_LOGGING_FNS
 
-from pypadsext.analysis.doc_parsing import doc
-from pypadsext.analysis.parameter_search import parameter_search_executor, parameter_search
-from pypadsext.concepts.splitter import default_split
-from pypadsext.concepts.util import _create_ctx
-from pypadsext.functions.logging import dataset, predictions, split, hyperparameters, keras_probabilities, \
-    sklearn_probabilities, torch_metric, torch_predictions
-from pypadsext.functions.run_init import git_meta
-from pypadsext.util import get_class_that_defined_method
+from padrepads.concepts.splitter import default_split
+from padrepads.concepts.util import _create_ctx
+from padrepads.functions.analysis.doc_parsing import Doc
+from padrepads.functions.analysis.parameter_search import ParameterSearch, ParameterSearchExecutor
+from padrepads.functions.loggers.data_splitting import SplitsTracker
+from padrepads.functions.loggers.dataset import Dataset
+from padrepads.functions.loggers.decision_tracking import Decisions, Decisions_keras, Decisions_sklearn, Decisions_torch
+from padrepads.functions.loggers.hyperparameters import HyperParameters
+from padrepads.functions.loggers.metric import Metric_torch
+from padrepads.functions.run_init_loggers.run_init import GitMeta
+from padrepads.util import get_class_that_defined_method
 
 # --- Pypads App ---
-
-DEFAULT_PYPADRE_INIT_RUN_FNS = [git_meta]
+DEFAULT_PYPADRE_INIT_RUN_FNS = [GitMeta(_pypads_timeout=5)]
 
 # Extended mappings. We allow to log parameters, output or input, datasets
 DEFAULT_PYPADRE_LOGGING_FNS = {
-    "dataset": dataset,
-    "predictions": predictions,
-    "parameter_search": parameter_search,
-    "parameter_search_executor": parameter_search_executor,
-    "splits": split,
-    "hyperparameters": hyperparameters,
-    "doc": doc,
-    ("predictions", "keras"): keras_probabilities,
-    ("predictions", "scikit-learn"): sklearn_probabilities,
-    ("predictions", "torch"): torch_predictions,
-    ("metric", "torch"): torch_metric
+    "dataset": Dataset(),
+    "predictions": Decisions(),
+    "parameter_search": ParameterSearch(),
+    "parameter_search_executor": ParameterSearchExecutor(),
+    "splits": SplitsTracker(),
+    "hyperparameters": HyperParameters(),
+    "doc": Doc(),
+    ("predictions", "keras"): Decisions_keras(),
+    ("predictions", "sklearn"): Decisions_sklearn(),
+    ("predictions", "torch"): Decisions_torch(),
+    ("metric", "torch"): Metric_torch()
 }
 
 # Extended config.
@@ -37,12 +41,15 @@ DEFAULT_PYPADRE_LOGGING_FNS = {
 # This config defines such a listening structure.
 # {"recursive": track functions recursively. Otherwise check the callstack to only track the top level function.}
 DEFAULT_PYPADRE_CONFIG = {"events": {
+    "input": {"with": {"no_intermediate": True}},
+    "output": {"with": {"no_intermediate": True}},
+    "hardware": {"with": {"no_intermediate": True}},
     "dataset": {"on": ["pypads_dataset"]},
     "predictions": {"on": ["pypads_predict"]},
     "splits": {"on": ["pypads_split"]},
     "hyperparameters": {"on": ["pypads_params"]},
-    "parameter_search": {"on": ["pypads_param_search"]},
-    "parameter_search_executor": {"on": ["pypads_param_search_exec"]},
+    "parameter_search": {"on": ["pypads_param_search"], "order": sys.maxsize - 1},
+    "parameter_search_executor": {"on": ["pypads_param_search_exec"], "order": sys.maxsize - 2},
     "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]},
     "metric": {"on": ["pypads_metric", "pypads_grad"], "with": {"artifact_fallback": True}}
 },
@@ -65,7 +72,7 @@ class PyPadrePadsActuators:
         self._pypads = pypads
 
     def set_random_seed(self, seed=None):
-        from pypadsext.functions.management.randomness import set_random_seed
+        from padrepads.functions.management.randomness import set_random_seed
         # Set seed if needed
         if seed is None:
             import random
@@ -143,7 +150,7 @@ class PyPadrePadsDecorators(PypadsDecorators):
 
 class PyPadrePads(PyPads):
     def __init__(self, *args, config=None, logging_fns=None, init_run_fns=None, remote_provider=None, **kwargs):
-        config = config or util.dict_merge(DEFAULT_PYPADRE_CONFIG, DEFAULT_CONFIG)
+        config = config or util.dict_merge(DEFAULT_CONFIG, DEFAULT_PYPADRE_CONFIG)
         run_init = init_run_fns or DEFAULT_INIT_RUN_FNS + DEFAULT_PYPADRE_INIT_RUN_FNS
         logging_fns = logging_fns or util.dict_merge(DEFAULT_LOGGING_FNS, DEFAULT_PYPADRE_LOGGING_FNS)
 

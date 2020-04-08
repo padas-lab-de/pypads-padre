@@ -1,7 +1,7 @@
 import os
 
 from pypads.test.base_test import BaseTest
-from pypads.test.sklearn.mappings.mapping_sklearn_test import _get_mapping
+from pypads.test.sklearn.mappings.test_mapping_sklearn import _get_mapping
 
 torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0.json"))
 
@@ -113,7 +113,7 @@ class PyPadsTorchTest(BaseTest):
     def test_torch_Sequential_class(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from pypadsext.base import PyPadrePads
+        from padrepads.base import PyPadrePads
         PyPadrePads(mapping=torch_padre)
 
         import timeit

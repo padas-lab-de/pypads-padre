@@ -27,7 +27,7 @@
         ],
         "pypads_predict": [
           "fit_predict",
-          "predict"
+          "predict$"
         ],
         "pypads_transform": [
           "fit_transform",
@@ -43,7 +43,7 @@
       },
       "hooks": {
         "pypads_metric": [
-          ".*"
+          "^(?!_).*"
         ]
       }
     },
@@ -51,11 +51,12 @@
       "name": "sklearn datasets",
       "other_names": [],
       "implementation": {
-        "sklearn": "sklearn.datasets"
+        "sklearn": "sklearn.datasets.base"
       },
       "hooks": {
         "pypads_dataset": [
-          "load*"
+          "load_iris",
+          "load_digits"
         ]
       }
     },
@@ -68,6 +69,12 @@
       "hooks": {
         "pypads_param_search": [
           "fit"
+        ],
+        "pypads_fit": [
+          "fit"
+        ],
+        "pypads_predict": [
+          "predict$"
         ]
       }
     },
