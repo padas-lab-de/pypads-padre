@@ -7,7 +7,7 @@ from pypads.functions.loggers.base_logger import LoggingFunction
 class HyperParameters(LoggingFunction):
 
     def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 
@@ -36,7 +36,7 @@ class HyperParameters(LoggingFunction):
         return _pypads_env.callback(*_args, **_kwargs)
 
     def __post__(self, ctx, *args, **kwargs):
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
         params = pads.cache.run_get(self._fn.__qualname__)

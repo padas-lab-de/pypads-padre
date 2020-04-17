@@ -25,7 +25,7 @@ def persistent_hash(to_hash, algorithm=hashlib.md5):
 
 
 def get_by_tag(tag=None, value=None, experiment_id=None):
-    from pypads.base import get_current_pads
+    from pypads.pypads import get_current_pads
     from padrepads.base import PyPadrePads
     pads: PyPadrePads = get_current_pads()
     if not experiment_id:

@@ -26,16 +26,16 @@ def split_output_inv(result, fn=None):
                     'The splitter function return values are ambiguous (more than train/test/validation splitting).'
                     'Decision tracking might be inaccurate')
                 split_info.update({'set_{}'.format(i): a for i, a in enumerate(result)})
-                split_info.update({"decision_track": False})
+                split_info.update({"track_decisions": False})
             else:
                 Warning("The output of the splitter is not indices, Decision tracking might be inaccurate.")
                 if "sklearn" in fn.__module__:
                     split_info.update({'Xtrain': result[0], 'Xtest': result[1], 'ytrain': result[2],
                                        'ytest': result[3]})
-                    split_info.update({"decision_track": True})
+                    split_info.update({"track_decisions": True})
                 else:
                     split_info.update({'output_{}'.format(i): a for i, a in enumerate(result)})
-                    split_info.update({"decision_track": False})
+                    split_info.update({"track_decisions": False})
         else:
             if indices:
                 names = ['train', 'test', 'val']
@@ -43,15 +43,15 @@ def split_output_inv(result, fn=None):
                 while i < n_output:
                     split_info[names[i]] = result[i]
                     i += 1
-                split_info.update({"decision_track": True})
+                split_info.update({"track_decisions": True})
             else:
                 Warning("The output of the splitter is not indices, Decision tracking might be inaccurate.")
                 split_info.update({'output_{}'.format(i): a for i, a in enumerate(result)})
-                split_info.update({"decision_track": False})
+                split_info.update({"track_decisions": False})
     else:
         Warning("The splitter has a single output. Decision tracking might be inaccurate.")
         split_info.update({'output_0': result})
-        split_info.update({"decision_track": True})
+        split_info.update({"track_decisions": True})
     return split_info
 
 
@@ -69,7 +69,7 @@ class SplitsTracker(LoggingFunction):
         :param kwargs:
         :return:
         """
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
 
         pads: PyPadrePads = get_current_pads()

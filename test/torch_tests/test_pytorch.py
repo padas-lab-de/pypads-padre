@@ -1,7 +1,6 @@
 import os
 
-from pypads.test.base_test import BaseTest
-from pypads.test.sklearn.mappings.test_mapping_sklearn import _get_mapping
+from test.base_test import BaseTest, _get_mapping
 
 torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0.json"))
 
@@ -11,6 +10,7 @@ def torch_simple_example():
     from torch.nn import Sequential, Conv2d, Linear, ReLU, MaxPool2d, Dropout2d, Softmax, CrossEntropyLoss
     from torch.optim import Adam
     import torch
+    from torch.utils.data import DataLoader
     from torchvision import datasets
     from torchvision.transforms import transforms
 
@@ -58,23 +58,23 @@ def torch_simple_example():
     device = torch.device('cpu')
 
     # Load Mnist Dataset
-    train_mnist = datasets.MNIST('data', train=True, download=False, transform=transforms.Compose([
+    train_mnist = datasets.MNIST('data', train=True, download=True, transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ]))
-    test_mnist = datasets.MNIST('data', train=False, download=False, transform=transforms.Compose([
+    test_mnist = datasets.MNIST('data', train=False, download=True, transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ]))
 
     # N is batch size;
-    N, epochs = 100, 1
+    N, epochs = 500, 1
 
     # Training Loader
-    train_loader = torch.utils.data.DataLoader(train_mnist, batch_size=N)
+    train_loader = DataLoader(train_mnist, batch_size=N)
 
     # Testing Loader
-    test_loader = torch.utils.data.DataLoader(test_mnist, batch_size=N)
+    test_loader = DataLoader(test_mnist, batch_size=N)
 
     # Create random Tensors to hold inputs and outputs
     # x = torch.randn(N, D_in, device=device)

@@ -1,6 +1,6 @@
 import numpy as np
 from boltons.funcutils import wraps
-from pypads.base import get_current_pads
+from pypads.pypads import get_current_pads
 
 from padrepads.util import unpack
 

@@ -1,11 +1,11 @@
 from logging import warning
 
-from pypads.functions.run_init_loggers.base_run_init_logger import RunInitLoggingFunction
+from pypads.functions.pre_run.pre_run import PreRunFunction
 
 from padrepads.code.storage import get_run_git, get_git_repo
 
 
-class GitMeta(RunInitLoggingFunction):
+class GitMeta(PreRunFunction):
 
     @staticmethod
     def _needed_packages():
@@ -40,7 +40,7 @@ class GitMeta(RunInitLoggingFunction):
             pads.api.set_tag("pypads.git.remotes", remote_out)
 
 
-class GitMirror(RunInitLoggingFunction):
+class GitMirror(PreRunFunction):
 
     @staticmethod
     def _needed_packages():
@@ -52,24 +52,3 @@ class GitMirror(RunInitLoggingFunction):
             if repo:
                 # TODO mirror the given repo to our git remote server
                 pass
-
-# TODO find a good usage
-# def source_code_parsing(pads):
-#     pads.api.register_post_fn("tag_extraction", tag_extraction)
-#     run = pads.api.active_run()
-#     tags = run.data.tags
-#     source_name = tags.get("mlflow.source.name", None)
-#     code = None
-#     if source_name:
-#         with open(source_name) as f:
-#             code = f.read()
-#     else:
-#         import sys
-#         source = sys.argv[0]
-#         if "unittest" not in source.split('.')[-2]:
-#             with open(source) as f:
-#                 code = f.read()
-#         else:
-#             warning("The source code is being run from a unit test")
-#     if code:
-#         pads.cache.add("source_code", code)

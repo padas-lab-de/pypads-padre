@@ -1,0 +1,73 @@
+import atexit
+import json
+import logging
+import os
+import unittest
+from os.path import expanduser
+
+from pypads.autolog.mappings import MappingFile
+from pypads.functions.loggers.base_logger import LoggingFunction
+from pypads.pypads import logger
+
+if "loguru" in str(logger):
+    import pytest
+
+
+    @pytest.fixture
+    def caplog(_caplog):
+        class PropogateHandler(logging.Handler):
+            def emit(self, record):
+                logging.getLogger(record.name).handle(record)
+
+        from loguru import logger
+        handler_id = logger.add(PropogateHandler(), format="{message}")
+        yield _caplog
+        logger.remove(handler_id)
+
+TEST_FOLDER = os.path.join(expanduser("~"), ".padrepads-test_" + str(os.getpid()))
+
+
+def cleanup():
+    import shutil
+    if os.path.isdir(TEST_FOLDER):
+        shutil.rmtree(TEST_FOLDER)
+
+
+atexit.register(cleanup)
+
+
+def _get_mapping(path):
+    with open(path) as json_file:
+        name = os.path.basename(json_file.name)
+        return MappingFile(name, json.load(json_file))
+
+
+class BaseTest(unittest.TestCase):
+
+    def setUp(self) -> None:
+        if not os.path.isdir(TEST_FOLDER):
+            os.mkdir(TEST_FOLDER)
+
+    def tearDown(self):
+        from pypads.pypads import current_pads, set_current_pads
+        if current_pads:
+            current_pads.deactivate_tracking(run_atexits=True, reload_modules=False)
+            # noinspection PyTypeChecker
+            set_current_pads(None)
+
+
+class RanLogger(LoggingFunction):
+    """ Adds id of self to cache. """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._run_count = 0
+
+    def __pre__(self, ctx, *args, _pypads_env, _args, _kwargs, **kwargs):
+        from pypads.pypads import get_current_pads
+        pads = get_current_pads()
+        self._run_count += 1
+        pads.cache.run_add(id(self), self._run_count)
+
+    def __post__(self, ctx, *args, _pypads_env, _pypads_pre_return, _pypads_result, _args, _kwargs, **kwargs):
+        pass

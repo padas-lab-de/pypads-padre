@@ -17,7 +17,7 @@ class Dataset(LoggingFunction):
 
     def __post__(self, ctx, *args, _pypads_write_format=WriteFormats.pickle, _pypads_env: LoggingEnv, _pypads_result,
                  _args, _kwargs, **kwargs):
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 

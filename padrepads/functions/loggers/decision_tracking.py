@@ -20,7 +20,7 @@ class Decisions(LoggingFunction):
         :param kwargs:
         :return:
         """
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 
@@ -94,7 +94,7 @@ class Decisions_sklearn(Decisions):
         :param kwargs:
         :return:
         """
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 
@@ -140,7 +140,7 @@ class Decisions_keras(Decisions):
         :param kwargs:
         :return:
         """
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 
@@ -159,7 +159,7 @@ class Decisions_torch(Decisions):
     """
 
     def __post__(self, ctx, *args, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 

@@ -1,8 +1,8 @@
 import os
 
-from pypads.test.sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
+from test.sklearn_tests.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
     sklearn_simple_decision_tree_experiment
-from pypads.test.sklearn.mappings.test_mapping_sklearn import _get_mapping
+from test.base_test import _get_mapping
 
 sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "pypadre", "sklearn_pypadre.json"))
 

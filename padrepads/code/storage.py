@@ -6,7 +6,7 @@ from padrepads.util import _is_package_available
 
 
 def get_run_git():
-    from pypads.base import get_current_pads
+    from pypads.pypads import get_current_pads
     from padrepads.base import PyPadrePads
     pads: PyPadrePads = get_current_pads()
     run = pads.api.active_run()
@@ -54,7 +54,7 @@ def init_git_repo(path, pads=None):
 
 def check_index(repo, message="", init=False, pads=None):
     if not pads:
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
     run = pads.api.active_run()
@@ -128,6 +128,7 @@ def check_existing_branches(repo, ref='HEAD'):
         for tag in tags:
             diff = repo.git.diff(ref, tag.tag, '--raw')
             if diff == tag.message:
+                print("found a branch with the same changes")
                 return branches.get(tag.tag), repo.git.diff(ref, tag.tag)
     except Exception as e:
         info("Checking existing branches failed due to %s" % str(e))

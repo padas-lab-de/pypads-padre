@@ -1,7 +1,6 @@
 import os
 
-from pypads.test.base_test import BaseTest
-from pypads.test.sklearn.mappings.test_mapping_sklearn import _get_mapping
+from test.base_test import BaseTest, _get_mapping
 
 keras_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "keras_pypadre.json"))
 

@@ -14,7 +14,7 @@ def name_to_words(label):
 
 
 def tag_extraction():
-    from pypads.base import get_current_pads
+    from pypads.pypads import get_current_pads
     from padrepads.base import PyPadrePads
     pads: PyPadrePads = get_current_pads()
     docs = pads.cache.get("doc_map")
@@ -51,7 +51,7 @@ class Doc(LoggingFunction):
 
     def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
 
-        from pypads.base import get_current_pads
+        from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 

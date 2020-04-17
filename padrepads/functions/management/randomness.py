@@ -1,14 +1,14 @@
 import random
 from logging import warning
 
-from pypads.base import get_current_pads
+from pypads.pypads import get_current_pads
 
 from padrepads.util import _is_package_available
 
 
 # Logging
 def log_random_seed(key):
-    from pypads.base import get_current_pads
+    from pypads.pypads import get_current_pads
     from padrepads.base import PyPadrePads
     pads: PyPadrePads = get_current_pads()
 

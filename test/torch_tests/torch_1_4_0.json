@@ -41,7 +41,7 @@
       "name": "torchvision datasets",
       "other_names": [],
       "implementation": {
-        "torch": "torchvision.datasets"
+        "torch": "torchvision.datasets.mnist.MNIST"
       },
       "hooks": {
         "pypads_dataset": [
@@ -53,11 +53,11 @@
       "name": "torch dataloader",
       "other_names": [],
       "implementation": {
-        "torch": "torch.utils.data.dataLoader.DataLoader"
+        "torch": "torch.utils.data.dataloader._BaseDataLoaderIter"
       },
       "hooks": {
         "pypads_split": [
-          "__iter__"
+          "_next_index"
         ]
       }
     },
