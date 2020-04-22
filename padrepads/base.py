@@ -14,11 +14,10 @@ from padrepads.functions.loggers.dataset import Dataset
 from padrepads.functions.loggers.decision_tracking import Decisions, Decisions_keras, Decisions_sklearn, Decisions_torch
 from padrepads.functions.loggers.hyperparameters import HyperParameters
 from padrepads.functions.loggers.metric import Metric_torch
-from padrepads.functions.run_init_loggers.run_init import GitMeta
 from padrepads.util import get_class_that_defined_method
 
 # --- Pypads App ---
-DEFAULT_PYPADRE_INIT_RUN_FNS = [GitMeta(_pypads_timeout=5)]
+DEFAULT_PYPADRE_INIT_RUN_FNS = []
 
 # Extended mappings. We allow to log parameters, output or input, datasets
 DEFAULT_PYPADRE_LOGGING_FNS = {
