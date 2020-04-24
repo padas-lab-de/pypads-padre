@@ -9,13 +9,15 @@ class ParameterSearch(LoggingFunction):
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
         pads.cache.add("parameter_search", ctx)
+        # TODO save parameter grid used for the search
 
-    def __post__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
+    def __post__(self, ctx, *args, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
         from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
 
         pads.cache.pop("parameter_search")
+        # TODO save results (best estimator / setting, can we save even more on this level???) to the disk
 
 
 class ParameterSearchExecutor(LoggingFunction):
