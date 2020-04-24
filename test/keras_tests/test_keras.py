@@ -12,9 +12,8 @@ def keras_simple_sequential_experiment():
     from keras.layers import Dense
     # load the dataset
     import os
-    cwd = os.getcwd()
-
-    dataset = loadtxt(cwd + '/keras-diabetes-indians.csv', delimiter=',')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dataset = loadtxt(os.path.join(dir_path, 'keras-diabetes-indians.csv'), delimiter=',')
 
     # split into input (X) and output (y) variables
     X = dataset[:, 0:8]

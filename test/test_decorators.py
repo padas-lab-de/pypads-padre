@@ -1,8 +1,7 @@
 import os
 
-from pypads.test.base_test import BaseTest
-
 from padrepads.concepts.util import get_by_tag
+from test.base_test import BaseTest
 
 
 class PyPadrePadsDecoratorsTest(BaseTest):

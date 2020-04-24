@@ -220,7 +220,7 @@ def torch_crawler(obj: Crawler, *args, **kwargs):
     return data, metadata, targets
 
 
-if _is_package_available("torch"):
+if _is_package_available("torchvision"):
     Crawler.register_fn(Modules.torch.value, torch_crawler)
 
 
