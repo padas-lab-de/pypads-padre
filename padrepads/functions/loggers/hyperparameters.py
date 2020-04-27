@@ -6,7 +6,7 @@ from pypads.functions.loggers.base_logger import LoggingFunction
 
 class HyperParameters(LoggingFunction):
 
-    def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
+    def __call_wrapped__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
         from pypads.pypads import get_current_pads
         from padrepads.base import PyPadrePads
         pads: PyPadrePads = get_current_pads()
@@ -20,9 +20,6 @@ class HyperParameters(LoggingFunction):
 
         # tracer is activated on next call, return or exception
         sys.setprofile(tracer)
-
-    def __call_wrapped__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
-
         try:
             fn = _pypads_env.callback
             if _pypads_env.call.call_id.is_wrapped():

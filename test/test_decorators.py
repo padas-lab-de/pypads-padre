@@ -141,23 +141,23 @@ class PyPadrePadsDecoratorsTest(BaseTest):
             assert numpy.array_equal(val_idx, val)
         # !-------------------------- asserts ---------------------------
 
-    # def test_hyperparameters(self):
-    #     # --------------------------- setup of the tracking ---------------------------
-    #     # Activate tracking of pypads
-    #     from padrepads.base import PyPadrePads
-    #     tracker = PyPadrePads()
-    #
-    #     @tracker.decorators.hyperparameters()
-    #     def parameters():
-    #         param1 = 0
-    #         param2 = "test"
-    #         return
-    #
-    #     parameters()
-    #
-    #     # --------------------------- asserts ---------------------------
-    #     assert tracker.cache.run_exists(parameters.__qualname__)
-    #     params = tracker.cache.run_get(parameters.__qualname__)
-    #     assert "param1" in params.keys() and "param2" in params.keys()
-    #     assert params.get("param1") == 0 and params.get("param2") == "test"
-    #     # !-------------------------- asserts ---------------------------
+    def test_hyperparameters(self):
+        # --------------------------- setup of the tracking ---------------------------
+        # Activate tracking of pypads
+        from padrepads.base import PyPadrePads
+        tracker = PyPadrePads()
+
+        @tracker.decorators.hyperparameters()
+        def parameters():
+            param1 = 0
+            param2 = "test"
+            return
+
+        parameters()
+
+        # --------------------------- asserts ---------------------------
+        assert tracker.cache.run_exists(parameters.__qualname__)
+        params = tracker.cache.run_get(parameters.__qualname__)
+        assert "param1" in params.keys() and "param2" in params.keys()
+        assert params.get("param1") == 0 and params.get("param2") == "test"
+        # !-------------------------- asserts ---------------------------
