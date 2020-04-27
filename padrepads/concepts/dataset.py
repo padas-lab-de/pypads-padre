@@ -147,10 +147,16 @@ class Crawler:
 def numpy_crawler(obj: Crawler, **kwargs):
     metadata = {"type": str(obj.format), "shape": obj.data.shape}
     metadata = {**metadata, **kwargs}
-    targets_col = [arg for arg in kwargs if isinstance(arg, Iterable)]
     targets = None
     try:
-        targets = obj.data[:, targets_col]
+        targets_col = None
+        for k in kwargs:
+            if isinstance(kwargs.get(k), Iterable):
+                if "target" in k or "class" in k:
+                    targets_col = kwargs.get(k)
+                    break
+        if targets_col:
+            targets = obj.data[:, targets_col]
     except Exception as e:
         print(str(e))
     return obj.data, metadata, targets

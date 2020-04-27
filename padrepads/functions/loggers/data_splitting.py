@@ -60,7 +60,7 @@ class SplitsTracker(LoggingFunction):
     Function that tracks data splits
     """
 
-    def call_wrapped(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
+    def __call_wrapped__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
         """
 
         :param ctx:

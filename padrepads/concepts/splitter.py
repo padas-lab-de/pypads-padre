@@ -13,7 +13,8 @@ def logger():
             splits = fn(*args, **kwargs)
             for num, train, test, val in splits:
                 pads.cache.run_add("current_split", num)
-                pads.cache.run_add(num, {"train": train, "test": test, "val": val})
+                pads.cache.run_add(num,
+                                   {"split_info": {"train": train, "test": test, "val": val, "track_decisions": True}})
                 yield train, test, val
 
         return wrapper
@@ -60,8 +61,7 @@ def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val
             Warning("Targets of the dataset are missing, stratification is not possible")
 
     if random_seed is None:
-        from pypadre.core.util.random import padre_seed
-        random_seed = padre_seed
+        random_seed = 0
     r = np.random.RandomState(random_seed)
     n = shape[0]
     idx = np.arange(n)

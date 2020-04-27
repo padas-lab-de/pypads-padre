@@ -22,7 +22,7 @@ class Dataset(LoggingFunction):
         pads: PyPadrePads = get_current_pads()
 
         # if the return object is None, take the object instance ctx
-        obj = _pypads_result if _pypads_result else ctx
+        obj = _pypads_result if _pypads_result is not None else ctx
 
         # Get additional arguments if given by the user
         _dataset_kwargs = dict()
