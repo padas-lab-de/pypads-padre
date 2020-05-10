@@ -1,5 +1,5 @@
 from padrepads.base import PyPadrePads
-from test.sklearn_tests.test_common_sklearn import sklearn_padre
+from test.test_sklearn.test_common_sklearn import sklearn_padre
 
 tracker = PyPadrePads(mapping=sklearn_padre)
 

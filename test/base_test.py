@@ -20,9 +20,10 @@ if "loguru" in str(logger):
                 logging.getLogger(record.name).handle(record)
 
         from loguru import logger
-        handler_id = logger.add(PropogateHandler(), format="{message}")
+        from pypads.pads_loguru import logger_manager
+        handler_id = logger_manager.add(PropogateHandler(), format="{message}")
         yield _caplog
-        logger.remove(handler_id)
+        logger_manager.remove(handler_id)
 
 TEST_FOLDER = os.path.join(expanduser("~"), ".padrepads-test_" + str(os.getpid()))
 
@@ -33,6 +34,7 @@ def cleanup():
         shutil.rmtree(TEST_FOLDER)
 
 
+# TODO Is sometimes not run?
 atexit.register(cleanup)
 
 
@@ -42,6 +44,22 @@ def _get_mapping(path):
         return MappingFile(name, json.load(json_file))
 
 
+def mac_os_disabled(f):
+    """
+    Function to disable a test when mac os is used
+    :param f:
+    :return:
+    """
+    from sys import platform
+    if platform == "darwin":
+        def disabled(self):
+            print(f.__name__ + ' has been disabled on mac osx')
+
+        return disabled
+    else:
+        return f
+
+
 class BaseTest(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -49,6 +67,7 @@ class BaseTest(unittest.TestCase):
             os.mkdir(TEST_FOLDER)
 
     def tearDown(self):
+        # TODO isn't run on unexpected errors
         from pypads.pypads import current_pads, set_current_pads
         if current_pads:
             current_pads.deactivate_tracking(run_atexits=True, reload_modules=False)

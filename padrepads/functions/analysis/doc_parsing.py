@@ -13,10 +13,7 @@ def name_to_words(label):
     return label.replace(".", " ")
 
 
-def tag_extraction():
-    from pypads.pypads import get_current_pads
-    from padrepads.base import PyPadrePads
-    pads: PyPadrePads = get_current_pads()
+def tag_extraction(pads, *args, **kwargs):
     docs = pads.cache.get("doc_map")
     corpus = " ".join([doc for name, doc in docs.items()])
     corpus = corpus

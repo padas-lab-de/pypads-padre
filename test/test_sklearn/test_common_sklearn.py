@@ -1,10 +1,15 @@
 import os
 
-from test.sklearn_tests.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
-    sklearn_simple_decision_tree_experiment
-from test.base_test import _get_mapping
+from pypads.functions.analysis.strace import STrace
+from pypads.functions.pre_run.git import IGit
+from pypads.functions.pre_run.hardware import ISystem, IRam, ICpu, IDisk, IPid, ISocketInfo, IMacAddress
+from pypads.functions.pre_run.pre_run import RunLogger, RunInfo
 
-sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "pypadre", "sklearn_pypadre.json"))
+from test.base_test import _get_mapping, TEST_FOLDER
+from test.test_sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
+    sklearn_simple_decision_tree_experiment
+
+sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "bindings", "sklearn_pypadre.json"))
 
 
 def cross_validation_on_diabetes():
@@ -95,7 +100,7 @@ class PyPadrePadsTest(BaseSklearnTest):
         },
             "mirror_git": True
         }
-        tracker = PyPadrePads(config=config, mapping=sklearn_padre)
+        tracker = PyPadrePads(uri=TEST_FOLDER, config=config, mapping=sklearn_padre)
 
         import timeit
         t = timeit.Timer(cross_validation_on_diabetes)
@@ -121,7 +126,7 @@ class PyPadrePadsTest(BaseSklearnTest):
         #                                                      "recursion_depth": -1,
         #                                                      "retry_on_fail": False,
         #                                                      "log_on_failure": True})
-        tracker = PyPadrePads(mapping=sklearn_padre)
+        tracker = PyPadrePads(uri=TEST_FOLDER, mapping=sklearn_padre)
 
         import timeit
         t = timeit.Timer(sklearn_pipeline_experiment)
@@ -139,11 +144,17 @@ class PyPadrePadsTest(BaseSklearnTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(mapping=sklearn_padre)
+        tracker = PyPadrePads(uri=TEST_FOLDER,
+                              init_run_fns=[RunInfo(), RunLogger(), IGit(_pypads_timeout=3), ISystem(), IRam(), ICpu(),
+                                            IDisk(), IPid(),
+                                            ISocketInfo(),
+                                            IMacAddress(), STrace()], mapping=sklearn_padre)
 
         import timeit
         t = timeit.Timer(sklearn_simple_decision_tree_experiment)
         print(t.timeit(1))
+
+        tracker.api.end_run()
 
         # --------------------------- asserts ---------------------------
         # TODO

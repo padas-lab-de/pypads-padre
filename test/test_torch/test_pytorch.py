@@ -1,6 +1,6 @@
 import os
 
-from test.base_test import BaseTest, _get_mapping
+from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
 
 torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0.json"))
 
@@ -114,7 +114,7 @@ class PyPadsTorchTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from padrepads.base import PyPadrePads
-        PyPadrePads(mapping=torch_padre)
+        PyPadrePads(uri=TEST_FOLDER, mapping=torch_padre)
 
         import timeit
         t = timeit.Timer(torch_simple_example)

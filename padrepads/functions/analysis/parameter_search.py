@@ -1,5 +1,6 @@
 from pypads.functions.analysis.call_tracker import LoggingEnv
 from pypads.functions.loggers.base_logger import LoggingFunction
+from pypads.util import is_package_available
 
 
 class ParameterSearch(LoggingFunction):
@@ -17,7 +18,15 @@ class ParameterSearch(LoggingFunction):
         pads: PyPadrePads = get_current_pads()
 
         pads.cache.pop("parameter_search")
-        # TODO save results (best estimator / setting, can we save even more on this level???) to the disk
+
+        if is_package_available("sklearn"):
+            from sklearn.model_selection._search import BaseSearchCV
+            if isinstance(ctx, BaseSearchCV):
+                # TODO Write general information we can extract from base search
+                from sklearn.model_selection import GridSearchCV
+                if isinstance(ctx, GridSearchCV):
+                    # TODO Write information we can extract from GridSearchCV
+                    pass
 
 
 class ParameterSearchExecutor(LoggingFunction):
