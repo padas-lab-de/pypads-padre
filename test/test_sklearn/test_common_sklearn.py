@@ -107,7 +107,7 @@ class PyPadrePadsTest(BaseSklearnTest):
         print(t.timeit(1))
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------
 
     def test_pipeline(self):
@@ -133,7 +133,7 @@ class PyPadrePadsTest(BaseSklearnTest):
         print(t.timeit(1))
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------
 
     def test_decision_tree(self):
@@ -157,5 +157,5 @@ class PyPadrePadsTest(BaseSklearnTest):
         tracker.api.end_run()
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------

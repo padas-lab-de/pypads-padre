@@ -121,5 +121,5 @@ class PyPadsTorchTest(BaseTest):
         print(t.timeit(1))
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------

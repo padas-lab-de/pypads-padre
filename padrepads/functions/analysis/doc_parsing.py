@@ -40,7 +40,7 @@ def tag_extraction(pads, *args, **kwargs):
         pads.api.log_mem_artifact("doc_named_entities", str(ents))
 
     elif _is_package_available("nltk"):
-        # TODO https://towardsdatascience.com/named-entity-recognition-with-nltk-and-spacy-8c4a7d88e7da
+        # TODO use nltk to find named entities https://towardsdatascience.com/named-entity-recognition-with-nltk-and-spacy-8c4a7d88e7da
         pass
 
 

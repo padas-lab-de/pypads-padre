@@ -84,7 +84,7 @@ class PypadsKerasTest(BaseTest):
         print(t.timeit(1))
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------
 
     def test_keras_mlp(self):
@@ -98,7 +98,7 @@ class PypadsKerasTest(BaseTest):
         print(t.timeit(1))
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------
 
     def test_keras_autolog(self):
@@ -115,5 +115,5 @@ class PypadsKerasTest(BaseTest):
         print(t.timeit(1))
 
         # --------------------------- asserts ---------------------------
-        # TODO
+        # TODO Add asserts
         # !-------------------------- asserts ---------------------------
