@@ -1,0 +1,95 @@
+{
+  "default_hooks": {
+    "modules": {
+      "fns": {}
+    },
+    "classes": {
+      "fns": {
+        "pypads_init": [
+          "__init__"
+        ]
+      }
+    },
+    "fns": {}
+  },
+  "algorithms": [
+    {
+      "name": "base torch optimizer",
+      "other_names": [],
+      "implementation": {
+        "torch": "torch.optim.optimizer.Optimizer"
+      },
+      "hooks": {
+        "pypads_grad": [
+          "step"
+        ]
+      }
+    },
+    {
+      "name": "base torch parameter",
+      "other_names": [],
+      "implementation": {
+        "torch": "torch.nn.parameter.Parameter"
+      },
+      "hooks": {
+        "pypads_grad": [
+          "backward"
+        ]
+      }
+    },
+    {
+      "name": "torchvision datasets",
+      "other_names": [],
+      "implementation": {
+        "torch": "torchvision.datasets.mnist.MNIST"
+      },
+      "hooks": {
+        "pypads_dataset": [
+          "__init__"
+        ]
+      }
+    },
+    {
+      "name": "torch dataloader",
+      "other_names": [],
+      "implementation": {
+        "torch": "torch.utils.data.dataloader._BaseDataLoaderIter"
+      },
+      "hooks": {
+        "pypads_split": [
+          "_next_index"
+        ]
+      }
+    },
+    {
+      "name": "Base torch module",
+      "other_names": [],
+      "implementation": {
+        "torch": "torch.nn.modules.container.Sequential"
+      },
+      "hooks": {
+        "pypads_predict": [
+          "forward"
+        ]
+      }
+    },
+    {
+      "name": "torch loss functions",
+      "other_names": [],
+      "implementation": {
+        "torch": "torch.nn.modules.loss._Loss"
+      },
+      "hooks": {
+        "pypads_metric": [
+          "forward"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "author": "Mehdi Ben Amor",
+    "library": "torch",
+    "library_version": "1.4.0",
+    "mapping_version": "0.1"
+  }
+}

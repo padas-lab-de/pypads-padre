@@ -1,4 +1,7 @@
+import glob
+import os
 import sys
+from os.path import expanduser
 
 from pypads import util
 from pypads.autolog.mappings import AlgorithmMapping
@@ -158,8 +161,13 @@ class PyPadrePads(PyPads):
             self._remote_provider = None
         else:
             self._remote_provider = remote_provider
+        mapping_file_paths = []
+        mapping_file_paths.extend(glob.glob(os.path.join(expanduser("~"), ".padrepads", "bindings", "**.json")))
+        mapping_file_paths.extend(glob.glob(
+            os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "bindings", "resources", "mapping", "**.json"))))
 
-        super().__init__(*args, config=config, logging_fns=logging_fns, init_run_fns=run_init, **kwargs)
+        super().__init__(*args, config=config, mapping_paths=mapping_file_paths , logging_fns=logging_fns, init_run_fns=run_init, **kwargs)
         self._api = PyPadrePadsApi(self)
         self._decorators = PyPadrePadsDecorators(self)
         self._actuators = PyPadrePadsActuators(self)

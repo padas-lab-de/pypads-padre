@@ -1,0 +1,158 @@
+{
+  "default_hooks": {
+    "modules": {
+      "fns": {}
+    },
+    "classes": {
+      "fns": {
+        "pypads_init": [
+          "__init__"
+        ]
+      }
+    },
+    "fns": {}
+  },
+  "algorithms": [
+    {
+      "name": "base sklearn estimator",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.base.BaseEstimator"
+      },
+      "hooks": {
+        "pypads_fit": [
+          "fit",
+          "fit_predict",
+          "fit_transform"
+        ],
+        "pypads_predict": [
+          "fit_predict",
+          "predict$"
+        ],
+        "pypads_transform": [
+          "fit_transform",
+          "transform"
+        ]
+      }
+    },
+    {
+      "name": "sklearn classification metrics",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.metrics.classification"
+      },
+      "hooks": {
+        "pypads_metric": [
+          "^(?!_).*"
+        ]
+      }
+    },
+    {
+      "name": "sklearn datasets",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.datasets.base"
+      },
+      "hooks": {
+        "pypads_dataset": [
+          "load_iris",
+          "load_digits"
+        ]
+      }
+    },
+    {
+      "name": "sklearn cross validation",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.model_selection._search.BaseSearchCV"
+      },
+      "hooks": {
+        "pypads_param_search": [
+          "fit"
+        ],
+        "pypads_fit": [
+          "fit"
+        ],
+        "pypads_predict": [
+          "predict$"
+        ]
+      }
+    },
+    {
+      "name": "sklearn cross validation",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.model_selection._validation._fit_and_score"
+      },
+      "hooks": {
+        "pypads_param_search_exec": "always"
+      }
+    },
+    {
+      "name": "sklearn cross validation",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.model_selection._split.BaseCrossValidator"
+      },
+      "hooks": {
+        "pypads_split": [
+          "split"
+        ]
+      }
+    },
+    {
+      "name": "sklearn shuffle split",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.model_selection._split.BaseShuffleSplit"
+      },
+      "hooks": {
+        "pypads_split": [
+          "split"
+        ]
+      }
+    },
+    {
+      "name": "base sklearn estimator",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.base.RegressorMixin"
+      },
+      "hooks": {
+        "pypads_metric": [
+          "score"
+        ]
+      }
+    },
+    {
+      "name": "base sklearn estimator",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.base.ClassifierMixin"
+      },
+      "hooks": {
+        "pypads_metric": [
+          "score"
+        ]
+      }
+    },
+    {
+      "name": "base sklearn estimator",
+      "other_names": [],
+      "implementation": {
+        "sklearn": "sklearn.base.DensityMixin"
+      },
+      "hooks": {
+        "pypads_metric": [
+          "score"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "author": "Thomas Weißgerber",
+    "library": "sklearn",
+    "library_version": "0.19.1",
+    "mapping_version": "0.1"
+  }
+}
