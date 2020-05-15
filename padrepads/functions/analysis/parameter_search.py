@@ -28,19 +28,35 @@ class ParameterSearch(LoggingFunction):
                 from sklearn.model_selection import GridSearchCV
                 if isinstance(ctx, GridSearchCV):
                     # TODO Write information we can extract from GridSearchCV
-                    results = ctx.cv_results_
-                    serialized_dict = dict()
-                    for key, value in results.items():
-                        if hasattr(value, 'tolist'):
-                            serialized_dict[key] = value.tolist()
-                        elif isinstance(value, list):
-                            serialized_dict[key] = value
-                        else:
-                            serialized_dict[key] = str(value)
+                    serialized_dict = self.traverse_dict(ctx.cv_results_)
 
-                    name = 'cv_results'
+                    name = 'GridSearchCV'
                     try_write_artifact(name, json.dumps(serialized_dict),
                                        write_format=WriteFormats.text)
+
+    def traverse_dict(self, input_dict):
+        """
+        Function to traverse a dictionary and convert the values to JSON serializable format
+        :param input_dict:
+        :return: dict
+        """
+
+        serialized_dict = dict()
+        for key, value in input_dict.items():
+
+            if hasattr(value, 'tolist'):
+                serialized_dict[key] = value.tolist()
+
+            elif isinstance(value, list):
+                serialized_dict[key] = value
+
+            elif isinstance(value, dict):
+                serialized_dict[key] = self.traverse_dict(value)
+
+            else:
+                serialized_dict[key] = str(value)
+
+        return serialized_dict
 
 
 class ParameterSearchExecutor(LoggingFunction):
