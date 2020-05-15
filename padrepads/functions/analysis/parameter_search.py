@@ -1,6 +1,8 @@
 from pypads.functions.analysis.call_tracker import LoggingEnv
 from pypads.functions.loggers.base_logger import LoggingFunction
 from pypads.util import is_package_available
+from pypads.logging_util import WriteFormats, try_write_artifact
+import json
 
 
 class ParameterSearch(LoggingFunction):
@@ -26,7 +28,19 @@ class ParameterSearch(LoggingFunction):
                 from sklearn.model_selection import GridSearchCV
                 if isinstance(ctx, GridSearchCV):
                     # TODO Write information we can extract from GridSearchCV
-                    pass
+                    results = ctx.cv_results_
+                    serialized_dict = dict()
+                    for key, value in results.items():
+                        if hasattr(value, 'tolist'):
+                            serialized_dict[key] = value.tolist()
+                        elif isinstance(value, list):
+                            serialized_dict[key] = value
+                        else:
+                            serialized_dict[key] = str(value)
+
+                    name = 'cv_results'
+                    try_write_artifact(name, json.dumps(serialized_dict),
+                                       write_format=WriteFormats.text)
 
 
 class ParameterSearchExecutor(LoggingFunction):
