@@ -2,7 +2,7 @@ import os
 
 from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
 
-torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0.json"))
+torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0_padre.json"))
 
 
 # https://github.com/jcjohnson/pytorch-examples/blob/master/nn/two_layer_net_nn.py

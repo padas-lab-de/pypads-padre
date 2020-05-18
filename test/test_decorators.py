@@ -159,3 +159,29 @@ class PyPadrePadsDecoratorsTest(BaseTest):
         assert "param1" in params.keys() and "param2" in params.keys()
         assert params.get("param1") == 0 and params.get("param2") == "test"
         # !-------------------------- asserts ---------------------------
+
+    def test_track(self):
+        # --------------------------- setup of the tracking ---------------------------
+        # Activate tracking of pypads
+        from padrepads.base import PyPadrePads
+        tracker = PyPadrePads(uri=TEST_FOLDER)
+
+        @tracker.decorators.track(event="pypads_metric")
+        def roc_auc(y_test,scores, n_classes):
+            from sklearn.metrics import roc_curve, auc
+            # Compute ROC curve and ROC area for each class
+            fpr = dict()
+            tpr = dict()
+            roc_auc = dict()
+            for i in range(n_classes):
+                fpr[i], tpr[i], _ = roc_curve(y_test[:, i], scores[:, i])
+                roc_auc[i] = auc(fpr[i], tpr[i])
+
+            # Compute micro-average ROC curve and ROC area
+            fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), scores.ravel())
+            roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+            return roc_auc
+
+
+        # --------------------------- asserts ---------------------------
+        # !-------------------------- asserts ---------------------------

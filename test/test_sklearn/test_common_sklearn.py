@@ -9,7 +9,7 @@ from test.base_test import _get_mapping, TEST_FOLDER
 from test.test_sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
     sklearn_simple_decision_tree_experiment
 
-sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "bindings", "sklearn_0_19_1.json"))
+sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "bindings", "sklearn_pypadre.json"))
 
 
 def cross_validation_on_diabetes():

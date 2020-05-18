@@ -2,7 +2,7 @@ import os
 
 from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
 
-keras_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "keras_2_3_1.json"))
+keras_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "keras_2_3_1_padre.json"))
 
 
 def keras_simple_sequential_experiment():
