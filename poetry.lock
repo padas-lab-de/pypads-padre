@@ -727,7 +727,7 @@ description = "PyPaDS aims to to add tracking functionality to machine learning 
 name = "pypads"
 optional = false
 python-versions = ">=3.7.0,<4.0.0"
-version = "0.1.8"
+version = "0.1.9"
 
 [package.dependencies]
 boltons = ">=19.3.0,<20.0.0"
@@ -1178,7 +1178,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "63c97b83d6373454d8e9fea57ec60b0dad4a0827d9d099a7aa3186ca0609fdd8"
+content-hash = "84427ecc15e4376d4db1fe40e50cba30c98f93ff2e7c502e54b9fb8c3aa37922"
 python-versions = "^3.7.0"
 
 [metadata.files]
@@ -1580,8 +1580,8 @@ pyasn1-modules = [
     {file = "pyasn1_modules-0.2.8-py3.7.egg", hash = "sha256:c29a5e5cc7a3f05926aff34e097e84f8589cd790ce0ed41b67aed6857b26aafd"},
 ]
 pypads = [
-    {file = "pypads-0.1.8-py3-none-any.whl", hash = "sha256:2b659f4c658f7273e74ae58dd35ff997873e1a9a7d9e14210965d9e5aef9cd29"},
-    {file = "pypads-0.1.8.tar.gz", hash = "sha256:81481433f6d1deb8603427f4aa8cf0ac7619d416d87621bea5a7232ea38558e2"},
+    {file = "pypads-0.1.9-py3-none-any.whl", hash = "sha256:97932268fb349e74d72d5d971e23f855bbdad6a80e3c8ef9dc7576f92d6362ea"},
+    {file = "pypads-0.1.9.tar.gz", hash = "sha256:bb8ae9d4622ca644823f3673af6e3eb89bf592600033532b0695c4d91343a168"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
