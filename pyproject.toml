@@ -31,6 +31,8 @@ taskipy = "^1.1.2"
 bump2version = "^1.0.0"
 coverage = {version = "^5.0", extras = ["toml"]}
 gitchangelog = "^3.0.4"
+matplotlib = "^3.2.1"
+torchvision = "^0.6.0"
 
 [tool.poetry.extras]
 docs = ["sphinx", "sphinx_rtd_theme"]
