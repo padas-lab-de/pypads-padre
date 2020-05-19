@@ -2,6 +2,20 @@ Changelog
 =========
 
 
+0.1.12 (2020-05-19)
+-------------------
+
+Fix
+~~~
+- Doc: Updated the documentation link. [Thomas Weißgerber]
+- Doc: Updated the doc to include references to pypads / pypadre.
+  [Thomas Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.1.11 → 0.1.12. [Thomas Weißgerber]
+
+
 0.1.11 (2020-05-19)
 -------------------
 - Bump version: 0.1.10 → 0.1.11. [Thomas Weißgerber]
