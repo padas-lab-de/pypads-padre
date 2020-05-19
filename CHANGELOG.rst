@@ -2,6 +2,11 @@ Changelog
 =========
 
 
+0.1.11 (2020-05-19)
+-------------------
+- Bump version: 0.1.10 → 0.1.11. [Thomas Weißgerber]
+
+
 0.1.10 (2020-05-19)
 -------------------
 - Bump version: 0.1.9 → 0.1.10. [Thomas Weißgerber]
