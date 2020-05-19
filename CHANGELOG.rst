@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+(unreleased)
+------------
+
+Fix
+~~~
+- Removed redundant test data. [Thomas Weißgerber]
+
+
 v0.1.6 (2020-05-19)
 -------------------
 
