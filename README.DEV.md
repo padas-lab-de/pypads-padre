@@ -14,7 +14,14 @@ pip install ./dist/padrepads-0.1.4.tar.gz
 
 # Publishing a new version
 
-To publish a new version of the library it's version number has to be increased. You can use [bump2version](https://pypi.org/project/bump2version/) to increment version numbers where needed.
+To publish a new version of the library it's version number has to be increased.
+A task is defined on taskipy for this purpose.
+
+``
+task publish patch/minor/major
+``
+
+You can use [bump2version](https://pypi.org/project/bump2version/) instead to increment version numbers where needed and manually publish the changes.
 Using one of the following commands bumps the version and pushes it tagged to git.
 
 ``

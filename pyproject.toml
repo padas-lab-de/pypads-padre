@@ -36,6 +36,9 @@ gitchangelog = "^3.0.4"
 docs = ["sphinx", "sphinx_rtd_theme"]
 
 [tool.taskipy.tasks]
+#pre_publish = "poetry test"
+publish = "bump2version"
+post_publish = "gitchangelog && task deploy"
 deploy = "poetry build && poetry publish"
 
 [tool.coverage.run]
