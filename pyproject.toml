@@ -38,7 +38,9 @@ docs = ["sphinx", "sphinx_rtd_theme"]
 [tool.taskipy.tasks]
 #pre_publish = "poetry test"
 publish = "bump2version"
-post_publish = "gitchangelog && git add ./CHANGELOG.rst && git commit -m 'Updated changelog' && git push && task deploy"
+post_publish = "gitchangelog && git add ./CHANGELOG.rst && git commit -m 'auto: Updated changelog' && git push && task doc"
+doc = "./docs/make html"
+post_doc = "task deploy"
 deploy = "poetry build && poetry publish"
 
 [tool.coverage.run]
