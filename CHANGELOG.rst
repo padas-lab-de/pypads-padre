@@ -7,8 +7,8 @@ Changelog
 
 Fix
 ~~~
-- Doc: Updated the documentation link. [Thomas Weißgerber]
-- Doc: Updated the doc to include references to pypads / pypadre.
+- doc: Updated the documentation link. [Thomas Weißgerber]
+- doc: Updated the doc to include references to pypads / pypadre.
   [Thomas Weißgerber]
 
 Other
