@@ -36,13 +36,25 @@ bump2version major
 
 # Generating a changelog
 
-A changelog can be generated from the git log with 
+A changelog can be generated from the git log manually with 
 
 ``
 gitchangelog > CHANGELOG.rst
 ``
 
 Following config includes information on how to structure your git commit messages.
+
+Use following format: ``ACTION: [AUDIENCE:] COMMIT_MSG [!TAG ...]``
+
+Examples:
+
+````
+new: usr: support of git implemented
+chg: re-indentend some lines !cosmetic
+fix: pkg: updated year of licence coverage.
+new: test: added a bunch of test around user usability of feature X.
+fix: typo in spelling my name in comment. !minor
+````
 
 ````
 # -*- coding: utf-8; mode: python -*-
@@ -120,4 +132,12 @@ Changelogs are automatically generated on deployment.
 
 # Generating the documentation
 
+The documentation is generated via sphinx.
+
 # Deploying to PyPi
+
+Deployment is done by poetry.
+
+``
+poetry publish
+``
