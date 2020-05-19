@@ -132,7 +132,13 @@ Changelogs are automatically generated on deployment.
 
 # Generating the documentation
 
-The documentation is generated via sphinx.
+The documentation is generated via sphinx. You can generate it manually by calling:
+
+``
+make -C ./docs html
+``
+
+The documentation should be updated automatically when a push is registered on github master due to webhook settings on readthedocs.
 
 # Deploying to PyPi
 
