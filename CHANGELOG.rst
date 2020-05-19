@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+(unreleased)
+------------
+
+Fix
+~~~
+- Fix version tag regex. [Thomas Weißgerber]
+
+
 v0.1.5 (2020-05-19)
 -------------------
 
