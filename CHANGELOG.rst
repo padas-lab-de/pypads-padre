@@ -2,12 +2,26 @@ Changelog
 =========
 
 
-(unreleased)
-------------
+0.1.10 (2020-05-19)
+-------------------
+- Bump version: 0.1.9 → 0.1.10. [Thomas Weißgerber]
 
-Fix
-~~~
-- Removed redundant test data. [Thomas Weißgerber]
+
+0.1.9 (2020-05-19)
+------------------
+- Bump version: 0.1.8 → 0.1.9. [Thomas Weißgerber]
+
+
+0.1.8 (2020-05-19)
+------------------
+- Bump version: 0.1.7 → 0.1.8. [Thomas Weißgerber]
+- Bump version: 0.1.7 → 0.1.7. [Thomas Weißgerber]
+
+
+0.1.7 (2020-05-19)
+------------------
+- Bump version: 0.1.6 → 0.1.7. [Thomas Weißgerber]
+- Bump version: 0.1.6 → 0.1.6. [Thomas Weißgerber]
 
 
 0.1.6 (2020-05-19)
