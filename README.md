@@ -41,7 +41,7 @@ The unit tests can be found under 'test/' and can be executed using
 
 # Documentation
 
-For more information, look into the [official documentation of PadrePads](https://pypads.readthedocs.io/en/latest/projects/padrepads.html).
+For more information, look into the [official documentation of PadrePads](https://pypads.readthedocs.io/projects/padrepads/en/latest/).
 
 # Scientific work disclaimer
 This was created in scope of scientific work of the Data Science Chair at the University of Passau. If you want to use this tool or any of its resources in your scientific work include a citation.
