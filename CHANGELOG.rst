@@ -2,6 +2,20 @@ Changelog
 =========
 
 
+0.1.13 (2020-05-19)
+-------------------
+
+Fix
+~~~
+- Added Logo Fix: dev: Removed unneeded file. [Thomas Weißgerber]
+- Readme update. [Thomas Weißgerber]
+- Cleanup index.rst. [Thomas Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.1.12 → 0.1.13. [Thomas Weißgerber]
+
+
 0.1.12 (2020-05-19)
 -------------------
 
