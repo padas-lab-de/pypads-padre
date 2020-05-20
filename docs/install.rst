@@ -4,6 +4,8 @@
 Getting started!
 ================
 
+.. _install_official_release:
+
 Installing the latest release with pip
 ======================================
 
@@ -21,6 +23,8 @@ strongly recommended to use a virtual environment, e.g. python3 ``virtualenv``
 .. warning::
 
     PadrePads requires Python 3.6 or newer.
+
+.. _install_from_source:
 
 Installing padrepads from source
 ================================

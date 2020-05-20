@@ -3,24 +3,24 @@
 PadrePaDS: Documentation!
 =====================================
 
-Building on the PyPaDS toolset, `PadrePaDS`_ aims to add additional semantic information to tracked experiments.
+Building on the PyPaDS toolset, `PadrePaDS <https://github.com/padre-lab-eu/padre-pads>`_ aims to add additional semantic information to tracked experiments.
 
 .. _PyPaDS: https://github.com/padre-lab-eu/pypads
 
-Install PyPads
---------------
+Install PadrePaDS
+-----------------
 
-Logging your experiments manually can be overwhelming and exhaustive? PyPads is a tool to help automate logging as much information as possible by
+Logging your experiments manually can be overwhelming and exhaustive? PadrePaDS is a tool to help automate logging as much information as possible by
 tracking the libraries of your choice.
 
-* **Installing PyPads**:
+* **Installing PadrePaDS**:
    :ref:`With pip <install_official_release>` |
    :ref:`From source <install_from_source>`
 
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Install PyPads:
+   :caption: Install PadrePaDS:
 
    install
 
