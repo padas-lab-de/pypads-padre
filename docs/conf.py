@@ -82,3 +82,7 @@ linkcode_resolve = make_linkcode_resolve('padrepads',
                                          'https://github.com/padre-lab-eu/padrepads/'
                                          'blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
+
+# Using the static custom css file
+def setup(app):
+    app.add_css_file('background.css')
