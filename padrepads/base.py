@@ -1,12 +1,6 @@
 import glob
 import os
 import sys
-from os.path import expanduser
-
-from pypads import util
-from pypads.autolog.mappings import AlgorithmMapping
-from pypads.base import PyPads, PypadsApi, PypadsDecorators, DEFAULT_CONFIG, \
-    DEFAULT_INIT_RUN_FNS, DEFAULT_LOGGING_FNS
 
 from padrepads.concepts.splitter import default_split
 from padrepads.concepts.util import _create_ctx
@@ -18,6 +12,10 @@ from padrepads.functions.loggers.decision_tracking import Decisions, Decisions_k
 from padrepads.functions.loggers.hyperparameters import HyperParameters
 from padrepads.functions.loggers.metric import Metric_torch
 from padrepads.util import get_class_that_defined_method
+from pypads import util
+from pypads.autolog.mappings import AlgorithmMapping
+from pypads.base import PyPads, PypadsApi, PypadsDecorators, DEFAULT_CONFIG, \
+    DEFAULT_INIT_RUN_FNS, DEFAULT_LOGGING_FNS
 
 # --- Pypads App ---
 DEFAULT_PYPADRE_INIT_RUN_FNS = []
@@ -151,7 +149,8 @@ class PyPadrePadsDecorators(PypadsDecorators):
 
 
 class PyPadrePads(PyPads):
-    def __init__(self, *args, config=None, logging_fns=None, init_run_fns=None, remote_provider=None, **kwargs):
+    def __init__(self, *args, config=None, logging_fns=None, init_run_fns=None, remote_provider=None,
+                 mapping_paths=None, include_default_mappings=True, **kwargs):
         config = config or util.dict_merge(DEFAULT_CONFIG, DEFAULT_PYPADRE_CONFIG)
         run_init = init_run_fns or DEFAULT_INIT_RUN_FNS + DEFAULT_PYPADRE_INIT_RUN_FNS
         logging_fns = logging_fns or util.dict_merge(DEFAULT_LOGGING_FNS, DEFAULT_PYPADRE_LOGGING_FNS)
@@ -161,13 +160,16 @@ class PyPadrePads(PyPads):
             self._remote_provider = None
         else:
             self._remote_provider = remote_provider
-        mapping_file_paths = []
-        mapping_file_paths.extend(glob.glob(os.path.join(expanduser("~"), ".padrepads", "bindings", "**.json")))
-        mapping_file_paths.extend(glob.glob(
-            os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "bindings", "resources", "mapping", "**.json"))))
 
-        super().__init__(*args, config=config, mapping_paths=mapping_file_paths , logging_fns=logging_fns, init_run_fns=run_init, **kwargs)
+        if mapping_paths is None:
+            mapping_paths = []
+        if include_default_mappings:
+            mapping_paths.extend(glob.glob(
+                os.path.abspath(
+                    os.path.join(os.path.dirname(__file__), "bindings", "resources", "mapping", "**.json"))))
+
+        super().__init__(*args, config=config, mapping_paths=mapping_paths, logging_fns=logging_fns,
+                         init_run_fns=run_init, **kwargs)
         self._api = PyPadrePadsApi(self)
         self._decorators = PyPadrePadsDecorators(self)
         self._actuators = PyPadrePadsActuators(self)
