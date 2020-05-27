@@ -4,6 +4,7 @@ import sys
 
 from padrepads.concepts.splitter import default_split
 from padrepads.concepts.util import _create_ctx
+from padrepads.functions.analysis.determinism import Determinism
 from padrepads.functions.analysis.doc_parsing import Doc
 from padrepads.functions.analysis.parameter_search import ParameterSearch, ParameterSearchExecutor
 from padrepads.functions.loggers.data_splitting import SplitsTracker
@@ -32,7 +33,8 @@ DEFAULT_PYPADRE_LOGGING_FNS = {
     ("predictions", "keras"): Decisions_keras(),
     ("predictions", "sklearn"): Decisions_sklearn(),
     ("predictions", "torch"): Decisions_torch(),
-    ("metric", "torch"): Metric_torch()
+    ("metric", "torch"): Metric_torch(),
+    "determinism": Determinism()
 }
 
 # Extended config.
@@ -51,7 +53,8 @@ DEFAULT_PYPADRE_CONFIG = {"events": {
     "parameter_search": {"on": ["pypads_param_search"], "order": sys.maxsize - 1},
     "parameter_search_executor": {"on": ["pypads_param_search_exec"], "order": sys.maxsize - 2},
     "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]},
-    "metric": {"on": ["pypads_metric", "pypads_grad"], "with": {"artifact_fallback": True}}
+    "metric": {"on": ["pypads_metric", "pypads_grad"], "with": {"artifact_fallback": True}},
+    "determinism": {"on": ["pypads_determinism"]}
 },
     "mirror_git": True
 }
