@@ -24,17 +24,6 @@ tracking the libraries of your choice.
 
    install
 
-Related Projects
-----------------
-- **PaDRe-Pads** is a tool that builds on PyPads and add some semantics to the tracked data of Machine learning experiments. See the `padre-pads documentation <https://github.com/padre-lab-eu/padre-pads>`_.
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Related Projects:
-
-   related_projects
-
 Concepts
 ========
 
