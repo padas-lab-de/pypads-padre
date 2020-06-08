@@ -7,6 +7,20 @@
       "fns": {
         "pypads_init": [
           "__init__"
+        ],
+        "pypads_fit": [
+          "fit",
+          "fit_predict",
+          "fit_transform"
+        ],
+        "pypads_predict": [
+          "fit_predict",
+          "predict",
+          "score"
+        ],
+        "pypads_transform": [
+          "fit_transform",
+          "transform"
         ]
       }
     },
