@@ -1,0 +1,13 @@
+metadata:
+  author: "Thomas Weißgerber"
+  version: "0.1.0"
+  library:
+    name: "tensorflow"
+    version: "2.2.0"
+
+mappings:
+  :tensorflow:
+      :python.ops:
+        hooks: "pypads_determinism"
+        :nn_ops.bias_add: ~
+        :nn.bias_add: ~
