@@ -12,19 +12,6 @@ class PadrePadsActuators(IActuators):
         from pypads.app.pypads import get_current_pads
         return get_current_pads()
 
-    @actuator
-    def set_random_seed(self, seed=None):
-        from pypads_padre.functions.management.randomness import set_random_seed
-        # Set seed if needed
-        if seed is None:
-            import random
-            # import sys
-            # seed = random.randrange(sys.maxsize)
-            # Numpy only allows for a max value of 2**32 - 1
-            seed = random.randrange(2 ** 32 - 1)
-        self.pypads.cache.run_add('seed', seed)
-        set_random_seed(seed)
-
     # noinspection PyMethodMayBeStatic
     @actuator
     def default_splitter(self, data, **kwargs):
