@@ -1,8 +1,8 @@
-from padrepads.concepts.util import get_by_tag
+from pypads_padre.concepts.util import get_by_tag
 from test.base_test import BaseTest, TEST_FOLDER
 
 
-class PyPadrePadsDecoratorsTest(BaseTest):
+class PyPadsDecoratorsTest(BaseTest):
 
     def test_dataset(self):
         """
@@ -10,8 +10,8 @@ class PyPadrePadsDecoratorsTest(BaseTest):
         """
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(uri=TEST_FOLDER)
+        from pypads.app.base import PyPads
+        tracker = PyPads(uri=TEST_FOLDER)
 
         from sklearn.datasets import make_classification
         ds_name = "generated"
@@ -42,8 +42,8 @@ class PyPadrePadsDecoratorsTest(BaseTest):
     def test_custom_splitter(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(uri=TEST_FOLDER)
+        from pypads.app.base import PyPads
+        tracker = PyPads(uri=TEST_FOLDER)
 
         @tracker.decorators.dataset(name="iris")
         def load_iris():
@@ -76,8 +76,8 @@ class PyPadrePadsDecoratorsTest(BaseTest):
     def test_default_splitter_with_no_params(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(uri=TEST_FOLDER)
+        from pypads.app.base import PyPads
+        tracker = PyPads(uri=TEST_FOLDER)
 
         @tracker.decorators.dataset(name="iris")
         def load_iris():
@@ -109,8 +109,8 @@ class PyPadrePadsDecoratorsTest(BaseTest):
     def test_default_splitter_with_params(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(uri=TEST_FOLDER)
+        from pypads.app.base import PyPads
+        tracker = PyPads(uri=TEST_FOLDER)
 
         @tracker.decorators.dataset(name="iris")
         def load_iris():
@@ -142,8 +142,8 @@ class PyPadrePadsDecoratorsTest(BaseTest):
     def test_hyperparameters(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(uri=TEST_FOLDER)
+        from pypads.app.base import PyPads
+        tracker = PyPads(uri=TEST_FOLDER)
 
         @tracker.decorators.hyperparameters()
         def parameters():
@@ -163,8 +163,8 @@ class PyPadrePadsDecoratorsTest(BaseTest):
     def test_track(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        tracker = PyPadrePads(uri=TEST_FOLDER)
+        from pypads.app.base import PyPads
+        tracker = PyPads(uri=TEST_FOLDER)
 
         @tracker.decorators.track(event="pypads_metric")
         def roc_auc(y_test,scores, n_classes):

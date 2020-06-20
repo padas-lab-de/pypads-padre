@@ -2,7 +2,7 @@ import os
 
 from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
 
-torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0_padre.json"))
+torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0.yml"))
 
 
 # https://github.com/jcjohnson/pytorch-examples/blob/master/nn/two_layer_net_nn.py
@@ -113,8 +113,8 @@ class PyPadsTorchTest(BaseTest):
     def test_torch_Sequential_class(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        PyPadrePads(uri=TEST_FOLDER, mapping=torch_padre)
+        from pypads.app.base import PyPads
+        PyPads(uri=TEST_FOLDER, mappings=torch_padre)
 
         import timeit
         t = timeit.Timer(torch_simple_example)

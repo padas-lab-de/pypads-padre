@@ -1,1 +1,1 @@
-recursive-include padrepads/ *.json
+recursive-include pypads_padre/ *.json

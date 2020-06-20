@@ -1,0 +1,28 @@
+metadata:
+  author: "Mehdi Ben Amor"
+  version: "0.1.0"
+  library:
+    name: "torch"
+    version: "1.4.0"
+
+mappings:
+  :keras.metrics.{re:.*}:
+    hooks: ["pypads_metric"]
+    data:
+      concepts: ["keras classification metrics"]
+
+  :torch:
+    :optim.optimizer.Optimizer.step:
+      hooks: ["pypads_grad"]
+    :utils.data.dataloader._BaseDataLoaderIter._next_index:
+      hooks: ["pypads_split"]
+    :nn:
+      :parameter.Parameter.backward:
+        hooks: ["pypads_grad"]
+      :modules:
+        :container.Sequential.forward:
+          hooks: ["pypads_predict"]
+        :loss._Loss.forward:
+          hooks: ["pypads_metric"]
+  :torchvision.datasets.mnist.MNIST.__init__:
+    hooks: ["pypads_dataset"]

@@ -72,13 +72,13 @@ html_static_path = ['_static']
 html_theme_path = ['themes']
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'padrepads'
+html_short_title = 'pypads_padre'
 
 html_logo = 'files/imgpsh_fullsize_anim.png'
 
 html_favicon = 'files/rtd.png'
 # The following is used by sphinx.ext.linkcode to provide links to github
-linkcode_resolve = make_linkcode_resolve('padrepads',
-                                         'https://github.com/padre-lab-eu/padrepads/'
+linkcode_resolve = make_linkcode_resolve('pypads_padre',
+                                         'https://github.com/padre-lab-eu/pypads_padre/'
                                          'blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
