@@ -110,11 +110,11 @@ def torch_simple_example():
 # noinspection PyMethodMayBeStatic
 class PyPadsTorchTest(BaseTest):
 
-    def test_torch_Sequential_class(self):
+    def test_torch_sequential_class(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        PyPads(uri=TEST_FOLDER, mappings=torch_padre)
+        PyPads(uri=TEST_FOLDER, mappings=[torch_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(torch_simple_example)

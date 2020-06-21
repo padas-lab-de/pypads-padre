@@ -3,28 +3,28 @@ from enum import Enum
 from typing import Any, Tuple, Callable, Iterable
 
 from pypads.app.base import tracking_active
-from pypads.utils.util import _is_package_available
+from pypads.utils.util import is_package_available
 
 
 class Types(Enum):
-    if _is_package_available('sklearn') and tracking_active:
+    if is_package_available('sklearn') and tracking_active:
         from sklearn.utils import Bunch
         bunch = Bunch
     else:
         bunch = "sklearn.utils.Bunch"
-    if _is_package_available('numpy'):
+    if is_package_available('numpy'):
         from numpy import ndarray
         Ndarray = ndarray
     else:
         ndarray = 'numpy.ndarray'
-    if _is_package_available('pandas'):
+    if is_package_available('pandas'):
         from pandas import DataFrame, Series
         dataframe = DataFrame
         series = Series
     else:
         dataframe = 'pandas.DataFrame'
         series = 'pandas.Series'
-    if _is_package_available('networkx'):
+    if is_package_available('networkx'):
         from networkx import Graph
         graph = Graph
     else:
@@ -34,11 +34,11 @@ class Types(Enum):
 
 
 class Modules(Enum):
-    if _is_package_available('sklearn'):
+    if is_package_available('sklearn'):
         sklearn = "sklearn.datasets"
-    if _is_package_available('keras'):
+    if is_package_available('keras'):
         keras = "keras.datasets"
-    if _is_package_available('torchvision'):
+    if is_package_available('torchvision'):
         torch = "torchvision.datasets"
 
 
@@ -225,7 +225,7 @@ def torch_crawler(obj: Crawler, *args, **kwargs):
     return data, metadata, targets
 
 
-if _is_package_available("torchvision"):
+if is_package_available("torchvision"):
     Crawler.register_fn(Modules.torch.value, torch_crawler)
 
 
@@ -240,7 +240,7 @@ def keras_crawler(obj: Crawler, *args, **kwargs):
     return data, metadata, targets
 
 
-if _is_package_available("keras"):
+if is_package_available("keras"):
     Crawler.register_fn(Modules.keras.value, keras_crawler)
 
 

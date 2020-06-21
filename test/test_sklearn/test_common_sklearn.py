@@ -90,17 +90,18 @@ class PyPadsTest(BaseSklearnTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        config = {"events": {
+        hooks = {
             "init": {"on": ["pypads_init"]},
             "splits": {"on": ["pypads_split"]},
             "metric": {"on": ["pypads_metric"]},
             "parameter_search": {"on": ["pypads_param_search"]},
             "parameter_search_executor": {"on": ["pypads_param_search_exec"]},
             "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]}
-        },
+        }
+        config = {
             "mirror_git": True
         }
-        tracker = PyPads(uri=TEST_FOLDER, config=config, mappings=sklearn_padre)
+        tracker = PyPads(uri=TEST_FOLDER, config=config, hooks=hooks, mappings=[sklearn_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(cross_validation_on_diabetes)
@@ -118,15 +119,7 @@ class PyPadsTest(BaseSklearnTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        # tracker = PyPads(mappings=MappingFile("empty", {
-        #     "metadata": {"library": "empty", "library_version": "0.0.1", "mapping_version": "0.1"}}),
-        #                       include_default_mappings=False)
-        # tracker = PyPads(mappings=sklearn_padre, config={"events": {"parameter_search": {"on": ["pypads_param_search"]},
-        #     "parameter_search_executor": {"on": ["pypads_param_search_exec"]}, "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]}}, "recursion_identity": False,
-        #                                                      "recursion_depth": -1,
-        #                                                      "retry_on_fail": False,
-        #                                                      "log_on_failure": True})
-        tracker = PyPads(uri=TEST_FOLDER, mappings=sklearn_padre)
+        tracker = PyPads(uri=TEST_FOLDER, mappings=[sklearn_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(sklearn_pipeline_experiment)

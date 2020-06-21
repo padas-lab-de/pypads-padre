@@ -3,7 +3,7 @@ import re
 
 from pypads.app.injections.base_logger import LoggingFunction
 from pypads.injections.analysis.call_tracker import LoggingEnv
-from pypads.utils.util import _is_package_available
+from pypads.utils.util import is_package_available
 
 
 def name_to_words(label):
@@ -22,7 +22,7 @@ def tag_extraction(pads, *args, **kwargs):
     pat = re.compile(r'([a-zA-Z][^\[\]\+\<\>\-\.!?]*[\.!?])', re.M)
     corpus = " ".join(pat.findall(corpus))
 
-    if _is_package_available("spacy"):
+    if is_package_available("spacy"):
         import spacy
         nlp = spacy.load("en_core_web_sm")
         doc = nlp(corpus)
@@ -38,7 +38,7 @@ def tag_extraction(pads, *args, **kwargs):
                 ents.add(ent.text)
         pads.api.log_mem_artifact("doc_named_entities", str(ents))
 
-    elif _is_package_available("nltk"):
+    elif is_package_available("nltk"):
         # TODO use nltk to find named entities https://towardsdatascience.com/named-entity-recognition-with-nltk-and-spacy-8c4a7d88e7da
         pass
 

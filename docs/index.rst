@@ -10,6 +10,7 @@ Welcome to pypads_padre's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+The pypads_padre documentation is under construction. Please refer to the PyPads documentation for now.
 
 
 Indices and tables

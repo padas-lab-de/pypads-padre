@@ -14,34 +14,34 @@ class PadrePadsDecorators(IDecorators):
 
     # ------------------------------------------- decorators --------------------------------
     @decorator
-    def dataset(self, mappings=None, name=None, metadata=None, **kwargs):
+    def dataset(self, mapping=None, name=None, metadata=None, **kwargs):
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.pypads.api.track_dataset(ctx=ctx, fn=fn, name=name, metadata=metadata, mappings=mapping,
+            return self.pypads.api.track_dataset(ctx=ctx, fn=fn, name=name, metadata=metadata, mapping=mapping,
                                                   **kwargs)
 
         return track_decorator
 
     @decorator
-    def splitter(self, mappings=None):
+    def splitter(self, mapping=None):
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.pypads.api.track_splits(ctx=ctx, fn=fn, mappings=mapping)
+            return self.pypads.api.track_splits(ctx=ctx, fn=fn, mapping=mapping)
 
         return track_decorator
 
     @decorator
-    def hyperparameters(self, mappings=None):
+    def hyperparameters(self, mapping=None):
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.pypads.api.track_parameters(ctx=ctx, fn=fn, mappings=mapping)
+            return self.pypads.api.track_parameters(ctx=ctx, fn=fn, mapping=mapping)
 
         return track_decorator
 
     @decorator
-    def parameter_search(self, mappings=None):
+    def parameter_search(self, mapping=None):
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.pypads.api.track_parameter_search(ctx=ctx, fn=fn, mappings=mapping)
+            return self.pypads.api.track_parameter_search(ctx=ctx, fn=fn, mapping=mapping)
 
         return track_decorator

@@ -18,16 +18,16 @@ class PadrePadsApi(IApi):
         self.pypads.cache.run_add('dataset_name', name)
         self.pypads.cache.run_add('dataset_meta', metadata)
         self.pypads.cache.run_add('dataset_kwargs', kwargs)
-        return self.pypads.api.track(fn, ctx, ["pypads_dataset"], mappings=mapping)
+        return self.pypads.api.track(fn, ctx, ["pypads_dataset"], mapping=mapping)
 
     @cmd
     def track_splits(self, fn, ctx=None, mapping: Mapping = None):
-        return self.pypads.api.track(fn, ctx, ["pypads_split"], mappings=mapping)
+        return self.pypads.api.track(fn, ctx, ["pypads_split"], mapping=mapping)
 
     @cmd
     def track_parameters(self, fn, ctx=None, mapping: Mapping = None):
-        return self.pypads.api.track(fn, ctx, ["pypads_params"], mappings=mapping)
+        return self.pypads.api.track(fn, ctx, ["pypads_params"], mapping=mapping)
 
     @cmd
     def track_parameter_search(self, fn, ctx=None, mapping: Mapping = None):
-        return self.pypads.api.track(fn, ctx, ["pypads_param_search"], mappings=mapping)
+        return self.pypads.api.track(fn, ctx, ["pypads_param_search"], mapping=mapping)

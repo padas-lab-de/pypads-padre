@@ -5,7 +5,7 @@ from pypads.app import base
 from pypads.bindings import events
 from pypads.bindings import hooks
 from pypads.importext import mappings
-from pypads.utils.util import merge_dicts
+from pypads.utils.util import dict_merge_caches
 
 from pypads_padre.app.actuators import PadrePadsActuators
 from pypads_padre.app.api import PadrePadsApi
@@ -42,10 +42,10 @@ def configure_plugin():
     mappings.default_mapping_file_paths.extend(
         glob.glob(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
                                                "resources", "mapping", "**.json"))))
-    base.DEFAULT_SETUP_FNS = merge_dicts(base.DEFAULT_SETUP_FNS, DEFAULT_PADRE_SETUP_FNS)
-    base.DEFAULT_CONFIG = merge_dicts(base.DEFAULT_CONFIG, DEFAULT_PADRE_CONFIG)
-    events.DEFAULT_LOGGING_FNS = merge_dicts(events.DEFAULT_LOGGING_FNS, DEFAULT_PADRE_LOGGING_FNS)
-    hooks.DEFAULT_HOOK_MAPPING = merge_dicts(hooks.DEFAULT_HOOK_MAPPING, DEFAULT_PADRE_HOOK_MAPPING)
+    base.DEFAULT_SETUP_FNS = dict_merge_caches(base.DEFAULT_SETUP_FNS, DEFAULT_PADRE_SETUP_FNS)
+    base.DEFAULT_CONFIG = dict_merge_caches(base.DEFAULT_CONFIG, DEFAULT_PADRE_CONFIG)
+    events.DEFAULT_LOGGING_FNS = dict_merge_caches(events.DEFAULT_LOGGING_FNS, DEFAULT_PADRE_LOGGING_FNS)
+    hooks.DEFAULT_HOOK_MAPPING = dict_merge_caches(hooks.DEFAULT_HOOK_MAPPING, DEFAULT_PADRE_HOOK_MAPPING)
     init_event_types()
     init_anchors()
 

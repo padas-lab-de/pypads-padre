@@ -11,7 +11,7 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER)
+        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         from sklearn.datasets import make_classification
         ds_name = "generated"
@@ -43,7 +43,7 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER)
+        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         @tracker.decorators.dataset(name="iris")
         def load_iris():
@@ -77,7 +77,7 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER)
+        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         @tracker.decorators.dataset(name="iris")
         def load_iris():
@@ -110,7 +110,7 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER)
+        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         @tracker.decorators.dataset(name="iris")
         def load_iris():
@@ -143,7 +143,7 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER)
+        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         @tracker.decorators.hyperparameters()
         def parameters():
@@ -164,7 +164,7 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER)
+        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         @tracker.decorators.track(event="pypads_metric")
         def roc_auc(y_test,scores, n_classes):
