@@ -32,6 +32,7 @@ class HyperParameters(LoggingFunction):
         return _pypads_env.callback(*_args, **_kwargs)
 
     def __post__(self, ctx, *args, **kwargs):
+        from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
         params = pads.cache.run_get(self._fn.__qualname__)
         for key, param in params.items():
