@@ -1,8 +1,7 @@
-from pypads_padre.base import PyPadrePads
-from pypads_padre.functions.loggers.dataset import Dataset
-from pypads.functions.pre_run.hardware import ICpu
+from pypads.app.base import PyPads
+from pypads.injections.setup.hardware import ICpu
 
-tracker = PyPadrePads(init_run_fns=[ICpu()])
+tracker = PyPads(setup_fns=[ICpu()], autostart=True)
 
 import numpy as np
 
