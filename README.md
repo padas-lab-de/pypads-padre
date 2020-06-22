@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/pypads-onto/badge/?version=latest)](https://pypads.readthedocs.io/projects/pypads-onto/en/latest/?badge=latest)
+
 # PadrePads
 An extension of pypads that implements and tracks other concepts from machine learning experiments.   
 
