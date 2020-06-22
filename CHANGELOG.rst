@@ -2,6 +2,22 @@ Changelog
 =========
 
 
+0.2.4 (2020-06-22)
+------------------
+
+New
+~~~
+- Added Changelog to doc. [Thomas Weißgerber]
+
+Fix
+~~~
+- Cleanup and documentation. [Thomas Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.2.3 → 0.2.4. [Thomas Weißgerber]
+
+
 0.2.3 (2020-06-22)
 ------------------
 
