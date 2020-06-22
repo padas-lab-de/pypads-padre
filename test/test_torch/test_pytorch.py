@@ -4,17 +4,17 @@ from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
 
 torch_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torch_1_4_0.yml"))
 
-
+torchvision_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "torchvision_0_5_0.yml"))
 # https://github.com/jcjohnson/pytorch-examples/blob/master/nn/two_layer_net_nn.py
 def torch_simple_example():
     from torch.nn import Sequential, Conv2d, Linear, ReLU, MaxPool2d, Dropout2d, Softmax, CrossEntropyLoss
     from torch.optim import Adam
     import torch
     from torch.utils.data import DataLoader
-    from torchvision import datasets
+    from torchvision.datasets.mnist import MNIST
     from torchvision.transforms import transforms
 
-    log_interval = 100
+    log_interval = 103
 
     class Flatten(torch.nn.Module):
         __constants__ = ['start_dim', 'end_dim']
@@ -58,11 +58,11 @@ def torch_simple_example():
     device = torch.device('cpu')
 
     # Load Mnist Dataset
-    train_mnist = datasets.MNIST('data', train=True, download=True, transform=transforms.Compose([
+    train_mnist = MNIST('data', train=True, download=True, transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ]))
-    test_mnist = datasets.MNIST('data', train=False, download=True, transform=transforms.Compose([
+    test_mnist = MNIST('data', train=False, download=True, transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ]))
@@ -114,13 +114,12 @@ class PyPadsTorchTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        PyPads(uri=TEST_FOLDER, mappings=[torch_padre], autostart=True)
+        tracker = PyPads(uri=TEST_FOLDER, mappings=[torch_padre,torchvision_padre], autostart=True)
 
         # TODO fixme
-        #import timeit
-        #t = timeit.Timer(torch_simple_example)
-        #print(t.timeit(1))
-
+        import timeit
+        t = timeit.Timer(torch_simple_example)
+        print(t.timeit(1))
         # --------------------------- asserts ---------------------------
         # TODO Add asserts
         # !-------------------------- asserts ---------------------------

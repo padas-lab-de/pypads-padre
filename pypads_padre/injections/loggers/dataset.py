@@ -1,5 +1,5 @@
 import os
-from logging import warning
+from pypads import logger
 
 from pypads.app.injections.base_logger import LoggingFunction
 from pypads.injections.analysis.call_tracker import LoggingEnv
@@ -63,7 +63,7 @@ class Dataset(LoggingFunction):
         try:
             _hash = persistent_hash(str(obj))
         except Exception:
-            warning("Could not compute the hash of the dataset object, falling back to dataset name hash...")
+            logger.warning("Could not compute the hash of the dataset object, falling back to dataset name hash...")
             _hash = persistent_hash(str(ds_name))
 
         _stored = get_by_tag("pypads.dataset.hash", str(_hash), repo.experiment_id)
@@ -81,7 +81,7 @@ class Dataset(LoggingFunction):
         else:
             # look for the existing dataset and reference it to the active run
             if len(_stored) > 1:
-                warning("multiple existing datasets with the same hash!!!")
+                logger.warning("multiple existing datasets with the same hash!!!")
             else:
                 dataset_id = _stored.pop().info.run_id
                 pads.api.set_tag("pypads.datasetID", dataset_id)

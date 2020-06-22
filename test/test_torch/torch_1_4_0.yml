@@ -3,26 +3,24 @@ metadata:
   version: "0.1.0"
   library:
     name: "torch"
-    version: "1.4.0"
+    version: "1.4.0+cpu"
 
 mappings:
-  :keras.metrics.{re:.*}:
-    hooks: ["pypads_metric"]
-    data:
-      concepts: ["keras classification metrics"]
-
-  :torch:
-    :optim.optimizer.Optimizer.step:
-      hooks: ["pypads_grad"]
-    :utils.data.dataloader._BaseDataLoaderIter._next_index:
-      hooks: ["pypads_split"]
-    :nn:
-      :parameter.Parameter.backward:
+  !!python/pPath torch:
+    !!python/pPath optim.optimizer.Optimizer:
+      !!python/pPath step:
         hooks: ["pypads_grad"]
-      :modules:
-        :container.Sequential.forward:
-          hooks: ["pypads_predict"]
-        :loss._Loss.forward:
-          hooks: ["pypads_metric"]
-  :torchvision.datasets.mnist.MNIST.__init__:
-    hooks: ["pypads_dataset"]
+    !!python/pPath utils.data.dataloader._BaseDataLoaderIter:
+      !!python/pPath _next_index:
+        hooks: ["pypads_split"]
+    !!python/pPath nn:
+      !!python/pPath parameter.Parameter:
+        !!python/pPath backward:
+          hooks: "pypads_grad"
+      !!python/pPath modules:
+        !!python/pPath container.Sequential:
+          !!python/pPath forward:
+            hooks: "pypads_predict"
+        !!python/pPath loss._Loss:
+          !!python/pPath forward:
+            hooks: ["pypads_metric"]

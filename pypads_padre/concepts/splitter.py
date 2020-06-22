@@ -1,10 +1,11 @@
 import numpy as np
 from boltons.funcutils import wraps
+from pypads import logger
 
 from pypads_padre.util import unpack
 
 
-def logger():
+def _logger():
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
@@ -22,7 +23,7 @@ def logger():
     return decorator
 
 
-@logger()
+@_logger()
 def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val_ratio=0,
                   n_folds=3, shuffle=True, stratified=None, indices=None, index=None):
     (data, shape, y) = unpack(ctx, "data", ("shape", None), ("targets", None))
@@ -58,7 +59,7 @@ def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val
     else:
         if stratified and y is None:
             stratified = False
-            Warning("Targets of the dataset are missing, stratification is not possible")
+            logger.warning("Targets of the dataset are missing, stratification is not possible")
 
     if random_seed is None:
         random_seed = 0
@@ -103,7 +104,7 @@ def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val
                                      " number of members in each class."
                                      % n_folds)
                 if n_folds > min_groups:
-                    raise Warning("The least populated class in y has only %d"
+                    logger.warning("The least populated class in y has only %d"
                                   " members, which is less than n_splits=%d." % (min_groups, n_folds))
                 y_order = np.sort(y_encoded)
                 allocation = np.asarray([np.bincount(y_order[i::n_folds], minlength=n_classes)

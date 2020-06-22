@@ -2,6 +2,7 @@ from abc import ABCMeta
 from enum import Enum
 from typing import Any, Tuple, Callable, Iterable
 
+from pypads import logger
 from pypads.app.base import tracking_active
 from pypads.utils.util import is_package_available
 
@@ -172,7 +173,7 @@ def dataframe_crawler(obj: Crawler, **kwargs):
     if "target" in data.columns:
         targets = data[[col for col in data.columns if "target" in col]].values
     else:
-        Warning("Target values might be innaccurate.")
+        logger.warning("Target values might be innaccurate.")
         targets = data[[data.columns[-1]]].values
     return data, metadata, targets
 

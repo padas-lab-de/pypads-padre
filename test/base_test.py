@@ -73,7 +73,7 @@ class BaseTest(unittest.TestCase):
             set_current_pads(None)
 
 
-class RanLogger(LoggingFunction):
+class RunLogger(LoggingFunction):
     """ Adds id of self to cache. """
 
     def __init__(self, *args, **kwargs):

@@ -1,7 +1,7 @@
 import os
 from logging import warning
 from typing import Iterable
-
+from pypads import logger
 from pypads.app.injections.base_logger import LoggingFunction
 from pypads.injections.analysis.call_tracker import LoggingEnv
 
@@ -42,7 +42,7 @@ class Decisions(LoggingFunction):
 
         # depending on available info log the predictions
         if split_info is None:
-            warning("No split information were found in the cache of the current run, "
+            logger.warning("No split information were found in the cache of the current run, "
                     "individual decision tracking might be missing Truth values, try to decorate you splitter!")
             pads.cache.run_add(num,
                                {'predictions': {str(i): {'predicted': preds[i]} for i in range(len(preds))}})
@@ -63,7 +63,7 @@ class Decisions(LoggingFunction):
                         pads.cache.run_get(num).get('predictions').get(str(sample)).update(
                             {'probabilities': probabilities[i]})
             except Exception as e:
-                warning("Could not log predictions due to this error '%s'" % str(e))
+                logger.warning("Could not log predictions due to this error '%s'" % str(e))
         if pads.cache.run_exists("targets"):
             try:
                 targets = pads.cache.run_get("targets")
@@ -72,7 +72,7 @@ class Decisions(LoggingFunction):
                         pads.cache.run_get(num).get('predictions').get(str(i)).update(
                             {'truth': targets[int(i)]})
             except Exception as e:
-                warning("Could not add the truth values due to this error '%s'" % str(e))
+                logger.warning("Could not add the truth values due to this error '%s'" % str(e))
 
         name = os.path.join(_pypads_env.call.to_folder(),
                             "decisions",
@@ -118,9 +118,9 @@ class Decisions_sklearn(Decisions):
                     predict_proba = predict_proba.__get__(ctx)
                     probabilities = predict_proba(*_args, **_kwargs)
                 except Exception as ee:
-                    warning("Couldn't compute probabilities because %s" % str(ee))
+                    logger.warning("Couldn't compute probabilities because %s" % str(ee))
             else:
-                warning("Couldn't compute probabilities because %s" % str(e))
+                logger.warning("Couldn't compute probabilities because %s" % str(e))
         finally:
             pads.cache.run_add("probabilities", probabilities)
 
@@ -145,7 +145,7 @@ class Decisions_keras(Decisions):
         try:
             probabilities = ctx.predict(*_args, **_kwargs)
         except Exception as e:
-            warning("Couldn't compute probabilities because %s" % str(e))
+            logger.warning("Couldn't compute probabilities because %s" % str(e))
 
         pads.cache.run_add("probabilities", probabilities)
 
@@ -159,7 +159,10 @@ class Decisions_torch(Decisions):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
-        pads.cache.run_add("probabilities", _pypads_result.data.numpy())
-        pads.cache.run_add("predictions", _pypads_result.argmax(dim=1).data.numpy())
+        if hasattr(ctx,"training") and ctx.training:
+            pass
+        else:
+            pads.cache.run_add("probabilities", _pypads_result.data.numpy())
+            pads.cache.run_add("predictions", _pypads_result.argmax(dim=1).data.numpy())
 
-        return super().__post__(ctx, *args, _pypads_env=_pypads_env, _pypads_result=_pypads_result, **kwargs)
+            return super().__post__(ctx, *args, _pypads_env=_pypads_env, _pypads_result=_pypads_result, **kwargs)

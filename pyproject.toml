@@ -13,7 +13,7 @@ classifiers = ["Development Status :: 3 - Alpha", "Intended Audience :: Develope
 
 [tool.poetry.dependencies]
 python = "^3.7.0"
-pypads = "^0.1.9"
+pypads = ">=0.1.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2.5"

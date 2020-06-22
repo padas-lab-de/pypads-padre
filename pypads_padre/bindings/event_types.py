@@ -1,7 +1,7 @@
 from pypads.bindings.event_types import EventType, event_types
 
 DEFAULT_PADRE_EVENT_TYPES = [EventType("dataset", "A function returning a dataset."),
-                             EventType("predications", "A function predicting on instance level."),
+                             EventType("predictions", "A function predicting on instance level."),
                              EventType("parameter_search", "A function denoting that a parameter search is starting"),
                              EventType("parameter_search_executor",
                                        "A function being the execution of a single parameter search run"),

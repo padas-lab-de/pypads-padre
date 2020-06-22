@@ -1,6 +1,6 @@
 from pypads_padre.injections.analysis.doc_parsing import Doc
 from pypads_padre.injections.analysis.parameter_search import ParameterSearch, ParameterSearchExecutor
-from pypads_padre.injections.loggers.data_splitting import SplitsTracker
+from pypads_padre.injections.loggers.data_splitting import SplitsTracker, SplitsTrackerTorch
 from pypads_padre.injections.loggers.dataset import Dataset
 from pypads_padre.injections.loggers.decision_tracking import Decisions, Decisions_keras, Decisions_sklearn, \
     Decisions_torch
@@ -20,5 +20,6 @@ DEFAULT_PADRE_LOGGING_FNS = {
     ("predictions", "keras"): Decisions_keras(),
     ("predictions", "sklearn"): Decisions_sklearn(),
     ("predictions", "torch"): Decisions_torch(),
-    ("metric", "torch"): MetricTorch()
+    ("metric", "torch"): MetricTorch(),
+    ("splits","torch"): SplitsTrackerTorch()
 }

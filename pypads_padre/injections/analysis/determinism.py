@@ -2,8 +2,8 @@ import os
 
 from padrepads.util import _is_package_available
 from pypads import logger
-from pypads.functions.analysis.call_tracker import LoggingEnv
-from pypads.functions.loggers.base_logger import LoggingFunction
+from pypads.app.injections.base_logger import LoggingFunction
+from pypads.injections.analysis.call_tracker import LoggingEnv
 
 
 class Determinism(LoggingFunction):
@@ -16,7 +16,7 @@ class Determinism(LoggingFunction):
 
         import tensorflow
 
-        from pypads.pypads import get_current_pads
+        from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
         tf_version = tensorflow.version.VERSION

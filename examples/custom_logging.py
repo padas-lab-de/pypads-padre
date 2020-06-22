@@ -1,6 +1,6 @@
-from pypads_padre.base import PyPadrePads
+from pypads.app.base import PyPads
 
-tracker = PyPadrePads()
+tracker = PyPads(autostart=True)
 # just changing stuff
 from sklearn import datasets
 from sklearn.metrics.classification import f1_score
