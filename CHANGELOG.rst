@@ -2,6 +2,22 @@ Changelog
 =========
 
 
+0.2.2 (2020-06-22)
+------------------
+
+Fix
+~~~
+- Updated references to new name. [Thomas Weißgerber]
+- Updated package name. [Thomas Weißgerber]
+- Updated package name. [Thomas Weißgerber]
+- Fixed version ref. [Thomas Weißgerber]
+- Fixed examples. [Thomas Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.2.1 → 0.2.2. [Thomas Weißgerber]
+
+
 0.2.1 (2020-06-22)
 ------------------
 
