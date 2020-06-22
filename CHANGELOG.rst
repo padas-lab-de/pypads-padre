@@ -2,6 +2,19 @@ Changelog
 =========
 
 
+0.2.3 (2020-06-22)
+------------------
+
+Fix
+~~~
+- Documentation fixes. Updated version bumping and naming. [Thomas
+  Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.2.2 → 0.2.3. [Thomas Weißgerber]
+
+
 0.2.2 (2020-06-22)
 ------------------
 
