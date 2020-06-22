@@ -2,7 +2,7 @@ variables:
   PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
 
 cache:
-  key: "padre-pads-${CI_JOB_NAME}"
+  key: "pypads-padre-${CI_JOB_NAME}"
   paths:
     - .cache/pip
     - .venv
