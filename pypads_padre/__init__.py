@@ -1,4 +1,4 @@
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 from pypads_padre.app.plugin import configure_plugin
 
