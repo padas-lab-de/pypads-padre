@@ -1,19 +1,19 @@
 [tool.poetry]
-name = "pypads_padre"
-version = "0.2.0"
-description = "PaDRe-PaDS aims to to add additional machine learning concepts into the world of pypads."
+name = "pypads-padre"
+version = "0.2.5"
+description = "PyPads_PaDRe aims to to add additional machine learning concepts into the world of pypads."
 authors = ["Thomas Weißgerber <thomas.weissgerber@uni-passau.de>", "Ben Amor Mehdi <Mehdi.BenAmor@uni-passau.de>", "Christofer Fellicious <Christofer.Fellicious@uni-passau.de>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 homepage = "https://www.padre-lab.eu/"
-repository = "https://github.com/padre-lab-eu/pypads_padre"
+repository = "https://github.com/padre-lab-eu/pypads-padre"
 documentation = "https://pypads.readthedocs.io/en/latest/"
 keywords = ["tracking", "machine learning", "deep learning", "neural networks", "reproducibility"]
 classifiers = ["Development Status :: 3 - Alpha", "Intended Audience :: Developers", "Intended Audience :: Science/Research", "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)", "Natural Language :: English", "Operating System :: MacOS", "Operating System :: Microsoft :: Windows", "Operating System :: Unix", "Programming Language :: Python :: 3.7", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Topic :: Scientific/Engineering :: Artificial Intelligence"]
 
 [tool.poetry.dependencies]
 python = "^3.7.0"
-pypads = ">=0.1.9"
+pypads = "^0.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2.5"

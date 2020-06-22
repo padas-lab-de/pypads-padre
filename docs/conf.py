@@ -20,12 +20,12 @@ from github_link import make_linkcode_resolve
 
 # -- Project information -----------------------------------------------------
 
-project = 'PadrePads'
+project = 'PyPads-Padre'
 copyright = '2020, Padre-Lab'
 author = 'Padre-Lab, Thomas Weissgerber & Mehdi Ben Amor'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.10'
+release = '0.2.5'
 
 # -- General configuration ---------------------------------------------------
 
@@ -72,13 +72,13 @@ html_static_path = ['_static']
 html_theme_path = ['themes']
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'pypads_padre'
+html_short_title = 'pypads-padre'
 
 html_logo = 'files/imgpsh_fullsize_anim.png'
 
 html_favicon = 'files/rtd.png'
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve('pypads_padre',
-                                         'https://github.com/padre-lab-eu/pypads_padre/'
+                                         'https://github.com/padre-lab-eu/pypads-padre/'
                                          'blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
