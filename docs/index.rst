@@ -37,6 +37,7 @@ Getting started
 
 The pypads-padre documentation is under construction. Please refer to the PyPads documentation for now.
 
+.. include:: ../CHANGELOG.rst
 
 Indices and tables
 ==================

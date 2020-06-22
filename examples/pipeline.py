@@ -1,6 +1,5 @@
 from pypads.app.base import PyPads
 from pypads.injections.setup.hardware import ICpu
-
 tracker = PyPads(setup_fns=[ICpu()], autostart=True)
 
 import numpy as np
