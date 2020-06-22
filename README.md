@@ -3,7 +3,7 @@
 An extension of pypads that implements and tracks other concepts from machine learning experiments.   
 
 [![Documentation Status](https://readthedocs.org/projects/pypads-onto/badge/?version=latest)](https://pypads.readthedocs.io/projects/pypads-onto/en/latest/?badge=latest)
-[![PyPI version](https://badge.fury.io/py/pypads-padre.svg)](https://badge.fury.io/py/pypads-padre)
+[![PyPI version](https://badge.fury.io/py/pypads-padre.svg)](https://badge.fury.io/py/pypads-padre)  
 
 ![Build status](https://gitlab.padim.fim.uni-passau.de/RP-17-PaDReP/padre-pads/badges/master/pipeline.svg)]
 
