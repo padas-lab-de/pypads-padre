@@ -4,7 +4,7 @@ An extension of pypads that implements and tracks other concepts from machine le
 
 [![Documentation Status](https://readthedocs.org/projects/pypads-onto/badge/?version=latest)](https://pypads.readthedocs.io/projects/pypads-onto/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/pypads-padre.svg)](https://badge.fury.io/py/pypads-padre)
-![Build status](https://gitlab.padim.fim.uni-passau.de/RP-17-PaDReP/padre-pads/badges/master/pipeline.svg)
+[![Build status](https://gitlab.padim.fim.uni-passau.de/RP-17-PaDReP/padre-pads/badges/master/pipeline.svg)](https://badge.fury.io/py/pypads-padre)
 
 # Intalling
 This tool requires those libraries to work:
