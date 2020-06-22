@@ -1,8 +1,12 @@
-from padrepads.base import PyPadrePads
+from pypads_padre.base import PyPadrePads
+from pypads_padre.functions.loggers.dataset import Dataset
+from pypads.functions.pre_run.hardware import ICpu
 
-tracker = PyPadrePads()
+tracker = PyPadrePads(init_run_fns=[ICpu()])
 
 import numpy as np
+
+import tensorflow
 
 from sklearn import datasets
 from sklearn.decomposition import PCA

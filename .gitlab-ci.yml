@@ -38,19 +38,17 @@ stages:
     expire_in: 1 week
 
 # Test with different python versions
-# Fix pypads 3.6 first
-#test-python-3.6:
-#  <<: *test
-#  image: python:3.6
+test-python-3.6:
+  <<: *test
+  image: python:3.6
 
 test-python-3.7:
   <<: *test
   image: python:3.7
 
-# Numpy currently not supported
-#test-python-3.8:
-#  <<: *test
-#  image: python:3.8
+test-python-3.8:
+  <<: *test
+  image: python:3.8
 
 ## Deploy jobs
 #publish:

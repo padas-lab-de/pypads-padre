@@ -9,7 +9,4 @@ python:
         - docs
 
 sphinx:
-  configuration: docs/conf.py
-
-formats:
-  - pdf
+  configuration: docs/source/conf.py

@@ -1,54 +1,16 @@
-..
+.. pypads_padre documentation master file, created by
+sphinx-quickstart on Tue May 19 15:15:40 2020.
+You can adapt this file completely to your liking, but it should at least
+contain the root `toctree` directive.
 
-PadrePaDS: Documentation!
+Welcome to pypads_padre's documentation!
 =====================================
-
-Building on the PyPaDS toolset, `PadrePaDS <https://github.com/padre-lab-eu/padre-pads>`_ aims to add additional semantic information to tracked experiments.
-
-.. _PyPaDS: https://github.com/padre-lab-eu/pypads
-
-Install PadrePaDS
------------------
-
-Logging your experiments manually can be overwhelming and exhaustive? PadrePaDS is a tool to help automate logging as much information as possible by
-tracking the libraries of your choice.
-
-* **Installing PadrePaDS**:
-   :ref:`With pip <install_official_release>` |
-   :ref:`From source <install_from_source>`
 
 .. toctree::
    :maxdepth: 2
-   :hidden:
-   :caption: Install PadrePaDS:
+   :caption: Contents:
 
-   install
-
-Concepts
-========
-
-PadrePads builds upon pypads when it comes to tracking, but it also adds a layer of loggers that tracks semantic information from experiments executions.
-
-Dataset tracking
-----------------
-
-PadrePads have a dataset logger that tries to identify the object returned by the tracked function hooked with 'pypads_dataset'.
-After collecting as mush metadata on this object, padrepads then dumps it on disk along with the metadata and link to the current run ID.
-
-The currently supported dataset providers by padrepads::
-
-    - Scikit-learn (sklearn.datasets).
-    - Keras datasets.
-    - torchvision datasets.
-
-Split tracking
---------------
-
-Decisions tracking
-------------------
-
-Grid Search
------------
+The pypads_padre documentation is under construction. Please refer to the PyPads documentation for now.
 
 
 Indices and tables

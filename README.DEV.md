@@ -9,7 +9,7 @@ poetry build
 A wheel is created which can be used to install the package into the local python env.
 
 ``
-pip install ./dist/padrepads-0.1.4.tar.gz
+pip install ./dist/pypads_padre-0.1.4.tar.gz
 ``
 
 # Publishing a new version
@@ -132,13 +132,7 @@ Changelogs are automatically generated on deployment.
 
 # Generating the documentation
 
-The documentation is generated via sphinx. You can generate it manually by calling:
-
-``
-make -C ./docs html
-``
-
-The documentation should be updated automatically when a push is registered on github master due to webhook settings on readthedocs.
+The documentation is generated via sphinx.
 
 # Deploying to PyPi
 

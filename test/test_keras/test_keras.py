@@ -2,7 +2,7 @@ import os
 
 from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
 
-keras_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "keras_2_3_1.json"))
+keras_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "keras_2_3_1.yml"))
 
 
 def keras_simple_sequential_experiment():
@@ -76,8 +76,8 @@ class PypadsKerasTest(BaseTest):
     def test_keras_base_class(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        PyPadrePads(uri=TEST_FOLDER, mapping=keras_padre)
+        from pypads.app.base import PyPads
+        PyPads(uri=TEST_FOLDER, mappings=[keras_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(keras_simple_sequential_experiment)
@@ -90,8 +90,8 @@ class PypadsKerasTest(BaseTest):
     def test_keras_mlp(self):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        PyPadrePads(uri=TEST_FOLDER, mapping=keras_padre)
+        from pypads.app.base import PyPads
+        PyPads(uri=TEST_FOLDER, mappings=[keras_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(keras_mlp_for_multi_class_softmax_classification)
@@ -103,12 +103,11 @@ class PypadsKerasTest(BaseTest):
 
     def test_keras_autolog(self):
         # Activate tracking of pypads
-        from padrepads.base import PyPadrePads
-        PyPadrePads(uri=TEST_FOLDER, config={"events": {
+        from pypads.app.base import PyPads
+        PyPads(uri=TEST_FOLDER, hooks={
             "autolog": {"on": ["pypads_fit"]},
             "pipeline": {"on": ["pypads_fit", "pypads_predict", "pypads_transform", "pypads_metrics"]}
-        }
-        }, mapping=keras_padre)
+        }, mappings=[keras_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(keras_simple_sequential_experiment)
