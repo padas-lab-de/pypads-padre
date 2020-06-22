@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pypads_padre"
+name = "pypads-padre"
 version = "0.2.1"
 description = "PyPads_PaDRe aims to to add additional machine learning concepts into the world of pypads."
 authors = ["Thomas Weißgerber <thomas.weissgerber@uni-passau.de>", "Ben Amor Mehdi <Mehdi.BenAmor@uni-passau.de>", "Christofer Fellicious <Christofer.Fellicious@uni-passau.de>"]
