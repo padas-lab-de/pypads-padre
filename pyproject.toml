@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pypads-padre"
-version = "0.2.1"
+version = "0.2.2"
 description = "PyPads_PaDRe aims to to add additional machine learning concepts into the world of pypads."
 authors = ["Thomas Weißgerber <thomas.weissgerber@uni-passau.de>", "Ben Amor Mehdi <Mehdi.BenAmor@uni-passau.de>", "Christofer Fellicious <Christofer.Fellicious@uni-passau.de>"]
 license = "GPL-3.0-or-later"
