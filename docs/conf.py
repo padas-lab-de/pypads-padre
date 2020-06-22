@@ -79,6 +79,6 @@ html_logo = 'files/imgpsh_fullsize_anim.png'
 html_favicon = 'files/rtd.png'
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve('pypads_padre',
-                                         'https://github.com/padre-lab-eu/pypads_padre/'
+                                         'https://github.com/padre-lab-eu/pypads-padre/'
                                          'blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
