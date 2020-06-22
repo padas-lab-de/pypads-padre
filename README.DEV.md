@@ -1,9 +1,15 @@
 # Building and installing local version
 
-To build the package you can just run:
+To install the poetry project locally use:
 
 ``
-poetry build
+poetry install
+``
+
+You might want to clear your caches if versions changed:
+
+``
+poetry cache clear --all pypi
 ``
 
 A wheel is created which can be used to install the package into the local python env.
