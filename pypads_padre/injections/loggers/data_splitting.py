@@ -104,6 +104,9 @@ class SplitsTracker(LoggingFunction):
 
 class SplitsTrackerTorch(LoggingFunction):
 
+    def supported_libraries(self):
+        return {LibSelector("torch", "*", specificity=1)}
+
     def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):
         if isinstance(error, StopIteration):
             logger.warning("Ignoring recovery of this StopIteration error: {}".format(error))

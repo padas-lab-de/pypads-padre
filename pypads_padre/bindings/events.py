@@ -6,20 +6,16 @@ from pypads_padre.injections.loggers.decision_tracking import Decisions, Decisio
     Decisions_torch
 from pypads_padre.injections.loggers.hyperparameters import HyperParameters
 from pypads_padre.injections.loggers.metric import MetricTorch
-
+from pypads.injections.loggers.metric import Metric
 
 # Extended mappings. We allow to log parameters, output or input, datasets
 DEFAULT_PADRE_LOGGING_FNS = {
     "dataset": Dataset(),
-    "predictions": Decisions(),
+    "predictions": [Decisions(), Decisions_sklearn(), Decisions_torch(), Decisions_keras()],
     "parameter_search": ParameterSearch(),
     "parameter_search_executor": ParameterSearchExecutor(),
-    "splits": SplitsTracker(),
+    "splits": [SplitsTracker(), SplitsTrackerTorch()],
     "hyperparameters": HyperParameters(),
     "doc": Doc(),
-    ("predictions", "keras"): Decisions_keras(),
-    ("predictions", "sklearn"): Decisions_sklearn(),
-    ("predictions", "torch"): Decisions_torch(),
-    ("metric", "torch"): MetricTorch(),
-    ("splits","torch"): SplitsTrackerTorch()
+    "metric": [Metric(), MetricTorch()]
 }

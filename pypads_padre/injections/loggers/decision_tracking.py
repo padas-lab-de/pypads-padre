@@ -3,6 +3,7 @@ from logging import warning
 from typing import Iterable
 from pypads import logger
 from pypads.app.injections.base_logger import LoggingFunction
+from pypads.importext.mappings import LibSelector
 from pypads.injections.analysis.call_tracker import LoggingEnv
 
 
@@ -85,6 +86,9 @@ class Decisions_sklearn(Decisions):
     Function getting the prediction scores from sklearn estimators
     """
 
+    def supported_libraries(self):
+        return {LibSelector("sklearn", "*", specificity=1)}
+
     def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **kwargs):
         """
 
@@ -130,6 +134,9 @@ class Decisions_keras(Decisions):
     Function getting the prediction scores from keras models
     """
 
+    def supported_libraries(self):
+        return {LibSelector("keras", "*", specificity=1)}
+
     def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **kwargs):
         """
 
@@ -154,6 +161,9 @@ class Decisions_torch(Decisions):
     """
     Function getting the prediction scores from torch models
     """
+
+    def supported_libraries(self):
+        return {LibSelector("torch", "*", specificity=1)}
 
     def __post__(self, ctx, *args, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
         from pypads.app.pypads import get_current_pads

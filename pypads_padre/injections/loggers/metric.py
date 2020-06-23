@@ -1,5 +1,6 @@
 import mlflow
 from mlflow.utils.autologging_utils import try_mlflow_log
+from pypads.importext.mappings import LibSelector
 from pypads.injections.analysis.call_tracker import LoggingEnv
 from pypads.injections.loggers.metric import Metric
 
@@ -8,6 +9,9 @@ class MetricTorch(Metric):
     """
     Function logging wrapped metrics of PyTroch
     """
+
+    def supported_libraries(self):
+        return {LibSelector("torch", "*", specificity=1)}
 
     @staticmethod
     def _needed_packages():
