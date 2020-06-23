@@ -42,7 +42,7 @@ def configure_plugin():
     mappings.default_mapping_file_paths.extend(
         glob.glob(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
                                                "resources", "mapping", "**.json"))))
-    base.DEFAULT_SETUP_FNS = dict_merge_caches(base.DEFAULT_SETUP_FNS, DEFAULT_PADRE_SETUP_FNS)
+    base.DEFAULT_SETUP_FNS = base.DEFAULT_SETUP_FNS | DEFAULT_PADRE_SETUP_FNS
     base.DEFAULT_CONFIG = dict_merge_caches(base.DEFAULT_CONFIG, DEFAULT_PADRE_CONFIG)
     events.DEFAULT_LOGGING_FNS = dict_merge_caches(events.DEFAULT_LOGGING_FNS, DEFAULT_PADRE_LOGGING_FNS)
     hooks.DEFAULT_HOOK_MAPPING = dict_merge_caches(hooks.DEFAULT_HOOK_MAPPING, DEFAULT_PADRE_HOOK_MAPPING)
