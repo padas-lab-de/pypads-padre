@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+0.2.6 (2020-06-23)
+------------------
+
+Changes
+~~~~~~~
+- Removed poetry.lock file. [mehdi]
+
+Other
+~~~~~
+- Bump version: 0.2.5 → 0.2.6. [Thomas Weißgerber]
+
+
 0.2.5 (2020-06-22)
 ------------------
 - Bump version: 0.2.4 → 0.2.5. [Thomas Weißgerber]
