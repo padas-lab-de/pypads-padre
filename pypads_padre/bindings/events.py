@@ -17,5 +17,5 @@ DEFAULT_PADRE_LOGGING_FNS = {
     "splits": [SplitsTracker(), SplitsTrackerTorch()],
     "hyperparameters": HyperParameters(),
     "doc": Doc(),
-    "metric": [Metric(), MetricTorch()]
+    "metric": [MetricTorch()]
 }

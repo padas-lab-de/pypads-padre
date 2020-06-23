@@ -18,7 +18,7 @@ from pypads_padre.bindings.events import DEFAULT_PADRE_LOGGING_FNS
 # --- Pypads App ---
 from pypads_padre.bindings.hooks import DEFAULT_PADRE_HOOK_MAPPING
 
-DEFAULT_PADRE_SETUP_FNS = {}
+DEFAULT_PADRE_SETUP_FNS = set()
 
 # Extended config.
 # Pypads mapping files shouldn't interact directly with the logging functions,
