@@ -14,7 +14,7 @@ sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "bindings",
 
 def cross_validation_on_diabetes():
     import numpy as np
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
 
     from sklearn import datasets
     from sklearn.linear_model import LassoCV
@@ -36,22 +36,22 @@ def cross_validation_on_diabetes():
     clf.fit(X, y)
     scores = clf.cv_results_['mean_test_score']
     scores_std = clf.cv_results_['std_test_score']
-    plt.figure().set_size_inches(8, 6)
-    plt.semilogx(alphas, scores)
+    # plt.figure().set_size_inches(8, 6)
+    # plt.semilogx(alphas, scores)
 
     # plot error lines showing +/- std. errors of the scores
     std_error = scores_std / np.sqrt(n_folds)
 
-    plt.semilogx(alphas, scores + std_error, 'b--')
-    plt.semilogx(alphas, scores - std_error, 'b--')
-
-    # alpha=0.2 controls the translucency of the fill color
-    plt.fill_between(alphas, scores + std_error, scores - std_error, alpha=0.2)
-
-    plt.ylabel('CV score +/- std error')
-    plt.xlabel('alpha')
-    plt.axhline(np.max(scores), linestyle='--', color='.5')
-    plt.xlim([alphas[0], alphas[-1]])
+    # plt.semilogx(alphas, scores + std_error, 'b--')
+    # plt.semilogx(alphas, scores - std_error, 'b--')
+    #
+    # # alpha=0.2 controls the translucency of the fill color
+    # plt.fill_between(alphas, scores + std_error, scores - std_error, alpha=0.2)
+    #
+    # plt.ylabel('CV score +/- std error')
+    # plt.xlabel('alpha')
+    # plt.axhline(np.max(scores), linestyle='--', color='.5')
+    # plt.xlim([alphas[0], alphas[-1]])
 
     # #############################################################################
     # Bonus: how much can you trust the selection of alpha?
@@ -78,7 +78,7 @@ def cross_validation_on_diabetes():
     print("subsets of the data and moreover, the scores for these alphas differ")
     print("quite substantially.")
 
-    plt.show()
+    # plt.show()
 
 
 class PyPadsTest(BaseSklearnTest):
