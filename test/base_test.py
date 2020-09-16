@@ -1,12 +1,11 @@
 import atexit
-import json
 import logging
 import os
 import unittest
 from os.path import expanduser
 
-from pypads.app.injections.base_logger import LoggingFunction
-from pypads.app.pypads import logger, current_pads, set_current_pads, get_current_pads
+from pypads.app.injections.injection import InjectionLogger
+from pypads.app.pypads import logger
 from pypads.importext.mappings import MappingFile
 
 if "loguru" in str(logger):
@@ -73,7 +72,7 @@ class BaseTest(unittest.TestCase):
             set_current_pads(None)
 
 
-class RunLogger(LoggingFunction):
+class RunLogger(InjectionLogger):
     """ Adds id of self to cache. """
 
     def __init__(self, *args, **kwargs):
@@ -81,6 +80,7 @@ class RunLogger(LoggingFunction):
         self._run_count = 0
 
     def __pre__(self, ctx, *args, _pypads_env, _args, _kwargs, **kwargs):
+        from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
         self._run_count += 1
         pads.cache.run_add(id(self), self._run_count)

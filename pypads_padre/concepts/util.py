@@ -1,7 +1,9 @@
 import functools
 import hashlib
+import numbers
 import operator
 from typing import Tuple
+import numpy as np
 
 
 def _create_ctx(cache):
@@ -44,3 +46,25 @@ def get_by_tag(tag=None, value=None, experiment_id=None):
         else:
             selection.append(run)
     return selection
+
+
+def _shape(x):
+    """Return number of samples in array-like x."""
+    if not hasattr(x, '__len__') and not hasattr(x, 'shape'):
+        if hasattr(x, '__array__'):
+            x = np.asarray(x)
+        else:
+            raise TypeError("Expected sequence or array-like, got %s" %
+                            type(x))
+    if hasattr(x, 'shape'):
+        if len(x.shape) == 0:
+            raise TypeError("Singleton array %r cannot be considered"
+                            " a valid collection." % x)
+        # Check that shape is returning an integer or default to len
+        # Dask dataframes may not return numeric shape[0] value
+        if isinstance(x.shape[0], numbers.Integral):
+            return x.shape[0]
+        else:
+            return len(x)
+    else:
+        return len(x)

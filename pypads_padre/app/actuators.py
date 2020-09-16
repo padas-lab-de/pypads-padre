@@ -14,18 +14,7 @@ class PadrePadsActuators(IActuators):
 
     # noinspection PyMethodMayBeStatic
     @actuator
-    def default_splitter(self, data, **kwargs):
-        ctx = _create_ctx(self.pypads.cache.run_cache().cache)
-        ctx.update({"data": data})
-        return default_split(ctx, **kwargs)
+    def default_splitter(self, X, y=None, **kwargs):
+        _fn = self.pypads.api.track_splits(default_split)
+        return _fn(X, y=y, **kwargs)
 
-
-def _create_ctx(cache):
-    ctx = dict()
-    if "data" in cache.keys():
-        ctx["data"] = cache.get("data")
-    if "shape" in cache.keys():
-        ctx["shape"] = cache.get("shape")
-    if "targets" in cache.keys():
-        ctx["targets"] = cache.get("targets")
-    return ctx
