@@ -1,23 +1,20 @@
 import mlflow
 from mlflow.utils.autologging_utils import try_mlflow_log
 from pypads.importext.mappings import LibSelector
-from pypads.injections.analysis.call_tracker import LoggingEnv
-from pypads.injections.loggers.metric import Metric
+from pypads.injections.loggers.metric import MetricILF
 
 
-class MetricTorch(Metric):
+class MetricTorch(MetricILF):
     """
     Function logging wrapped metrics of PyTroch
     """
 
-    def supported_libraries(self):
-        return {LibSelector("torch", "*", specificity=1)}
+    supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 
-    @staticmethod
-    def _needed_packages():
-        return ["torch"]
+    _dependencies = {"torch"}
 
-    def __post__(self, ctx, *args, _pypads_artifact_fallback=False, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
+    def __post__(self, ctx, *args, _pypads_artifact_fallback=False, _logger_call, _logger_output, _pypads_result,
+                 **kwargs):
         """
 
         :param ctx:
@@ -32,6 +29,7 @@ class MetricTorch(Metric):
             from torch import Tensor
             if isinstance(result, Tensor):
                 super().__post__(ctx, *args, _pypads_artifact_fallback=_pypads_artifact_fallback,
+                                 _logger_call=_logger_call, _logger_output=_logger_output,
                                  _pypads_result=result.item(), **kwargs)
             else:
                 from torch.optim.optimizer import Optimizer
@@ -43,6 +41,6 @@ class MetricTorch(Metric):
                         if weights_by_layer and isinstance(weights_by_layer, list):
                             for layer, weights in enumerate(weights_by_layer):
                                 try_mlflow_log(mlflow.log_metric,
-                                               _pypads_env.call.call_id.context.container.__name__+ ".Layer_" + str(
+                                               _logger_call.original_call.call_id.context.container.__name__ + ".Layer_" + str(
                                                    layer) + "_MEAN_GRADIENT.txt",
                                                weights.grad.mean().item())

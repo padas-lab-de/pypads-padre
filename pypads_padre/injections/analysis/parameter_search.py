@@ -1,24 +1,26 @@
-from pypads.app.injections.base_logger import LoggingFunction
-from pypads.injections.analysis.call_tracker import LoggingEnv
+from pypads.app.injections.base_logger import LoggerCall
+from pypads.app.injections.injection import InjectionLogger
+from pypads.app.env import InjectionLoggerEnv
 import json
 
 from pypads.utils.logging_util import try_write_artifact, WriteFormats
 from pypads.utils.util import is_package_available
 
 
-class ParameterSearch(LoggingFunction):
+class ParameterSearch(InjectionLogger):
 
-    @staticmethod
-    def _needed_packages():
-        return ["sklearn"]
+    _dependencies = {"sklearn"}
 
-    def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
+    def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: LoggerCall, _logger_output, _args, _kwargs,
+                **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
         pads.cache.add("parameter_search", ctx)
         # TODO save parameter grid used for the search
 
-    def __post__(self, ctx, *args, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
+    def __post__(self, ctx, *args, _logger_call, _pypads_pre_return,
+                 _pypads_result, _logger_output, _args, _kwargs,
+                 **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
@@ -60,7 +62,7 @@ class ParameterSearch(LoggingFunction):
         return serialized_dict
 
 
-class ParameterSearchExecutor(LoggingFunction):
+class ParameterSearchExecutor(InjectionLogger):
 
     def __pre__(self, ctx, *args, **kwargs):
         pass
@@ -68,7 +70,7 @@ class ParameterSearchExecutor(LoggingFunction):
     def __post__(self, ctx, *args, **kwargs):
         pass
 
-    def call_wrapped(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
+    def call_wrapped(self,ctx, *args, _pypads_env: InjectionLoggerEnv, _args, _kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 

@@ -1,8 +1,8 @@
 import os
 import re
 
-from pypads.app.injections.base_logger import LoggingFunction
-from pypads.injections.analysis.call_tracker import LoggingEnv
+from pypads.app.injections.base_logger import LoggerCall
+from pypads.app.injections.injection import InjectionLogger
 from pypads.utils.util import is_package_available
 
 
@@ -43,9 +43,10 @@ def tag_extraction(pads, *args, **kwargs):
         pass
 
 
-class Doc(LoggingFunction):
+class Doc(InjectionLogger):
 
-    def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
+    def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: LoggerCall, _logger_output, _args, _kwargs,
+                **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
@@ -57,26 +58,26 @@ class Doc(LoggingFunction):
         else:
             doc_map = pads.cache.get("doc_map")
 
-        if _pypads_env.call.call_id.wrappee.__doc__:
-            name = os.path.join(_pypads_env.call.to_folder(),
-                                _pypads_env.call.call_id.wrappee.__name__ + ".__doc__")
+        if _logger_call.original_call.call_id.wrappee.__doc__:
+            name = os.path.join(_logger_call.original_call.to_folder(),
+                                _logger_call.original_call.call_id.wrappee.__name__ + ".__doc__")
             if not pads.api.is_intermediate_run():
-                pads.api.log_mem_artifact(name, _pypads_env.call.call_id.wrappee.__doc__)
-            doc_map[name] = _pypads_env.call.call_id.wrappee.__doc__
+                pads.api.log_mem_artifact(name, _logger_call.original_call.call_id.wrappee.__doc__)
+            doc_map[name] = _logger_call.original_call.call_id.wrappee.__doc__
 
-        if _pypads_env.call.call_id.context.container.__doc__:
-            name = os.path.join(_pypads_env.call.to_folder(),
-                                _pypads_env.call.call_id.context.container.__name__ + ".__doc__")
+        if _logger_call.original_call.call_id.context.container.__doc__:
+            name = os.path.join(_logger_call.original_call.to_folder(),
+                                _logger_call.original_call.call_id.context.container.__name__ + ".__doc__")
             if not pads.api.is_intermediate_run():
-                pads.api.log_mem_artifact(name, _pypads_env.call.call_id.context.container.__doc__)
-            doc_map[name] = _pypads_env.call.call_id.context.container.__doc__
+                pads.api.log_mem_artifact(name, _logger_call.original_call.call_id.context.container.__doc__)
+            doc_map[name] = _logger_call.original_call.call_id.context.container.__doc__
 
         # Add ctx name to doc_map for named entity searching
-        doc_map[_pypads_env.call.call_id.context.container.__name__ + "_exists"] = "The " + name_to_words(
-            _pypads_env.call.call_id.context.container.__name__) + " exists."
-        doc_map[_pypads_env.call.call_id.wrappee.__name__ + "_exists"] = "The " + name_to_words(
-            _pypads_env.call.call_id.wrappee.__name__) + " exists."
-        doc_map[_pypads_env.call.call_id.wrappee.__name__ + "_is_in"] = "The " + name_to_words(
-            _pypads_env.call.call_id.wrappee.__name__) + " is in " + name_to_words(_pypads_env.call.call_id.context.container.__name__) + "."
+        doc_map[_logger_call.original_call.call_id.context.container.__name__ + "_exists"] = "The " + name_to_words(
+            _logger_call.original_call.call_id.context.container.__name__) + " exists."
+        doc_map[_logger_call.original_call.call_id.wrappee.__name__ + "_exists"] = "The " + name_to_words(
+            _logger_call.original_call.call_id.wrappee.__name__) + " exists."
+        doc_map[_logger_call.original_call.call_id.wrappee.__name__ + "_is_in"] = "The " + name_to_words(
+            _logger_call.original_call.call_id.wrappee.__name__) + " is in " + name_to_words(_logger_call.original_call.call_id.context.container.__name__) + "."
         # !Add ctx name to doc_map for named entity searching
         pads.cache.add("doc_map", doc_map)

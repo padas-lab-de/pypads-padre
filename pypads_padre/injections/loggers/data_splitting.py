@@ -1,11 +1,16 @@
+import uuid
 from types import GeneratorType
-from typing import Tuple, Iterable
+from typing import Tuple, Iterable, List, Union, Set, Type
 
+import numpy
+from pydantic import HttpUrl, BaseModel
 from pypads import logger
-from pypads.app.injections.base_logger import LoggingFunction, OriginalExecutor
+from pypads.app.injections.base_logger import TrackedObject
+from pypads.app.injections.injection import InjectionLogger, OriginalExecutor, MultiInjectionLogger
 from pypads.importext.mappings import LibSelector
-from pypads.injections.analysis.call_tracker import LoggingEnv
+from pypads.app.env import InjectionLoggerEnv
 from pypads.injections.analysis.time_keeper import add_run_time, TimingDefined
+from pypads.model.models import OutputModel, TrackedObjectModel
 
 
 def split_output_inv(result, fn=None):
@@ -58,12 +63,57 @@ def split_output_inv(result, fn=None):
     return split_info
 
 
-class SplitsTracker(LoggingFunction):
+class SplitTO(TrackedObject):
     """
-    Function that tracks data splits
+    Tracking Object class for splits of your tracked dataset
     """
 
-    def __call_wrapped__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
+    class SplitModel(TrackedObjectModel):
+        uri: HttpUrl = "https://www.padre-lab.eu/onto/Split"
+
+        class Split(BaseModel):
+            split_id: uuid.UUID = ...
+            train_set: Union[List, Set, numpy.ndarray] = ...
+            test_set: Union[List, Set, numpy.ndarray] = ...
+
+            class Config:
+                orm_mode = True
+                arbitrary_types_allowed = True
+
+        splits: List[Split] = []
+
+    @classmethod
+    def get_model_cls(cls) -> Type[BaseModel]:
+        return cls.SplitModel
+
+    def __init__(self, *args, tracked_by, **kwargs):
+        super().__init__(*args, tracked_by=tracked_by, **kwargs)
+
+    def add_split(self, train_set=None, test_set=None):
+        split = self.SplitModel.Split(split_id=uuid.uuid4(), train_set=train_set, test_set=test_set)
+        self.splits.append(split)
+
+
+class SplitILF(InjectionLogger):
+    """
+    Function logging the dataset splits
+    """
+
+    name = "SplitLogger"
+    uri = "https://www.padre-lab.eu/onto/split-logger"
+
+    class SplitsILFOutput(OutputModel):
+        is_a: HttpUrl = "https://www.padre-lab.eu/onto/SplitILF-Output"
+        splits: SplitTO.get_model_cls() = ...
+
+        class Config:
+            orm_mode = True
+
+    @classmethod
+    def output_schema_class(cls) -> Type[OutputModel]:
+        return cls.SplitsILFOutput
+
+    def __call_wrapped__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _args, _kwargs):
         """
 
         :param ctx:
@@ -102,10 +152,17 @@ class SplitsTracker(LoggingFunction):
         return generator()
 
 
-class SplitsTrackerTorch(LoggingFunction):
+class SplitILFTorch(InjectionLogger):
+    """
+    Function logging splits used by torch DataLoader
+    """
+    name = "SplitTorchLogger"
+    uri = "https://www.padre-lab.eu/onto/split-torch-logger"
 
-    def supported_libraries(self):
-        return {LibSelector("torch", "*", specificity=1)}
+    supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
+
+    def get_model_cls(cls) -> Type[BaseModel]:
+        return SplitILF.SplitsILFOutput
 
     def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):
         if isinstance(error, StopIteration):
@@ -115,9 +172,13 @@ class SplitsTrackerTorch(LoggingFunction):
         else:
             super()._handle_error(*args, ctx, _pypads_env, error, **kwargs)
 
-    def __post__(self, ctx, *args, _pypads_env, _pypads_pre_return, _pypads_result, _args, _kwargs, **kwargs):
+
+    def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
+                 **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
+        if _logger_output.splits is None:
+            split = SplitTO(tracked_by=_logger_call)
 
         # Dataloader splits
         train = True

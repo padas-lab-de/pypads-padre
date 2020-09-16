@@ -194,8 +194,11 @@ def bunch_crawler(obj: Crawler, **kwargs):
     import numpy as np
     bunch = obj.data
     data = np.concatenate([bunch.get('data'), bunch.get("target").reshape(len(bunch.get("target")), 1)], axis=1)
-    metadata = {"type": str(obj.format), "features_names": bunch.get("feature_names"),
-                "target_names": list(bunch.get("target_names")), "description": bunch.get("DESCR"), "shape": data.shape}
+    features = []
+    for i, name in enumerate(bunch.get("feature_names")):
+        features.append((name, str(data[:,i].dtype), False, (data[:,i].min(), data[:,i].max())))
+    features.append(("class", str(data[:,-1].dtype), True, tuple(bunch.get("target_names"))))
+    metadata = {"type": str(obj.format), "features": features, "description": bunch.get("DESCR"), "shape": data.shape}
     metadata = {**metadata, **kwargs}
     return data, metadata, bunch.get("target")
 

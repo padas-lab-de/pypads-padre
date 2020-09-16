@@ -6,8 +6,10 @@ metadata:
     version: "2.2.0"
 
 mappings:
-  :tensorflow:
-      :python.ops:
-        hooks: "pypads_determinism"
-        :nn_ops.bias_add: ~
-        :nn.bias_add: ~
+  :tensorflow.python.ops:
+      :nn_ops.bias_add:
+        hooks: ["pypads_determinism"]
+      :nn.bias_add:
+        hooks: ["pypads_determinism"]
+
+
