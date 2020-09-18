@@ -1,15 +1,37 @@
-from pypads.app.injections.base_logger import LoggerCall
+from pydantic import HttpUrl
+from pypads.app.injections.base_logger import LoggerCall, TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.app.env import InjectionLoggerEnv
 import json
 
-from pypads.utils.logging_util import try_write_artifact, WriteFormats
+# from pypads.utils.logging_util import try_write_artifact, WriteFormats
+from pypads.arguments import ontology_uri
+from pypads.model.models import OutputModel, ArtifactMetaModel, TrackedObjectModel
 from pypads.utils.util import is_package_available
 
+class ParameterSearchTO(TrackedObject):
+    """
+    Tracking object for grid search and results
+    """
+    class ParamSearchModel(TrackedObjectModel):
+        uri: HttpUrl = f"{ontology_uri}ParameterSearch"
 
-class ParameterSearch(InjectionLogger):
 
+class ParameterSearchILF(InjectionLogger):
+    """
+    Function logging the cv results of a parameter search
+    """
+    name = "ParameterSearchILF"
+    uri = f"{ontology_uri}parameter-search-logger"
     _dependencies = {"sklearn"}
+
+    class ParameterSearchOutput(OutputModel):
+        is_a: HttpUrl = f"{ontology_uri}parameter-search-output"
+        parameter_grid: ArtifactMetaModel = ...
+        cv_results: ArtifactMetaModel = ...
+
+        class Config:
+            orm_mode = True
 
     def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: LoggerCall, _logger_output, _args, _kwargs,
                 **kwargs):
@@ -34,8 +56,8 @@ class ParameterSearch(InjectionLogger):
                 serialized_dict = self.traverse_dict(ctx.cv_results_)
 
                 name = 'GridSearchCV'
-                try_write_artifact(name, json.dumps(serialized_dict),
-                                   write_format=WriteFormats.text)
+                # try_write_artifact(name, json.dumps(serialized_dict),
+                #                    write_format=WriteFormats.text)
 
     def traverse_dict(self, input_dict):
         """

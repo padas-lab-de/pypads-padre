@@ -7,6 +7,7 @@ from pydantic import HttpUrl, BaseModel
 from pypads import logger
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger, OriginalExecutor, MultiInjectionLogger
+from pypads.arguments import ontology_uri
 from pypads.importext.mappings import LibSelector
 from pypads.app.env import InjectionLoggerEnv
 from pypads.injections.analysis.time_keeper import add_run_time, TimingDefined
@@ -17,19 +18,27 @@ def splitter_output(result, fn):
     # TODO rework this function to return train, test, val indices
 
     # check if the output of the splitter is a tuple of indices
-    if isinstance(result, Tuple):
-        if "sklearn" in fn.__module__:
-            return result[0].tolist(), result[1].tolist(), None, None
-        elif "default_splitter" in fn.__name__:
-            return result[1], result[2], result[3], result[0]
+    try:
+        if isinstance(result, Tuple):
+            if "sklearn" in fn.__module__:
+                return result[0].tolist(), result[1].tolist(), None, None
+            elif "default_splitter" in fn.__name__:
+                return result[1], result[2], result[3], result[0]
+            else:
+                if len(result) < 4:
+                    return result[0], result[1], result[3], None
         else:
-            if len(result) < 4:
-                return result[0], result[1], result[3], None
-    else:
-        if "torch" in fn.__module__:
-            return result, None, None, None
-        else:
-            return None
+            if "torch" in fn.__module__:
+                if hasattr(fn, "_dataset"):
+                    if fn._dataset.train:
+                        return result.tolist(), None, None, None
+                    else:
+                        return None, result.tolist(), None, None
+                return result, None, None, None
+            else:
+                return None
+    except Exception as e:
+        logger.warning("Split tracking ommitted due to exception {}".format(str(e)))
 
 
 class SplitTO(TrackedObject):
@@ -38,7 +47,7 @@ class SplitTO(TrackedObject):
     """
 
     class SplitModel(TrackedObjectModel):
-        uri: HttpUrl = "https://www.padre-lab.eu/onto/Split"
+        uri: HttpUrl = f"{ontology_uri}Split"
 
         class Split(BaseModel):
             split_id: uuid.UUID = ...
@@ -77,10 +86,10 @@ class SplitILF(MultiInjectionLogger):
     """
 
     name = "SplitLogger"
-    uri = "https://www.padre-lab.eu/onto/split-logger"
+    uri = f"{ontology_uri}split-logger"
 
     class SplitsILFOutput(OutputModel):
-        is_a: HttpUrl = "https://www.padre-lab.eu/onto/SplitILF-Output"
+        is_a: HttpUrl = f"{ontology_uri}SplitILF-Output"
         splits: SplitTO.get_model_cls() = None
 
         class Config:
@@ -159,7 +168,7 @@ class SplitILFTorch(MultiInjectionLogger):
     Function logging splits used by torch DataLoader
     """
     name = "SplitTorchLogger"
-    uri = "https://www.padre-lab.eu/onto/split-torch-logger"
+    uri = f"{ontology_uri}split-torch-logger"
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 
@@ -176,27 +185,26 @@ class SplitILFTorch(MultiInjectionLogger):
 
     @staticmethod
     def store(pads, *args, **kwargs):
-        pass
+        split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
+        call = split_tracker.get("call")
+        output = split_tracker.get("output")
+
+        call.output = output.store(split_tracker.get("base_path"))
+        call.store()
 
     def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
                  **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
+        pads.cache.run_add("split_tracker", id(self))
         if _logger_output.splits is None:
-            split = SplitTO(tracked_by=_logger_call)
+            splits = SplitTO(tracked_by=_logger_call)
         else:
             splits = _logger_output.splits
 
-        # Dataloader splits
-        train = True
-        if hasattr(ctx, "_dataset"):
-            train = ctx._dataset.train
-
-        if not train:
-            curr = pads.cache.run_get("current_split", None)
-            if curr is not None:
-                curr += 1
-            else:
-                curr = 0
-            pads.cache.run_add("current_split", curr)
-            pads.cache.run_add(curr, {"split_info": {"test": _pypads_result}})
+        train, test, val, num = splitter_output(_pypads_result, fn=ctx)
+        split_id = uuid.uuid4()
+        pads.cache.run_add("current_split", split_id)
+        splits.add_split(split_id, train, test, val)
+        splits.store(_logger_output, "splits")
+        pads.cache.run_add(pads.cache.run_get("split_tracker"), {'call': _logger_call, 'output': _logger_output})

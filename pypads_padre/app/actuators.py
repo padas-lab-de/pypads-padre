@@ -15,6 +15,5 @@ class PadrePadsActuators(IActuators):
     # noinspection PyMethodMayBeStatic
     @actuator
     def default_splitter(self, X, y=None, **kwargs):
-        _fn = self.pypads.api.track_splits(default_split)
-        return _fn(X, y=y, **kwargs)
+        return self.pypads.api.track_splits(default_split)(X, y=y, **kwargs)
 

@@ -22,7 +22,7 @@ class SingleInstanceTO(TrackedObject):
         class DecisionModel(BaseModel):
             instance: str = ...
             prediction: Any = ...
-            probability: float = ...
+            probabilities: List[float] = ...
 
             class Config:
                 orm_mode = True
@@ -38,8 +38,9 @@ class SingleInstanceTO(TrackedObject):
     def __init__(self, *args, split_id, tracked_by, **kwargs):
         super().__init__(*args, split_id=split_id, tracked_by=tracked_by, **kwargs)
 
-    def add_instance(self, instance, prediction, probability):
-        pass
+    def add_decision(self, instance, prediction, probabilities):
+        self.decisions.append(
+            self.SingleInstancesModel.DecisionModel(instance=instance, prediction=prediction, probabilities=probabilities))
 
 
 class SingleInstanceILF(InjectionLogger):
@@ -84,6 +85,10 @@ class SingleInstanceILF(InjectionLogger):
             probabilities = pads.cache.run_pop("probabilities")
 
         # check if there exists information about the current split
+        if pads.cache.run_exists("current_split"):
+            split_id = pads.cache.run_get("current_split")
+            splitter = pads.cache.run_get(pads.cache.run_get("split_tracker"))
+
         num = 0
         split_info = None
         if pads.cache.run_exists("current_split"):
@@ -184,7 +189,7 @@ class Decisions_keras(SingleInstanceILF):
     Function getting the prediction scores from keras models
     """
 
-    supported_libraries = {LibSelector(name="keras", constraint = "*", specificity=1)}
+    supported_libraries = {LibSelector(name="keras", constraint="*", specificity=1)}
 
     def __pre__(self, ctx, *args,
                 _logger_call, _logger_output, _args, _kwargs, **kwargs):

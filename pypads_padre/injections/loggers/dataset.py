@@ -6,8 +6,9 @@ from pypads import logger
 from pypads.app.backends.repository import Repository
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
+from pypads.arguments import ontology_uri
 from pypads.model.models import TrackedObjectModel, OutputModel, ArtifactMetaModel
-from pypads.utils.logging_util import WriteFormats
+from pypads.utils.logging_util import FileFormats
 
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, get_by_tag
@@ -30,7 +31,7 @@ class DatasetTO(TrackedObject):
     """
 
     class DatasetModel(TrackedObjectModel):
-        uri: HttpUrl = "https://www.padre-lab.eu/onto/Dataset"
+        uri: HttpUrl = f"{ontology_uri}Dataset"
 
         class Feature(BaseModel):
             name: str = ...
@@ -112,10 +113,10 @@ class DatasetILF(InjectionLogger):
     Function logging the wrapped dataset loader
     """
     name = "DatasetLogger"
-    uri = "https://www.padre-lab.eu/onto/dataset-logger"
+    uri = f"{ontology_uri}dataset-logger"
 
     class DatasetILFOutput(OutputModel):
-        is_a: HttpUrl = "https://www.padre-lab.eu/onto/DatasetILF-Output"
+        is_a: HttpUrl = f"{ontology_uri}DatasetILF-Output"
 
         dataset: DatasetTO.get_model_cls() = ...
 
@@ -126,7 +127,7 @@ class DatasetILF(InjectionLogger):
     def output_schema_class(cls) -> Type[OutputModel]:
         return cls.DatasetILFOutput
 
-    def __post__(self, ctx, *args, _pypads_write_format=WriteFormats.pickle, _logger_call, _pypads_pre_return,
+    def __post__(self, ctx, *args, _pypads_write_format=FileFormats.pickle, _logger_call, _pypads_pre_return,
                  _pypads_result, _logger_output, _args, _kwargs,
                  **kwargs):
         from pypads.app.pypads import get_current_pads

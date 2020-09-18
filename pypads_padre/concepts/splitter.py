@@ -3,18 +3,6 @@ from pypads import logger
 from pypads_padre.concepts.util import _shape
 
 
-# def _logger():
-#     def decorator(fn):
-#         def wrapper(*args, **kwargs):
-#             from pypads.app.pypads import get_current_pads
-#             pads = get_current_pads()
-#             return fn(*args, **kwargs)
-#         return wrapper
-#
-#     return decorator
-#
-#
-# @_logger()
 def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=None, val_ratio=0,
                   n_folds=3, shuffle=True, stratified=None, indices=None, index=None):
     """
