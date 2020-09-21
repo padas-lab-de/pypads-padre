@@ -68,3 +68,15 @@ def _shape(x):
             return len(x)
     else:
         return len(x)
+
+
+def _tolist(x):
+    """Return a list representation of any array-like/Iterable x """
+    if isinstance(x, list):
+        return x
+    elif hasattr(x, 'tolist'):
+        return x.tolist()
+    elif hasattr(x, 'values'):
+        return x.values.tolist()
+    else:
+        raise TypeError("%s cannot be converted to a list" % type(x))

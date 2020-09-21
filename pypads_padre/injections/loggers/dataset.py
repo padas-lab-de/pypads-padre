@@ -1,28 +1,17 @@
 import os
-from typing import List, Any, Type
+from typing import List, Any, Type, Union
 
 from pydantic import HttpUrl, BaseModel
 from pypads import logger
-from pypads.app.backends.repository import Repository
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.arguments import ontology_uri
-from pypads.model.models import TrackedObjectModel, OutputModel, ArtifactMetaModel
+from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.utils.logging_util import FileFormats
 
+from pypads_padre.app.backends.repository import DatasetRepository
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, get_by_tag
-
-
-class DatasetRepository(Repository):
-
-    def __init__(self, *args, **kwargs):
-        """
-        Repository holding all the relevant schema information
-        :param args:
-        :param kwargs:
-        """
-        super().__init__(*args, name="pypads_datasets", **kwargs)
 
 
 class DatasetTO(TrackedObject):
@@ -31,6 +20,31 @@ class DatasetTO(TrackedObject):
     """
 
     class DatasetModel(TrackedObjectModel):
+        context: Union[List[str], str] = str({
+            "number_of_instances": {
+                "@id": f"{ontology_uri}has_instances",
+                "@type": f"{ontology_uri}DatasetProperty"
+            },
+            "number_of_features": {
+                "@id": f"{ontology_uri}has_features",
+                "@type": f"{ontology_uri}DatasetProperty"
+            },
+            "features": {
+                "type": {
+                    "@id": f"{ontology_uri}has_type",
+                    "@type": f"{ontology_uri}FeatureProperty"
+                },
+                "default_target": {
+                    "@id": f"{ontology_uri}is_target",
+                    "@type": f"{ontology_uri}FeatureProperty"
+                }
+            },
+            "data": {
+                "@id": f"{ontology_uri}stored_at",
+                "@type": f"{ontology_uri}Data"
+            }
+        })
+
         uri: HttpUrl = f"{ontology_uri}Dataset"
 
         class Feature(BaseModel):
@@ -46,55 +60,51 @@ class DatasetTO(TrackedObject):
         number_of_instances: int = ...
         number_of_features: int = ...
         features: List[Feature] = []
-        data: ArtifactMetaModel = ...
+        data: str = ...
 
     @classmethod
     def get_model_cls(cls) -> Type[BaseModel]:
         return cls.DatasetModel
 
-    def __init__(self, *args, tracked_by, name, shape, **kwargs):
-        super().__init__(*args, tracked_by=tracked_by, name=name, number_of_instances=shape[0],
+    def __init__(self, *args, part_of, name, shape, **kwargs):
+        super().__init__(*args, part_of=part_of, name=name, number_of_instances=shape[0],
                          number_of_features=shape[1], **kwargs)
 
     def store_data(self, obj: Any, metadata, format):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
         # get the repo or create new where datasets are stored
-        repo = DatasetRepository()
+        dataset_repo = DatasetRepository()
 
         # get the current active run
         current_run = pads.api.active_run()
 
         # add data set if it is not already existing with name and hash check
         try:
-            _hash = persistent_hash(str(obj))
+            data_hash = persistent_hash(str(obj))
         except Exception:
             logger.warning("Could not compute the hash of the dataset object, falling back to dataset name hash...")
-            _hash = persistent_hash(str(self.name))
+            data_hash = persistent_hash(str(self.name))
 
-        _stored = get_by_tag("pypads.dataset.hash", str(_hash), repo.id)
-        if not _stored:
-            with repo.context() as run:
-                dataset_id = run.info.run_id
-                path = os.path.join(run.info.artifact_uri, self.name)
-                pads.cache.run_add("dataset_id", dataset_id, current_run.info.run_id)
-                pads.api.set_tag("pypads.dataset", self.name)
-                pads.api.set_tag("pypads.dataset.hash", _hash)
-                meta = ArtifactMetaModel(path=path, description="Dataset binary", format=format)
-                pads.api.log_mem_artifact(self.name, obj, write_format=format, meta=meta)
-                pads.api.log_mem_artifact("metadata", metadata)
+        # _stored = get_by_tag("pypads.dataset.hash", str(_hash), dataset_repo.id)
+        if not dataset_repo.has_object(uid=data_hash):
+            dataset_entity = dataset_repo.get_object(uid=data_hash)
+            dataset_id = dataset_entity.run_id
+            pads.cache.run_add("dataset_id", dataset_id, current_run.info.run_id)
+            with dataset_repo.context(run_id=dataset_id) as run:
+                self.store_tag("pypads.dataset", self.name, description="Dataset Name")
+                self.store_tag("pypads.dataset.hash", data_hash, description="Dataset hash")
+                self.data = self.store_artifact(self.name, obj, write_format=format, description="Dataset binary",
+                                                meta=metadata)
 
-            pads.api.set_tag("pypads.datasetID", dataset_id)
+            self.store_tag("pypads.datasetID", dataset_id, description="Dataset repository ID")
         else:
+            dataset_entity = dataset_repo.get_object(uid=data_hash)
             # look for the existing dataset and reference it to the active run
-            if len(_stored) > 1:
-                logger.warning("multiple existing datasets with the same hash!!!")
-            else:
-                run = _stored.pop()
-                dataset_id = run.info.run_id
-                path = os.path.join(run.info.artifact_uri, self.name)
-                meta = ArtifactMetaModel(path=path, description="Dataset binary", format=format)
-                pads.api.set_tag("pypads.datasetID", dataset_id)
+            dataset_id = dataset_entity.run_id
+            path = os.path.join(dataset_entity.run.info.artifact_uri, self.name)
+            self.data = path
+            self.store_tag("pypads.datasetID", dataset_id, description="Dataset repository ID")
 
         # Fill the tracked object for the current run
         features = metadata.get("features", None)
@@ -102,10 +112,6 @@ class DatasetTO(TrackedObject):
             for name, type, default_target, range in features:
                 self.features.append(
                     self.DatasetModel.Feature(name=name, type=type, default_target=default_target, range=range))
-        self.data = meta
-
-    def _get_artifact_path(self, name="data"):
-        return super()._get_artifact_path(name)
 
 
 class DatasetILF(InjectionLogger):
@@ -118,7 +124,7 @@ class DatasetILF(InjectionLogger):
     class DatasetILFOutput(OutputModel):
         is_a: HttpUrl = f"{ontology_uri}DatasetILF-Output"
 
-        dataset: DatasetTO.get_model_cls() = ...
+        dataset: str = None
 
         class Config:
             orm_mode = True
@@ -162,7 +168,7 @@ class DatasetILF(InjectionLogger):
         if pads.cache.run_exists("dataset_meta"):
             metadata = {**metadata, **pads.cache.run_get("dataset_meta")}
 
-        dataset = DatasetTO(tracked_by=_logger_call, name=ds_name, shape=metadata.get("shape"))
+        dataset = DatasetTO(part_of=_logger_output, name=ds_name, shape=metadata.get("shape"))
 
         dataset.store_data(data, metadata, _pypads_write_format)
         dataset.store(_logger_output, "dataset")

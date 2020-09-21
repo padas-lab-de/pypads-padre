@@ -1,14 +1,14 @@
-import os
 import uuid
-from logging import warning
-from typing import Iterable, Type, Any, List
+from typing import Type, Any, List
 
 from pydantic import HttpUrl, BaseModel
 from pypads import logger
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.mappings import LibSelector
-from pypads.model.models import OutputModel, TrackedObjectModel
+from pypads.model.logger_output import TrackedObjectModel, OutputModel
+
+from pypads_padre.concepts.util import _tolist
 
 
 class SingleInstanceTO(TrackedObject):
@@ -21,8 +21,9 @@ class SingleInstanceTO(TrackedObject):
 
         class DecisionModel(BaseModel):
             instance: str = ...
+            truth: Any = None
             prediction: Any = ...
-            probabilities: List[float] = ...
+            probabilities: List[float] = []
 
             class Config:
                 orm_mode = True
@@ -35,12 +36,13 @@ class SingleInstanceTO(TrackedObject):
     def get_model_cls(cls) -> Type[BaseModel]:
         return cls.SingleInstancesModel
 
-    def __init__(self, *args, split_id, tracked_by, **kwargs):
-        super().__init__(*args, split_id=split_id, tracked_by=tracked_by, **kwargs)
+    def __init__(self, *args, split_id, part_of, **kwargs):
+        super().__init__(*args, split_id=split_id, part_of=part_of, **kwargs)
 
-    def add_decision(self, instance, prediction, probabilities):
+    def add_decision(self, instance, truth, prediction, probabilities):
         self.decisions.append(
-            self.SingleInstancesModel.DecisionModel(instance=instance, prediction=prediction, probabilities=probabilities))
+            self.SingleInstancesModel.DecisionModel(instance=instance, prediction=prediction,
+                                                    probabilities=probabilities))
 
 
 class SingleInstanceILF(InjectionLogger):
@@ -53,7 +55,7 @@ class SingleInstanceILF(InjectionLogger):
     class SingleInstanceOuptut(OutputModel):
         is_a: HttpUrl = "https://www.padre-lab.eu/onto/SingleInstanceILF-Output"
 
-        individual_decisions: SingleInstanceTO.get_model_cls() = None
+        individual_decisions: str = None
 
         class Config:
             orm_mode = True
@@ -73,7 +75,6 @@ class SingleInstanceILF(InjectionLogger):
         """
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
-        _pypads_env = _logger_call.logging_env
 
         preds = _pypads_result
         if pads.cache.run_exists("predictions"):
@@ -84,56 +85,41 @@ class SingleInstanceILF(InjectionLogger):
         if pads.cache.run_exists("probabilities"):
             probabilities = pads.cache.run_pop("probabilities")
 
+        # check if there is info on truth values
+        targets = None
+        if pads.cache.run_exists("targets"):
+            targets = pads.cache.run_get("targets")
+
         # check if there exists information about the current split
+        current_split = None
+        split_id = None
         if pads.cache.run_exists("current_split"):
             split_id = pads.cache.run_get("current_split")
             splitter = pads.cache.run_get(pads.cache.run_get("split_tracker"))
 
-        num = 0
-        split_info = None
-        if pads.cache.run_exists("current_split"):
-            num = pads.cache.run_get("current_split")
-        if pads.cache.run_exists(num):
-            split_info = pads.cache.run_get(num).get("split_info", None)
+            current_split = splitter.get("TO").splits.get(str(split_id), None)
 
         # depending on available info log the predictions
-        if split_info is None:
+        if current_split is None:
             logger.warning("No split information were found in the cache of the current run, "
                            "individual decision tracking might be missing Truth values, try to decorate you splitter!")
-            pads.cache.run_add(num,
-                               {'predictions': {str(i): {'predicted': preds[i]} for i in range(len(preds))}})
-            if probabilities is not None:
-                for i in pads.cache.run_get(num).get('predictions').keys():
-                    pads.cache.run_get(num).get('predictions').get(str(i)).update(
-                        {'probabilities': probabilities[int(i)]})
         else:
-            try:
-                # for i, sample in enumerate(split_info.get('test')):
-                #     pads.cache.run_get(num).get('predictions').get(str(sample)).update({'predicted': preds[i]})
-                pads.cache.run_add(num,
-                                   {'predictions': {str(sample): {'predicted': preds[i]} for i, sample in
-                                                    enumerate(split_info.get('test'))}})
-
-                if probabilities is not None:
-                    for i, sample in enumerate(split_info.get('test')):
-                        pads.cache.run_get(num).get('predictions').get(str(sample)).update(
-                            {'probabilities': probabilities[i]})
-            except Exception as e:
-                logger.warning("Could not log predictions due to this error '%s'" % str(e))
-        if pads.cache.run_exists("targets"):
-            try:
-                targets = pads.cache.run_get("targets")
-                if isinstance(targets, Iterable):
-                    for i in pads.cache.run_get(num).get('predictions').keys():
-                        pads.cache.run_get(num).get('predictions').get(str(i)).update(
-                            {'truth': targets[int(i)]})
-            except Exception as e:
-                logger.warning("Could not add the truth values due to this error '%s'" % str(e))
-
-        name = os.path.join(_pypads_env.call.to_folder(),
-                            "decisions",
-                            str(id(_pypads_env.callback)))
-        pads.api.log_mem_artifact(name, pads.cache.run_get(num))
+            decisions = SingleInstanceTO(split_id=split_id, part_of=_logger_output)
+            if current_split.test_set is not None:
+                try:
+                    for i, instance in enumerate(current_split.test_set):
+                        prediction = preds[i]
+                        probability_scores = []
+                        if probabilities is not None:
+                            probability_scores = _tolist(probabilities[i])
+                        truth = None
+                        if targets is not None:
+                            truth = targets[instance]
+                        decisions.add_decision(instance=str(instance), truth=truth, prediction=prediction,
+                                               probabilities=probability_scores)
+                    decisions.store(_logger_output, "individual_decisions")
+                except Exception as e:
+                    logger.warning("Could not log single instance decisions due to this error '%s'" % str(e))
 
 
 class Decisions_sklearn(SingleInstanceILF):

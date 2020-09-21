@@ -6,7 +6,9 @@ import json
 
 # from pypads.utils.logging_util import try_write_artifact, WriteFormats
 from pypads.arguments import ontology_uri
-from pypads.model.models import OutputModel, ArtifactMetaModel, TrackedObjectModel
+from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads.model.storage import ArtifactMetaModel
+
 from pypads.utils.util import is_package_available
 
 class ParameterSearchTO(TrackedObject):
