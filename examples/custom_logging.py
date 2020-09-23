@@ -26,6 +26,7 @@ for train_idx, test_idx in splitter.split(dataset.data, y=dataset.target):
     # summarize the fit of the model
     print("Score: " + str(f1_score(expected, predicted, average="macro")))
     scores.append(f1_score(expected, predicted, average="macro"))
+    i += 1
 
 print("Average score over {} splits : {}".format(i + 1, sum(scores) / len(scores)))
 tracker.api.end_run()

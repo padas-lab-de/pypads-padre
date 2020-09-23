@@ -1,5 +1,5 @@
 import uuid
-from typing import Type, Any, List
+from typing import Type, Any, List, Union
 
 from pydantic import HttpUrl, BaseModel
 from pypads import logger
@@ -20,10 +20,10 @@ class SingleInstanceTO(TrackedObject):
         uri: HttpUrl = "https://www.padre-lab.eu/onto/SingleInstanceResult"
 
         class DecisionModel(BaseModel):
-            instance: str = ...
-            truth: Any = None
-            prediction: Any = ...
-            probabilities: List[float] = []
+            instance: Union[str, int] = ...
+            truth: Union[str, int] = None
+            prediction: Union[str, int] = ...
+            probabilities: List[Union[float]] = []
 
             class Config:
                 orm_mode = True
@@ -41,8 +41,25 @@ class SingleInstanceTO(TrackedObject):
 
     def add_decision(self, instance, truth, prediction, probabilities):
         self.decisions.append(
-            self.SingleInstancesModel.DecisionModel(instance=instance, prediction=prediction,
-                                                    probabilities=probabilities))
+            self.SingleInstancesModel.DecisionModel(instance=self.check_type(instance),
+                                                    truth=self.check_type(truth), prediction=self.check_type(prediction),
+                                                                          probabilities=self.check_type(probabilities)))
+
+    def check_type(self,value):
+        if "int" in str(type(value)):
+            return int(value)
+        elif "float" in str(type(value)):
+            return float(value)
+        elif "str" in str(type(value)):
+            return str(value)
+        elif "bool" in str(type(value)):
+            return bool(value)
+        elif "array" in str(type(value)):
+            value_ = []
+            for v in value:
+                value_.append(self.check_type(v))
+            return value_
+        return value
 
 
 class SingleInstanceILF(InjectionLogger):
@@ -115,7 +132,7 @@ class SingleInstanceILF(InjectionLogger):
                         truth = None
                         if targets is not None:
                             truth = targets[instance]
-                        decisions.add_decision(instance=str(instance), truth=truth, prediction=prediction,
+                        decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
                                                probabilities=probability_scores)
                     decisions.store(_logger_output, "individual_decisions")
                 except Exception as e:
@@ -128,6 +145,12 @@ class Decisions_sklearn(SingleInstanceILF):
     """
 
     supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
+
+    # identity =
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SingleInstanceILF.__name__
 
     def __pre__(self, ctx, *args,
                 _logger_call, _logger_output, _args, _kwargs, **kwargs):
@@ -177,6 +200,10 @@ class Decisions_keras(SingleInstanceILF):
 
     supported_libraries = {LibSelector(name="keras", constraint="*", specificity=1)}
 
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SingleInstanceILF.__name__
+
     def __pre__(self, ctx, *args,
                 _logger_call, _logger_output, _args, _kwargs, **kwargs):
         """
@@ -204,6 +231,10 @@ class Decisions_torch(SingleInstanceILF):
     """
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
+
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SingleInstanceILF.__name__
 
     def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
                  **kwargs):

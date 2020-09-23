@@ -152,14 +152,12 @@ class DatasetILF(InjectionLogger):
                           callback=_logger_call.original_call.call_id.wrappee,
                           kw=_kwargs)
         data, metadata, targets = crawler.crawl(**_dataset_kwargs)
-        pads.cache.run_add("data", data)
-        pads.cache.run_add("shape", metadata.get("shape"))
         pads.cache.run_add("targets", targets)
 
         # setting the dataset object name
         if hasattr(obj, "name"):
             ds_name = obj.name
-        elif pads.cache.run_exists("dataset_name") and pads.cache.run_get("dataset_name") is not None:
+        elif pads.cache.run_exists("dataset_name") and pads.cache.run_exists("dataset_name") is not None:
             ds_name = pads.cache.run_get("dataset_name")
         else:
             ds_name = _logger_call.original_call.call_id.wrappee.__qualname__

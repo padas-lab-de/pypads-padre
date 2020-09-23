@@ -13,8 +13,6 @@ from pypads.model.logger_output import TrackedObjectModel, OutputModel
 
 
 def splitter_output(result, fn):
-    # TODO rework this function to return train, test, val indices
-
     # check if the output of the splitter is a tuple of indices
     try:
         if isinstance(result, Tuple):
