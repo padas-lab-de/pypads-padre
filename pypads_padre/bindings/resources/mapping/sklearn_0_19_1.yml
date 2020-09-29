@@ -27,7 +27,7 @@ mappings:
         !!python/pPath score:
           hooks: "pypads_metric"
     !!python/pPath metrics.classification:
-      !!python/rSeg .*:
+      !!python/rSeg .f1_score:
         hooks: "pypads_metric"
         data:
           concepts: ["Sklearn provided metric"]

@@ -2,12 +2,11 @@ import uuid
 from types import GeneratorType
 from typing import Tuple, List, Type, Dict
 
-from pydantic import HttpUrl, BaseModel
+from pydantic import BaseModel
 from pypads import logger
 from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import OriginalExecutor, MultiInjectionLogger
-from pypads.arguments import ontology_uri
 from pypads.importext.mappings import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 
@@ -32,22 +31,21 @@ def splitter_output(result, fn):
                         return None, result.tolist(), None, None
                 return result, None, None, None
             else:
-                return None
+                return None, None, None, None
     except Exception as e:
         logger.warning("Split tracking ommitted due to exception {}".format(str(e)))
-        return None
+        return None, None, None, None
 
 
 class SplitTO(TrackedObject):
     """
-    Tracking Object class for splits of your tracked dataset
+    Tracking Object class for splits of your tracked dataset. Splits are defined
     """
 
     class SplitModel(TrackedObjectModel):
-        uri: HttpUrl = f"{ontology_uri}Split"
+        category: str = "Split"
 
         class Split(BaseModel):
-            split_id: uuid.UUID = ...
             train_set: List = []
             test_set: List = []
             validation_set: List = []
@@ -73,7 +71,7 @@ class SplitTO(TrackedObject):
             test_set = []
         if train_set is None:
             train_set = []
-        split = self.SplitModel.Split(split_id=split_id, train_set=train_set, test_set=test_set,
+        split = self.SplitModel.Split(train_set=train_set, test_set=test_set,
                                       validation_set=val_set)
         self.splits.update({str(split_id): split})
 
@@ -84,10 +82,10 @@ class SplitILF(MultiInjectionLogger):
     """
 
     name = "SplitLogger"
-    uri = f"{ontology_uri}split-logger"
+    category = "SplitLogger"
 
     class SplitsILFOutput(OutputModel):
-        is_a: HttpUrl = f"{ontology_uri}SplitILF-Output"
+        category: str = "SplitILF-Output"
         splits: str = None
 
         class Config:
@@ -168,7 +166,7 @@ class SplitILFTorch(MultiInjectionLogger):
     Function logging splits used by torch DataLoader
     """
     name = "SplitTorchLogger"
-    uri = f"{ontology_uri}split-torch-logger"
+    category = "Splitogger"
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 

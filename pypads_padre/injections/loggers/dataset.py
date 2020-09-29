@@ -5,7 +5,7 @@ from pydantic import HttpUrl, BaseModel
 from pypads import logger
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
-from pypads.arguments import ontology_uri
+from pypads_padre.arguments import ontology_uri
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.utils.logging_util import FileFormats
 
@@ -45,7 +45,7 @@ class DatasetTO(TrackedObject):
             }
         })
 
-        uri: HttpUrl = f"{ontology_uri}Dataset"
+        category: str = "Dataset"
 
         class Feature(BaseModel):
             name: str = ...
@@ -119,10 +119,10 @@ class DatasetILF(InjectionLogger):
     Function logging the wrapped dataset loader
     """
     name = "DatasetLogger"
-    uri = f"{ontology_uri}dataset-logger"
+    category = "DatasetLogger"
 
     class DatasetILFOutput(OutputModel):
-        is_a: HttpUrl = f"{ontology_uri}DatasetILF-Output"
+        category: str = "DatasetILF-Output"
 
         dataset: str = None
 

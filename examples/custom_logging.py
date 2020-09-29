@@ -1,6 +1,6 @@
 from pypads.app.base import PyPads
 
-tracker = PyPads(autostart=True)
+tracker = PyPads(uri="http://localhost:5000",autostart=True)
 # just changing stuff
 from sklearn import datasets
 from sklearn.metrics.classification import f1_score

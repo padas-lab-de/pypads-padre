@@ -1,6 +1,6 @@
 import mlflow
 from mlflow.utils.autologging_utils import try_mlflow_log
-from pypads.importext.mappings import LibSelector
+from pypads.importext.versioning import LibSelector
 from pypads.injections.loggers.metric import MetricILF
 
 

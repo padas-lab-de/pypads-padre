@@ -28,7 +28,7 @@ DEFAULT_PADRE_SETUP_FNS = set()
 DEFAULT_PADRE_CONFIG = {}
 
 
-def configure_plugin():
+def configure_plugin(pypads):
     """
     This function can be used to configure the plugin. It should be called at least once to allow for the usage of the
     plugin. Multiple executions should be possible.

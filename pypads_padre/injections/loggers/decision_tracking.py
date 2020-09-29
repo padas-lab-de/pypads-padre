@@ -5,10 +5,11 @@ from pydantic import HttpUrl, BaseModel
 from pypads import logger
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
-from pypads.importext.mappings import LibSelector
+from pypads_padre.arguments import ontology_uri
+from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 
-from pypads_padre.concepts.util import _tolist
+from pypads_padre.concepts.util import _tolist, check_type
 
 
 class SingleInstanceTO(TrackedObject):
@@ -17,8 +18,10 @@ class SingleInstanceTO(TrackedObject):
         """
 
     class SingleInstancesModel(TrackedObjectModel):
-        uri: HttpUrl = "https://www.padre-lab.eu/onto/SingleInstanceResult"
-
+        category: str = "SingleInstanceResult"
+        # context: Union[List[str], str] = str({
+        #     "split"
+        # })
         class DecisionModel(BaseModel):
             instance: Union[str, int] = ...
             truth: Union[str, int] = None
@@ -41,36 +44,20 @@ class SingleInstanceTO(TrackedObject):
 
     def add_decision(self, instance, truth, prediction, probabilities):
         self.decisions.append(
-            self.SingleInstancesModel.DecisionModel(instance=self.check_type(instance),
-                                                    truth=self.check_type(truth), prediction=self.check_type(prediction),
-                                                                          probabilities=self.check_type(probabilities)))
-
-    def check_type(self,value):
-        if "int" in str(type(value)):
-            return int(value)
-        elif "float" in str(type(value)):
-            return float(value)
-        elif "str" in str(type(value)):
-            return str(value)
-        elif "bool" in str(type(value)):
-            return bool(value)
-        elif "array" in str(type(value)):
-            value_ = []
-            for v in value:
-                value_.append(self.check_type(v))
-            return value_
-        return value
+            self.SingleInstancesModel.DecisionModel(instance=check_type(instance),
+                                                    truth=check_type(truth), prediction=check_type(prediction),
+                                                                          probabilities=check_type(probabilities)))
 
 
 class SingleInstanceILF(InjectionLogger):
     """
     Function logging individual decisions
     """
-    name = "SingleInstanceILF"
-    uri = "https://www.padre-lab.eu/single-instance-logger"
+    name = "SingleInstance"
+    category = "SingleInstanceLogger"
 
     class SingleInstanceOuptut(OutputModel):
-        is_a: HttpUrl = "https://www.padre-lab.eu/onto/SingleInstanceILF-Output"
+        category: str = "SingleInstanceILF-Output"
 
         individual_decisions: str = None
 
@@ -139,14 +126,14 @@ class SingleInstanceILF(InjectionLogger):
                     logger.warning("Could not log single instance decisions due to this error '%s'" % str(e))
 
 
-class Decisions_sklearn(SingleInstanceILF):
+class DecisionsSklearnILF(SingleInstanceILF):
     """
     Function getting the prediction scores from sklearn estimators
     """
+    name = "DecisionsSklearn"
+    category = "SklearnDecisionsLogger"
 
     supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
-
-    # identity =
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -193,10 +180,12 @@ class Decisions_sklearn(SingleInstanceILF):
             pads.cache.run_add("probabilities", probabilities)
 
 
-class Decisions_keras(SingleInstanceILF):
+class DecisionsKerasILF(SingleInstanceILF):
     """
     Function getting the prediction scores from keras models
     """
+    name = "DecisionsKeras"
+    category = "KerasDecisionsLogger"
 
     supported_libraries = {LibSelector(name="keras", constraint="*", specificity=1)}
 
@@ -225,10 +214,12 @@ class Decisions_keras(SingleInstanceILF):
         pads.cache.run_add("probabilities", probabilities)
 
 
-class Decisions_torch(SingleInstanceILF):
+class DecisionsTorchILF(SingleInstanceILF):
     """
     Function getting the prediction scores from torch models
     """
+    name = "DecisionsTorch"
+    category = "TorchDecisionsLogger"
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 

@@ -80,3 +80,20 @@ def _tolist(x):
         return x.values.tolist()
     else:
         raise TypeError("%s cannot be converted to a list" % type(x))
+
+
+def check_type(value):
+    if "int" in str(type(value)):
+        return int(value)
+    elif "float" in str(type(value)):
+        return float(value)
+    elif "str" in str(type(value)):
+        return str(value)
+    elif "bool" in str(type(value)):
+        return bool(value)
+    elif "array" in str(type(value)):
+        value_ = []
+        for v in value:
+            value_.append(check_type(v))
+        return value_
+    return value

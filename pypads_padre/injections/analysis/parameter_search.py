@@ -1,22 +1,47 @@
-from pydantic import HttpUrl
-from pypads.app.injections.base_logger import LoggerCall, TrackedObject
+from pypads.app.injections.base_logger import LoggerCall, TrackedObject, LoggerOutput
 from pypads.app.injections.injection import InjectionLogger
 from pypads.app.env import InjectionLoggerEnv
-import json
+from pydantic import BaseModel
 
-# from pypads.utils.logging_util import try_write_artifact, WriteFormats
-from pypads.arguments import ontology_uri
+from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
-from pypads.model.storage import ArtifactMetaModel
+from typing import List
 
-from pypads.utils.util import is_package_available
 
 class ParameterSearchTO(TrackedObject):
     """
     Tracking object for grid search and results
     """
+
     class ParamSearchModel(TrackedObjectModel):
-        uri: HttpUrl = f"{ontology_uri}ParameterSearch"
+        catergory: str = "ParameterSearch"
+
+        class SearchModel(BaseModel):
+            index: int = ...
+            setting: dict = {}
+            mean_score: float = ...
+            std_score: float = ...
+            ranking: int = ...
+
+        number_of_splits: int = ...
+        results: List[SearchModel] = []
+
+        class Config:
+            orm_mode = True
+
+    def __init__(self, *args, part_of: LoggerOutput, **kwargs):
+        super().__init__(*args, part_of=part_of, **kwargs)
+
+    def add_results(self, cv_results: dict):
+        """
+        Parse the result dict of sklearn Grid search
+        """
+        mean_scores = cv_results.get('mean_test_score',[])
+        std_scores = cv_results.get('std_test_score', [])
+        rankings = cv_results.get('rank_test_score', [])
+        for i, params in enumerate(cv_results.get('params', [])):
+            #TODO
+            pass
 
 
 class ParameterSearchILF(InjectionLogger):
@@ -24,13 +49,14 @@ class ParameterSearchILF(InjectionLogger):
     Function logging the cv results of a parameter search
     """
     name = "ParameterSearchILF"
-    uri = f"{ontology_uri}parameter-search-logger"
-    _dependencies = {"sklearn"}
+    category = f"ParameterSearchLogger"
+
+    supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
 
     class ParameterSearchOutput(OutputModel):
-        is_a: HttpUrl = f"{ontology_uri}parameter-search-output"
-        parameter_grid: ArtifactMetaModel = ...
-        cv_results: ArtifactMetaModel = ...
+        category: str = "ParameterSearchOutput"
+
+        gridsearch_cv: str = ...
 
         class Config:
             orm_mode = True
@@ -39,67 +65,31 @@ class ParameterSearchILF(InjectionLogger):
                 **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
-        pads.cache.add("parameter_search", ctx)
-        # TODO save parameter grid used for the search
+        pads.cache.run_add("parameter_search", True)
 
     def __post__(self, ctx, *args, _logger_call, _pypads_pre_return,
                  _pypads_result, _logger_output, _args, _kwargs,
                  **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
-
         pads.cache.pop("parameter_search")
         from sklearn.model_selection._search import BaseSearchCV
         if isinstance(ctx, BaseSearchCV):
-            # TODO Write general information we can extract from base search
-            from sklearn.model_selection import GridSearchCV
-            if isinstance(ctx, GridSearchCV):
-                # TODO Write information we can extract from GridSearchCV
-                serialized_dict = self.traverse_dict(ctx.cv_results_)
-
-                name = 'GridSearchCV'
-                # try_write_artifact(name, json.dumps(serialized_dict),
-                #                    write_format=WriteFormats.text)
-
-    def traverse_dict(self, input_dict):
-        """
-        Function to traverse a dictionary and convert the values to JSON serializable format
-        :param input_dict:
-        :return: dict
-        """
-
-        serialized_dict = dict()
-        for key, value in input_dict.items():
-
-            if hasattr(value, 'tolist'):
-                serialized_dict[key] = value.tolist()
-
-            elif isinstance(value, list):
-                serialized_dict[key] = value
-
-            elif isinstance(value, dict):
-                serialized_dict[key] = self.traverse_dict(value)
-
-            else:
-                serialized_dict[key] = str(value)
-
-        return serialized_dict
+            gridsearch = ParameterSearchTO(part_of=_logger_output)
+            gridsearch.number_of_splits = ctx.n_splits_
+            gridsearch.add_results(ctx.cv_results_)
+            gridsearch.store(_logger_output, "gridsearch_cv")
 
 
 class ParameterSearchExecutor(InjectionLogger):
 
-    def __pre__(self, ctx, *args, **kwargs):
-        pass
-
-    def __post__(self, ctx, *args, **kwargs):
-        pass
-
-    def call_wrapped(self,ctx, *args, _pypads_env: InjectionLoggerEnv, _args, _kwargs):
+    def call_wrapped(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call, _logger_output, _args,
+                     _kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
-        if pads.cache.exists("parameter_search"):
-            with pads.api.intermediate_run(experiment_id=pads.api.active_run().info.experiment_id):
+        if pads.cache.run_get("parameter_search", False):
+            with pads.api.intermediate_run(experiment_id=pads.api.active_run().info.experiment_id, setups=False):
                 out = _pypads_env.callback(*_args, **_kwargs)
             return out
         else:

@@ -208,6 +208,8 @@ def sklearn_crawler(obj: Crawler, **kwargs):
     if "return_X_y" in kwargs and kwargs.get("return_X_y"):
         X, y = obj.data
         data = np.concatenate([X, y.reshape(len(y), 1)], axis=1)
+        features = [(str(i), str(X[:,i].dtype), False, (data[:,i].min(), data[:,i].max())) for i in range(X.shape[1])]
+        features.append(("class", str(y.dtype), True, (y.min(),y.max())))
         metadata = {"type": str(obj.format), "features": X, "shape": (X.shape[0], X.shape[1] + 1)}
         metadata = {**metadata, **kwargs}
         return data, metadata, y
