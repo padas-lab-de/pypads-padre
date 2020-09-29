@@ -147,7 +147,7 @@ class PyPadsDecoratorsTest(BaseTest):
 
         @tracker.decorators.hyperparameters()
         def parameters():
-            param1 = 0
+            param1: int = 0
             param2 = "test"
             return
 
@@ -182,6 +182,4 @@ class PyPadsDecoratorsTest(BaseTest):
             roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
             return roc_auc
 
-
-        # --------------------------- asserts ---------------------------
         # !-------------------------- asserts ---------------------------
