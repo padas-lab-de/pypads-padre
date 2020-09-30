@@ -48,7 +48,7 @@ def get_by_tag(tag=None, value=None, experiment_id=None):
     return selection
 
 
-def _shape(x):
+def _len(x):
     """Return number of samples in array-like x."""
     if not hasattr(x, '__len__') and not hasattr(x, 'shape'):
         if hasattr(x, '__array__'):
@@ -82,7 +82,7 @@ def _tolist(x):
         raise TypeError("%s cannot be converted to a list" % type(x))
 
 
-def check_type(value):
+def validate_type(value):
     if "int" in str(type(value)):
         return int(value)
     elif "float" in str(type(value)):
@@ -91,9 +91,14 @@ def check_type(value):
         return str(value)
     elif "bool" in str(type(value)):
         return bool(value)
-    elif "array" in str(type(value)):
+    elif isinstance(value, tuple):
         value_ = []
         for v in value:
-            value_.append(check_type(v))
+            value_.append(validate_type(v))
+        return tuple(value_)
+    elif "array" in str(type(value)) or isinstance(value, list):
+        value_ = []
+        for v in value:
+            value_.append(validate_type(v))
         return value_
     return value

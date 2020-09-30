@@ -11,7 +11,7 @@ from pypads.utils.logging_util import FileFormats
 
 from pypads_padre.app.backends.repository import DatasetRepository
 from pypads_padre.concepts.dataset import Crawler
-from pypads_padre.concepts.util import persistent_hash, get_by_tag
+from pypads_padre.concepts.util import persistent_hash, get_by_tag, validate_type
 
 
 class DatasetTO(TrackedObject):
@@ -88,6 +88,7 @@ class DatasetTO(TrackedObject):
 
         # _stored = get_by_tag("pypads.dataset.hash", str(_hash), dataset_repo.id)
         if not dataset_repo.has_object(uid=data_hash):
+            logger.info("Detected Dataset was not found in the store. Adding an entry...")
             dataset_entity = dataset_repo.get_object(uid=data_hash)
             dataset_id = dataset_entity.run_id
             pads.cache.run_add("dataset_id", dataset_id, current_run.info.run_id)
@@ -96,9 +97,11 @@ class DatasetTO(TrackedObject):
                 self.store_tag("pypads.dataset.hash", data_hash, description="Dataset hash")
                 self.data = self.store_artifact(self.name, obj, write_format=format, description="Dataset binary",
                                                 meta=metadata)
+                logger.info("Entry added in the dataset repository.")
 
             self.store_tag("pypads.datasetID", dataset_id, description="Dataset repository ID")
         else:
+            logger.info("Detected dataset already exists in the store. Getting information about the entry...")
             dataset_entity = dataset_repo.get_object(uid=data_hash)
             # look for the existing dataset and reference it to the active run
             dataset_id = dataset_entity.run_id
@@ -111,7 +114,8 @@ class DatasetTO(TrackedObject):
         if features is not None:
             for name, type, default_target, range in features:
                 self.features.append(
-                    self.DatasetModel.Feature(name=name, type=type, default_target=default_target, range=range))
+                    self.DatasetModel.Feature(name=validate_type(name), type=validate_type(type), default_target=default_target,
+                                              range=validate_type(range)))
 
 
 class DatasetILF(InjectionLogger):

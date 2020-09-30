@@ -1,18 +1,20 @@
-from pypads.app.injections.base_logger import LoggerCall, TrackedObject, LoggerOutput
+from pypads.app.injections.base_logger import LoggerCall, TrackedObject, LoggerOutput, OriginalExecutor
 from pypads.app.injections.injection import InjectionLogger
 from pypads.app.env import InjectionLoggerEnv
 from pydantic import BaseModel
-
+from pypads import logger
 from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
-from typing import List
+from typing import List, Optional, Type
+
+from pypads_padre.concepts.util import validate_type
 
 
 class ParameterSearchTO(TrackedObject):
     """
     Tracking object for grid search and results
     """
-
+    name = "GridSearchResults"
     class ParamSearchModel(TrackedObjectModel):
         catergory: str = "ParameterSearch"
 
@@ -24,24 +26,32 @@ class ParameterSearchTO(TrackedObject):
             ranking: int = ...
 
         number_of_splits: int = ...
+        best_candidate: int = ...
         results: List[SearchModel] = []
 
         class Config:
             orm_mode = True
 
+    @classmethod
+    def get_model_cls(cls) -> Type[BaseModel]:
+        return cls.ParamSearchModel
+
     def __init__(self, *args, part_of: LoggerOutput, **kwargs):
         super().__init__(*args, part_of=part_of, **kwargs)
+        self.results = []
 
     def add_results(self, cv_results: dict):
         """
         Parse the result dict of sklearn Grid search
         """
-        mean_scores = cv_results.get('mean_test_score',[])
-        std_scores = cv_results.get('std_test_score', [])
-        rankings = cv_results.get('rank_test_score', [])
+        logger.info("Logging Grid Search resutls....")
+        mean_scores = validate_type(cv_results.get('mean_test_score', []))
+        std_scores = validate_type(cv_results.get('std_test_score', []))
+        rankings = validate_type(cv_results.get('rank_test_score', []))
         for i, params in enumerate(cv_results.get('params', [])):
-            #TODO
-            pass
+            self.results.append(self.ParamSearchModel.SearchModel(index=validate_type(i), setting=validate_type(params),
+                                                                  mean_score=mean_scores[i], std_score=std_scores[i],
+                                                                  ranking=rankings[i]))
 
 
 class ParameterSearchILF(InjectionLogger):
@@ -61,6 +71,10 @@ class ParameterSearchILF(InjectionLogger):
         class Config:
             orm_mode = True
 
+    @classmethod
+    def output_schema_class(cls) -> Optional[Type[OutputModel]]:
+        return cls.ParameterSearchOutput
+
     def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: LoggerCall, _logger_output, _args, _kwargs,
                 **kwargs):
         from pypads.app.pypads import get_current_pads
@@ -72,25 +86,32 @@ class ParameterSearchILF(InjectionLogger):
                  **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
-        pads.cache.pop("parameter_search")
+        pads.cache.run_pop("parameter_search")
         from sklearn.model_selection._search import BaseSearchCV
         if isinstance(ctx, BaseSearchCV):
             gridsearch = ParameterSearchTO(part_of=_logger_output)
             gridsearch.number_of_splits = ctx.n_splits_
+
+            # Track individual decisions for all splits
+            pads.cache.add("tracking_mode","multiple")
+
+            gridsearch.best_candidate = ctx.best_index_
             gridsearch.add_results(ctx.cv_results_)
             gridsearch.store(_logger_output, "gridsearch_cv")
 
 
 class ParameterSearchExecutor(InjectionLogger):
 
-    def call_wrapped(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call, _logger_output, _args,
+    def __call_wrapped__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call, _logger_output, _args,
                      _kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
         if pads.cache.run_get("parameter_search", False):
-            with pads.api.intermediate_run(experiment_id=pads.api.active_run().info.experiment_id, setups=False):
-                out = _pypads_env.callback(*_args, **_kwargs)
-            return out
+            logger.info("Executing a parameter search under a nested run.")
+            with pads.api.intermediate_run(experiment_id=pads.api.active_run().info.experiment_id, clear_cache=False,
+                                           setups=False):
+                _return, time = OriginalExecutor(fn=_pypads_env.callback)(*_args, **_kwargs)
+            return _return, time
         else:
-            return _pypads_env.callback(*_args, **_kwargs)
+            return OriginalExecutor(fn=_pypads_env.callback)(*_args, **_kwargs)

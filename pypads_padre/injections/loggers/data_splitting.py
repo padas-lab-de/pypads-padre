@@ -42,6 +42,8 @@ class SplitTO(TrackedObject):
     Tracking Object class for splits of your tracked dataset. Splits are defined
     """
 
+    name = "Splits"
+
     class SplitModel(TrackedObjectModel):
         category: str = "Split"
 
@@ -128,6 +130,8 @@ class SplitILF(MultiInjectionLogger):
                 split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
                 call = split_tracker.get("call")
                 output = split_tracker.get("output")
+                pads.cache.add("tracking_mode","single")
+                logger.info("Detected splitting, Tracking splits started...")
                 if output.splits is None:
                     splits = SplitTO(part_of=output)
                 else:
@@ -143,9 +147,11 @@ class SplitILF(MultiInjectionLogger):
                     yield r
         else:
             def generator():
+                logger.info("Detected splitting, Tracking splits started...")
                 split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
                 call = split_tracker.get("call")
                 output = split_tracker.get("output")
+                pads.cache.add("tracking_mode", "single")
                 if output.splits is None:
                     splits = SplitTO(part_of=output)
                 else:
@@ -200,7 +206,7 @@ class SplitILFTorch(MultiInjectionLogger):
             splits = SplitTO(part_of=_logger_output)
         else:
             splits = _logger_output.splits
-
+        logger.info("Detected splitting, Tracking splits started...")
         train, test, val, num = splitter_output(_pypads_result, fn=ctx)
         split_id = uuid.uuid4()
         pads.cache.run_add("current_split", split_id)

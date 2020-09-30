@@ -1,10 +1,11 @@
 import os
+from typing import Type, Optional
 
 from pydantic import BaseModel
-from pypads.app.injections.base_logger import LoggerCall, TrackedObject
-from pypads.app.injections.injection import MultiInjectionLogger
+from pypads.app.call import Call
+from pypads.app.injections.base_logger import TrackedObject
+from pypads.app.injections.injection import MultiInjectionLogger, MultiInjectionLoggerCall
 from pypads.model.logger_output import OutputModel, TrackedObjectModel
-from typing import Type
 
 from pypads_padre.concepts.nlp import preprocess, ner_tagging, name_to_words
 
@@ -31,25 +32,23 @@ class ExtractedDocs(TrackedObject):
         super().__init__(*args, part_of=part_of, **kwargs)
         self.doc_map = {}
 
-    def add_docs(self, call: LoggerCall):
-        if call.original_call.call_id.wrappee.__doc__:
-            name = os.path.join(call.original_call.to_folder(),
-                                call.original_call.call_id.wrappee.__name__ + ".__doc__")
-            self.doc_map[name] = call.original_call.call_id.wrappee.__doc__
+    def add_docs(self, call: Call):
+        if call.call_id.wrappee.__doc__:
+            name = call.call_id.wrappee.__name__ + ".__doc__"
+            self.doc_map[name] = call.call_id.wrappee.__doc__
 
-        if call.original_call.call_id.context.container.__doc__:
-            name = os.path.join(call.original_call.to_folder(),
-                                call.original_call.call_id.context.container.__name__ + ".__doc__")
-            self.doc_map[name] = call.original_call.call_id.context.container.__doc__
+        if call.call_id.context.container.__doc__:
+            name = call.call_id.context.container.__name__ + ".__doc__"
+            self.doc_map[name] = call.call_id.context.container.__doc__
 
         # Add ctx name to doc_map for named entity searching
-        self.doc_map[call.original_call.call_id.context.container.__name__ + "_exists"] = "The " + name_to_words(
-            call.original_call.call_id.context.container.__name__) + " exists."
-        self.doc_map[call.original_call.call_id.wrappee.__name__ + "_exists"] = "The " + name_to_words(
-            call.original_call.call_id.wrappee.__name__) + " exists."
-        self.doc_map[call.original_call.call_id.wrappee.__name__ + "_is_in"] = "The " + name_to_words(
-            call.original_call.call_id.wrappee.__name__) + " is in " + name_to_words(
-            call.original_call.call_id.context.container.__name__) + "."
+        self.doc_map[call.call_id.context.container.__name__ + "_exists"] = "The " + name_to_words(
+            call.call_id.context.container.__name__) + " exists."
+        self.doc_map[call.call_id.wrappee.__name__ + "_exists"] = "The " + name_to_words(
+            call.call_id.wrappee.__name__) + " exists."
+        self.doc_map[call.call_id.wrappee.__name__ + "_is_in"] = "The " + name_to_words(
+            call.call_id.wrappee.__name__) + " is in " + name_to_words(
+            call.call_id.context.container.__name__) + "."
 
 
 class DocExtractionILF(MultiInjectionLogger):
@@ -68,10 +67,14 @@ class DocExtractionILF(MultiInjectionLogger):
         class Config:
             orm_mode = True
 
+    @classmethod
+    def output_schema_class(cls) -> Optional[Type[OutputModel]]:
+        return cls.DocExtractionOutput
+
     @staticmethod
     def finalize_output(pads, *args, **kwargs):
 
-        doc_tracker = pads.cache.run_get(pads.cache.run_get("doc_tracker"))
+        doc_tracker = pads.cache.run_get(pads.cache.run_get("doc_parser"))
         call = doc_tracker.get("call")
         output = doc_tracker.get("output")
         to = output.docs
@@ -87,7 +90,8 @@ class DocExtractionILF(MultiInjectionLogger):
         call.output = output.store()
         call.store()
 
-    def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: LoggerCall, _logger_output, _args, _kwargs,
+    def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: MultiInjectionLoggerCall, _logger_output,
+                _args, _kwargs,
                 **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
@@ -96,6 +100,6 @@ class DocExtractionILF(MultiInjectionLogger):
             docs = ExtractedDocs(part_of=_logger_output)
         else:
             docs = _logger_output.docs
-        docs.add_docs(_logger_call)
+        docs.add_docs(_logger_call.last_call)
         # !Add ctx name to doc_map for named entity searching
         _logger_output.docs = docs

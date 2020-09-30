@@ -5,7 +5,7 @@ from typing import Any, Tuple, Callable, Iterable
 from pypads import logger
 from pypads.app.base import tracking_active
 from pypads.utils.util import is_package_available
-
+from pypads import logger
 
 class Types(Enum):
     if is_package_available('sklearn') and tracking_active:
@@ -145,6 +145,7 @@ class Crawler:
 
 # --- Numpy array object ---
 def numpy_crawler(obj: Crawler, **kwargs):
+    logger.info("Detecting a dataset object of type 'numpy.ndarray'. Crawling any available metadata...")
     metadata = {"type": str(obj.format), "shape": obj.data.shape}
     metadata = {**metadata, **kwargs}
     targets = None
@@ -167,6 +168,7 @@ Crawler.register_fn(Types.ndarray.value, numpy_crawler)
 
 # --- Pandas Dataframe object ---
 def dataframe_crawler(obj: Crawler, **kwargs):
+    logger.info("Detecting a dataset object of type 'pandas.DataFrame'. Crawling any available metadata...")
     data = obj.data
     metadata = {"type": obj.format, "shape": data.shape, "features": data.columns}
     metadata = {**metadata, **kwargs}
@@ -183,6 +185,7 @@ Crawler.register_fn(Types.dataframe.value, dataframe_crawler)
 
 # --- Pandas Series object ---
 def series_crawler(obj: Crawler, **kwargs):
+    logger.info("Detecting a dataset object of type 'pandas.Series'. Crawling any available metadata...")
     data = obj.data
     metadata = {"type": obj.format, "shape": data.shape}
     metadata = {**metadata, **kwargs}
@@ -204,13 +207,14 @@ def bunch_crawler(obj: Crawler, **kwargs):
 
 
 def sklearn_crawler(obj: Crawler, **kwargs):
+    logger.info("Detecting an sklearn dataset loaded object. Crawling any available metadata...")
     import numpy as np
     if "return_X_y" in kwargs and kwargs.get("return_X_y"):
         X, y = obj.data
         data = np.concatenate([X, y.reshape(len(y), 1)], axis=1)
         features = [(str(i), str(X[:,i].dtype), False, (data[:,i].min(), data[:,i].max())) for i in range(X.shape[1])]
         features.append(("class", str(y.dtype), True, (y.min(),y.max())))
-        metadata = {"type": str(obj.format), "features": X, "shape": (X.shape[0], X.shape[1] + 1)}
+        metadata = {"type": str(obj.format), "features": features, "shape": (X.shape[0], X.shape[1] + 1)}
         metadata = {**metadata, **kwargs}
         return data, metadata, y
     else:
@@ -223,6 +227,7 @@ Crawler.register_fn(Modules.sklearn.value, sklearn_crawler)
 
 # --- TorchVision Dataset object ---
 def torch_crawler(obj: Crawler, *args, **kwargs):
+    logger.info("Detecting a torchvision dataset loaded object. Crawling any available metadata...")
     data = obj.data.data.numpy()
     targets = obj.data.targets.numpy()
     metadata = {"format": obj.format, "shape": data.shape, "classes": obj.data.classes,
@@ -237,6 +242,7 @@ if is_package_available("torchvision"):
 
 # --- Keras datasets ---
 def keras_crawler(obj: Crawler, *args, **kwargs):
+    logger.info("Detecting a keras dataset loaded object. Crawling any available metadata...")
     (X_train, y_train), (X_test, y_test) = obj.data
     import numpy as np
     targets = np.concatenate([y_train, y_test])
@@ -252,6 +258,7 @@ if is_package_available("keras"):
 
 # --- networkx graph object ---
 def graph_crawler(obj: Crawler, **kwargs):
+    logger.info("Detecting a dataset loaded object of type 'networkx.Graph. Crawling any available metadata...")
     graph = obj.data
     metadata = {"type": str(obj.format), "shape": (graph.number_of_edges(), graph.number_of_nodes())}
     metadata = {**metadata, **kwargs}

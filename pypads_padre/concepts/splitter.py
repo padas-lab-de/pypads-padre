@@ -1,6 +1,6 @@
 import numpy as np
 from pypads import logger
-from pypads_padre.concepts.util import _shape
+from pypads_padre.concepts.util import _len
 
 
 def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=None, val_ratio=0,
@@ -42,7 +42,7 @@ def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=Non
     if random_seed is None:
         random_seed = 0
     r = np.random.RandomState(random_seed)
-    n = _shape(X)
+    n = _len(X)
     idx = np.arange(n)
 
     def splitting_iterator():

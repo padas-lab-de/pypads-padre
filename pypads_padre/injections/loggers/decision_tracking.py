@@ -9,7 +9,7 @@ from pypads_padre.arguments import ontology_uri
 from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 
-from pypads_padre.concepts.util import _tolist, check_type
+from pypads_padre.concepts.util import _tolist, validate_type, _len
 
 
 class SingleInstanceTO(TrackedObject):
@@ -19,6 +19,7 @@ class SingleInstanceTO(TrackedObject):
 
     class SingleInstancesModel(TrackedObjectModel):
         category: str = "SingleInstanceResult"
+
         # context: Union[List[str], str] = str({
         #     "split"
         # })
@@ -44,9 +45,9 @@ class SingleInstanceTO(TrackedObject):
 
     def add_decision(self, instance, truth, prediction, probabilities):
         self.decisions.append(
-            self.SingleInstancesModel.DecisionModel(instance=check_type(instance),
-                                                    truth=check_type(truth), prediction=check_type(prediction),
-                                                                          probabilities=check_type(probabilities)))
+            self.SingleInstancesModel.DecisionModel(instance=validate_type(instance),
+                                                    truth=validate_type(truth), prediction=validate_type(prediction),
+                                                    probabilities=validate_type(probabilities)))
 
 
 class SingleInstanceILF(InjectionLogger):
@@ -59,7 +60,7 @@ class SingleInstanceILF(InjectionLogger):
     class SingleInstanceOuptut(OutputModel):
         category: str = "SingleInstanceILF-Output"
 
-        individual_decisions: str = None
+        individual_decisions: Union[List[str], str] = None
 
         class Config:
             orm_mode = True
@@ -97,33 +98,61 @@ class SingleInstanceILF(InjectionLogger):
         # check if there exists information about the current split
         current_split = None
         split_id = None
+        mode = None
+        splits = None
         if pads.cache.run_exists("current_split"):
             split_id = pads.cache.run_get("current_split")
             splitter = pads.cache.run_get(pads.cache.run_get("split_tracker"))
-
-            current_split = splitter.get("TO").splits.get(str(split_id), None)
+            splits = splitter.get("TO").splits
+            mode = pads.cache.get("tracking_mode", "single")
+            current_split = splits.get(str(split_id), None)
 
         # depending on available info log the predictions
         if current_split is None:
             logger.warning("No split information were found in the cache of the current run, "
                            "individual decision tracking might be missing Truth values, try to decorate you splitter!")
         else:
-            decisions = SingleInstanceTO(split_id=split_id, part_of=_logger_output)
-            if current_split.test_set is not None:
-                try:
-                    for i, instance in enumerate(current_split.test_set):
-                        prediction = preds[i]
-                        probability_scores = []
-                        if probabilities is not None:
-                            probability_scores = _tolist(probabilities[i])
-                        truth = None
-                        if targets is not None:
-                            truth = targets[instance]
-                        decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
-                                               probabilities=probability_scores)
-                    decisions.store(_logger_output, "individual_decisions")
-                except Exception as e:
-                    logger.warning("Could not log single instance decisions due to this error '%s'" % str(e))
+            logger.info(
+                "Logging single instance / individual decisions depending on the availability of split information, "
+                "predictions, probabilites and target values.")
+            if mode == "multiple":
+                _logger_output.individual_decisions = []
+                if _len(preds) == _len(targets):
+                    for split_id, split in splits.items():
+                        decisions = SingleInstanceTO(split_id=uuid.UUID(split_id), part_of=_logger_output)
+                        if split.test_set is not None:
+                            try:
+                                for i, instance in enumerate(split.test_set):
+                                    prediction = preds[i]
+                                    probability_scores = []
+                                    if probabilities is not None:
+                                        probability_scores = _tolist(probabilities[i])
+                                    truth = None
+                                    if targets is not None:
+                                        truth = targets[instance]
+                                    decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
+                                                           probabilities=probability_scores)
+                                decisions.store(_logger_output, "individual_decisions")
+                            except Exception as e:
+                                logger.warning(
+                                    "Could not log single instance decisions due to this error '%s'" % str(e))
+            else:
+                decisions = SingleInstanceTO(split_id=split_id, part_of=_logger_output)
+                if current_split.test_set is not None:
+                    try:
+                        for i, instance in enumerate(current_split.test_set):
+                            prediction = preds[i]
+                            probability_scores = []
+                            if probabilities is not None:
+                                probability_scores = _tolist(probabilities[i])
+                            truth = None
+                            if targets is not None:
+                                truth = targets[instance]
+                            decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
+                                                   probabilities=probability_scores)
+                        decisions.store(_logger_output, "individual_decisions")
+                    except Exception as e:
+                        logger.warning("Could not log single instance decisions due to this error '%s'" % str(e))
 
 
 class DecisionsSklearnILF(SingleInstanceILF):
@@ -189,7 +218,7 @@ class DecisionsKerasILF(SingleInstanceILF):
 
     supported_libraries = {LibSelector(name="keras", constraint="*", specificity=1)}
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.identity = SingleInstanceILF.__name__
 
@@ -223,7 +252,7 @@ class DecisionsTorchILF(SingleInstanceILF):
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.identity = SingleInstanceILF.__name__
 
