@@ -1,82 +1,105 @@
 import os
-import re
+from typing import Type, Optional
 
-from pypads.app.injections.base_logger import LoggingFunction
-from pypads.injections.analysis.call_tracker import LoggingEnv
-from pypads.utils.util import is_package_available
+from pydantic import BaseModel
+from pypads.app.call import Call
+from pypads.app.injections.base_logger import TrackedObject
+from pypads.app.injections.injection import MultiInjectionLogger, MultiInjectionLoggerCall
+from pypads.model.logger_output import OutputModel, TrackedObjectModel
 
-
-def name_to_words(label):
-    label = re.sub(r".*([a-z])([A-Z]).*", r"\g<1> \g<2>", label)
-    label = label.replace("_", " ")
-    return label.replace(".", " ")
+from pypads_padre.concepts.nlp import preprocess, ner_tagging, name_to_words
 
 
-def tag_extraction(pads, *args, **kwargs):
-    docs = pads.cache.get("doc_map")
-    corpus = " ".join([doc for name, doc in docs.items()])
-    corpus = corpus
-    corpus = re.sub(r'[\s]+', ' ', corpus)
-    corpus = re.sub(r'[\t]+', '', corpus)
-    corpus = re.sub(r'[\n]+', '', corpus)
-    pat = re.compile(r'([a-zA-Z][^\[\]\+\<\>\-\.!?]*[\.!?])', re.M)
-    corpus = " ".join(pat.findall(corpus))
+class ExtractedDocs(TrackedObject):
+    """
+    Tracking object logging extracted Named entities from the documentation of used functions to reference concepts from the ontology
+    """
 
-    if is_package_available("spacy"):
-        import spacy
-        nlp = spacy.load("en_core_web_sm")
-        doc = nlp(corpus)
-        nouns = set()
-        for chunk in doc.noun_chunks:
-            if "=" not in chunk.text and "." not in chunk.text:
-                nouns.add(chunk.text)
-        pads.api.log_mem_artifact("doc_nouns", str(nouns))
+    class DocModel(TrackedObjectModel):
+        category: str = "ExtractedConcepts"
 
-        ents = set()
-        for ent in doc.ents:
-            if "=" not in ent.text and "." not in ent.text and "`" not in ent.text and "/" not in ent.text:
-                ents.add(ent.text)
-        pads.api.log_mem_artifact("doc_named_entities", str(ents))
+        nouns: str = ...
+        named_entities: str = ...
 
-    elif is_package_available("nltk"):
-        # TODO use nltk to find named entities https://towardsdatascience.com/named-entity-recognition-with-nltk-and-spacy-8c4a7d88e7da
-        pass
+        class Config:
+            orm_mode = True
 
+    @classmethod
+    def get_model_cls(cls) -> Type[BaseModel]:
+        return cls.DocModel
 
-class Doc(LoggingFunction):
+    def __init__(self, *args, part_of, **kwargs):
+        super().__init__(*args, part_of=part_of, **kwargs)
+        self.doc_map = {}
 
-    def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, **kwargs):
-        from pypads.app.pypads import get_current_pads
-        pads = get_current_pads()
+    def add_docs(self, call: Call):
+        if call.call_id.wrappee.__doc__:
+            name = call.call_id.wrappee.__name__ + ".__doc__"
+            self.doc_map[name] = call.call_id.wrappee.__doc__
 
-        pads.api.register_teardown_fn("tag_extraction", tag_extraction)
-
-        doc_map = {}
-        if not pads.cache.exists("doc_map"):
-            pads.cache.add("doc_map", doc_map)
-        else:
-            doc_map = pads.cache.get("doc_map")
-
-        if _pypads_env.call.call_id.wrappee.__doc__:
-            name = os.path.join(_pypads_env.call.to_folder(),
-                                _pypads_env.call.call_id.wrappee.__name__ + ".__doc__")
-            if not pads.api.is_intermediate_run():
-                pads.api.log_mem_artifact(name, _pypads_env.call.call_id.wrappee.__doc__)
-            doc_map[name] = _pypads_env.call.call_id.wrappee.__doc__
-
-        if _pypads_env.call.call_id.context.container.__doc__:
-            name = os.path.join(_pypads_env.call.to_folder(),
-                                _pypads_env.call.call_id.context.container.__name__ + ".__doc__")
-            if not pads.api.is_intermediate_run():
-                pads.api.log_mem_artifact(name, _pypads_env.call.call_id.context.container.__doc__)
-            doc_map[name] = _pypads_env.call.call_id.context.container.__doc__
+        if call.call_id.context.container.__doc__:
+            name = call.call_id.context.container.__name__ + ".__doc__"
+            self.doc_map[name] = call.call_id.context.container.__doc__
 
         # Add ctx name to doc_map for named entity searching
-        doc_map[_pypads_env.call.call_id.context.container.__name__ + "_exists"] = "The " + name_to_words(
-            _pypads_env.call.call_id.context.container.__name__) + " exists."
-        doc_map[_pypads_env.call.call_id.wrappee.__name__ + "_exists"] = "The " + name_to_words(
-            _pypads_env.call.call_id.wrappee.__name__) + " exists."
-        doc_map[_pypads_env.call.call_id.wrappee.__name__ + "_is_in"] = "The " + name_to_words(
-            _pypads_env.call.call_id.wrappee.__name__) + " is in " + name_to_words(_pypads_env.call.call_id.context.container.__name__) + "."
+        self.doc_map[call.call_id.context.container.__name__ + "_exists"] = "The " + name_to_words(
+            call.call_id.context.container.__name__) + " exists."
+        self.doc_map[call.call_id.wrappee.__name__ + "_exists"] = "The " + name_to_words(
+            call.call_id.wrappee.__name__) + " exists."
+        self.doc_map[call.call_id.wrappee.__name__ + "_is_in"] = "The " + name_to_words(
+            call.call_id.wrappee.__name__) + " is in " + name_to_words(
+            call.call_id.context.container.__name__) + "."
+
+
+class DocExtractionILF(MultiInjectionLogger):
+    """
+    Function logging extracted concepts from documentation.
+    """
+
+    name = "DocsExtractor"
+    category: str = "DocExtractionLogger"
+
+    class DocExtractionOutput(OutputModel):
+        category: str = "DocExtractionILF-Output"
+
+        docs: str = None
+
+        class Config:
+            orm_mode = True
+
+    @classmethod
+    def output_schema_class(cls) -> Optional[Type[OutputModel]]:
+        return cls.DocExtractionOutput
+
+    @staticmethod
+    def finalize_output(pads, *args, **kwargs):
+
+        doc_tracker = pads.cache.run_get(pads.cache.run_get("doc_parser"))
+        call = doc_tracker.get("call")
+        output = doc_tracker.get("output")
+        to = output.docs
+        docs = to.doc_map
+        corpus = " ".join([doc for name, doc in docs.items()])
+        corpus = preprocess(corpus)
+
+        nouns, entities = ner_tagging(corpus)
+
+        to.nouns = nouns
+        to.entities = entities
+        to.store(output, "docs")
+        call.output = output.store()
+        call.store()
+
+    def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: MultiInjectionLoggerCall, _logger_output,
+                _args, _kwargs,
+                **kwargs):
+        from pypads.app.pypads import get_current_pads
+        pads = get_current_pads()
+        pads.cache.run_add("doc_parser", id(self))
+        if _logger_output.docs is None:
+            docs = ExtractedDocs(part_of=_logger_output)
+        else:
+            docs = _logger_output.docs
+        docs.add_docs(_logger_call.last_call)
         # !Add ctx name to doc_map for named entity searching
-        pads.cache.add("doc_map", doc_map)
+        _logger_output.docs = docs

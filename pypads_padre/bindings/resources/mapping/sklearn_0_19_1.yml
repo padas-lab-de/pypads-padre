@@ -3,7 +3,7 @@ metadata:
   version: "0.1.0"
   library:
     name: "sklearn"
-    version: "0.19.1"
+    version: ">= 0.19.1"
 
 fragments:
   default_model:
@@ -27,7 +27,7 @@ mappings:
         !!python/pPath score:
           hooks: "pypads_metric"
     !!python/pPath metrics.classification:
-      !!python/rSeg .*:
+      !!python/rSeg .f1_score:
         hooks: "pypads_metric"
         data:
           concepts: ["Sklearn provided metric"]
@@ -49,10 +49,11 @@ mappings:
           data:
             concepts: ["Sklearn provided hyperparameter search execution"]
     !!python/pPath model_selection._split:
-      !!python/pPath BaseCrossValidator.split:
-        hooks: ["pypads_split"]
-        data:
-          concepts: ["Sklearn provided splitting"]
+      !!python/pPath BaseCrossValidator:
+        !!python/pPath split:
+          hooks: ["pypads_split"]
+          data:
+            concepts: ["Sklearn provided splitting"]
       !!python/pPath BaseShuffleSplit.split:
         hooks: ["pypads_split"]
         data:

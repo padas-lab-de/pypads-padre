@@ -1,20 +1,77 @@
-import os
-from logging import warning
-from typing import Iterable
+import uuid
+from typing import Type, Any, List, Union
+
+from pydantic import HttpUrl, BaseModel
 from pypads import logger
-from pypads.app.injections.base_logger import LoggingFunction
-from pypads.importext.mappings import LibSelector
-from pypads.injections.analysis.call_tracker import LoggingEnv
+from pypads.app.injections.base_logger import TrackedObject
+from pypads.app.injections.injection import InjectionLogger
+from pypads_padre.arguments import ontology_uri
+from pypads.importext.versioning import LibSelector
+from pypads.model.logger_output import TrackedObjectModel, OutputModel
+
+from pypads_padre.concepts.util import _tolist, validate_type, _len
 
 
-class Decisions(LoggingFunction):
+class SingleInstanceTO(TrackedObject):
+    """
+        Tracking Object class for single instance results
+        """
+
+    class SingleInstancesModel(TrackedObjectModel):
+        category: str = "SingleInstanceResult"
+
+        # context: Union[List[str], str] = str({
+        #     "split"
+        # })
+        class DecisionModel(BaseModel):
+            instance: Union[str, int] = ...
+            truth: Union[str, int] = None
+            prediction: Union[str, int] = ...
+            probabilities: List[Union[float]] = []
+
+            class Config:
+                orm_mode = True
+                arbitrary_types_allowed = True
+
+        split_id: uuid.UUID = ...
+        decisions: List[DecisionModel] = []
+
+    @classmethod
+    def get_model_cls(cls) -> Type[BaseModel]:
+        return cls.SingleInstancesModel
+
+    def __init__(self, *args, split_id, part_of, **kwargs):
+        super().__init__(*args, split_id=split_id, part_of=part_of, **kwargs)
+
+    def add_decision(self, instance, truth, prediction, probabilities):
+        self.decisions.append(
+            self.SingleInstancesModel.DecisionModel(instance=validate_type(instance),
+                                                    truth=validate_type(truth), prediction=validate_type(prediction),
+                                                    probabilities=validate_type(probabilities)))
+
+
+class SingleInstanceILF(InjectionLogger):
     """
     Function logging individual decisions
     """
+    name = "SingleInstance"
+    category = "SingleInstanceLogger"
 
-    def __post__(self, ctx, *args, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
+    class SingleInstanceOuptut(OutputModel):
+        category: str = "SingleInstanceILF-Output"
+
+        individual_decisions: Union[List[str], str] = None
+
+        class Config:
+            orm_mode = True
+
+    @classmethod
+    def output_schema_class(cls) -> Type[OutputModel]:
+        return cls.SingleInstanceOuptut
+
+    def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
+                 **kwargs):
         """
-
         :param ctx:
         :param args:
         :param _pypads_result:
@@ -33,63 +90,86 @@ class Decisions(LoggingFunction):
         if pads.cache.run_exists("probabilities"):
             probabilities = pads.cache.run_pop("probabilities")
 
+        # check if there is info on truth values
+        targets = None
+        if pads.cache.run_exists("targets"):
+            targets = pads.cache.run_get("targets")
+
         # check if there exists information about the current split
-        num = 0
-        split_info = None
+        current_split = None
+        split_id = None
+        mode = None
+        splits = None
         if pads.cache.run_exists("current_split"):
-            num = pads.cache.run_get("current_split")
-        if pads.cache.run_exists(num):
-            split_info = pads.cache.run_get(num).get("split_info", None)
+            split_id = pads.cache.run_get("current_split")
+            splitter = pads.cache.run_get(pads.cache.run_get("split_tracker"))
+            splits = splitter.get("TO").splits
+            mode = pads.cache.get("tracking_mode", "single")
+            current_split = splits.get(str(split_id), None)
 
         # depending on available info log the predictions
-        if split_info is None:
+        if current_split is None:
             logger.warning("No split information were found in the cache of the current run, "
-                    "individual decision tracking might be missing Truth values, try to decorate you splitter!")
-            pads.cache.run_add(num,
-                               {'predictions': {str(i): {'predicted': preds[i]} for i in range(len(preds))}})
-            if probabilities is not None:
-                for i in pads.cache.run_get(num).get('predictions').keys():
-                    pads.cache.run_get(num).get('predictions').get(str(i)).update(
-                        {'probabilities': probabilities[int(i)]})
+                           "individual decision tracking might be missing Truth values, try to decorate you splitter!")
         else:
-            try:
-                # for i, sample in enumerate(split_info.get('test')):
-                #     pads.cache.run_get(num).get('predictions').get(str(sample)).update({'predicted': preds[i]})
-                pads.cache.run_add(num,
-                                   {'predictions': {str(sample): {'predicted': preds[i]} for i, sample in
-                                                    enumerate(split_info.get('test'))}})
+            logger.info(
+                "Logging single instance / individual decisions depending on the availability of split information, "
+                "predictions, probabilites and target values.")
+            if mode == "multiple":
+                _logger_output.individual_decisions = []
+                if _len(preds) == _len(targets):
+                    for split_id, split in splits.items():
+                        decisions = SingleInstanceTO(split_id=uuid.UUID(split_id), part_of=_logger_output)
+                        if split.test_set is not None:
+                            try:
+                                for i, instance in enumerate(split.test_set):
+                                    prediction = preds[i]
+                                    probability_scores = []
+                                    if probabilities is not None:
+                                        probability_scores = _tolist(probabilities[i])
+                                    truth = None
+                                    if targets is not None:
+                                        truth = targets[instance]
+                                    decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
+                                                           probabilities=probability_scores)
+                                decisions.store(_logger_output, "individual_decisions")
+                            except Exception as e:
+                                logger.warning(
+                                    "Could not log single instance decisions due to this error '%s'" % str(e))
+            else:
+                decisions = SingleInstanceTO(split_id=split_id, part_of=_logger_output)
+                if current_split.test_set is not None:
+                    try:
+                        for i, instance in enumerate(current_split.test_set):
+                            prediction = preds[i]
+                            probability_scores = []
+                            if probabilities is not None:
+                                probability_scores = _tolist(probabilities[i])
+                            truth = None
+                            if targets is not None:
+                                truth = targets[instance]
+                            decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
+                                                   probabilities=probability_scores)
+                        decisions.store(_logger_output, "individual_decisions")
+                    except Exception as e:
+                        logger.warning("Could not log single instance decisions due to this error '%s'" % str(e))
 
-                if probabilities is not None:
-                    for i, sample in enumerate(split_info.get('test')):
-                        pads.cache.run_get(num).get('predictions').get(str(sample)).update(
-                            {'probabilities': probabilities[i]})
-            except Exception as e:
-                logger.warning("Could not log predictions due to this error '%s'" % str(e))
-        if pads.cache.run_exists("targets"):
-            try:
-                targets = pads.cache.run_get("targets")
-                if isinstance(targets, Iterable):
-                    for i in pads.cache.run_get(num).get('predictions').keys():
-                        pads.cache.run_get(num).get('predictions').get(str(i)).update(
-                            {'truth': targets[int(i)]})
-            except Exception as e:
-                logger.warning("Could not add the truth values due to this error '%s'" % str(e))
 
-        name = os.path.join(_pypads_env.call.to_folder(),
-                            "decisions",
-                            str(id(_pypads_env.callback)))
-        pads.api.log_mem_artifact(name, pads.cache.run_get(num))
-
-
-class Decisions_sklearn(Decisions):
+class DecisionsSklearnILF(SingleInstanceILF):
     """
     Function getting the prediction scores from sklearn estimators
     """
+    name = "DecisionsSklearn"
+    category = "SklearnDecisionsLogger"
 
-    def supported_libraries(self):
-        return {LibSelector("sklearn", "*", specificity=1)}
+    supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
 
-    def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **kwargs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SingleInstanceILF.__name__
+
+    def __pre__(self, ctx, *args,
+                _logger_call, _logger_output, _args, _kwargs, **kwargs):
         """
 
         :param ctx:
@@ -106,12 +186,12 @@ class Decisions_sklearn(Decisions):
         if hasattr(ctx, "predict_proba"):
             # TODO find a cleaner way to invoke the original predict_proba in case it is wrapped
             predict_proba = ctx.predict_proba
-            if _pypads_env.call.call_id.context.has_original(predict_proba):
-                predict_proba = _pypads_env.call.call_id.context.original(predict_proba)
+            if _logger_call.original_call.call_id.context.has_original(predict_proba):
+                predict_proba = _logger_call.original_call.call_id.context.original(predict_proba)
         elif hasattr(ctx, "_predict_proba"):
             predict_proba = ctx._predict_proba
-            if _pypads_env.call.call_id.context.has_original(predict_proba):
-                _pypads_env.call.call_id.context.original(predict_proba)
+            if _logger_call.original_call.call_id.context.has_original(predict_proba):
+                _logger_call.original_call.call_id.context.original(predict_proba)
         if hasattr(predict_proba, "__wrapped__"):
             predict_proba = predict_proba.__wrapped__
         try:
@@ -129,15 +209,21 @@ class Decisions_sklearn(Decisions):
             pads.cache.run_add("probabilities", probabilities)
 
 
-class Decisions_keras(Decisions):
+class DecisionsKerasILF(SingleInstanceILF):
     """
     Function getting the prediction scores from keras models
     """
+    name = "DecisionsKeras"
+    category = "KerasDecisionsLogger"
 
-    def supported_libraries(self):
-        return {LibSelector("keras", "*", specificity=1)}
+    supported_libraries = {LibSelector(name="keras", constraint="*", specificity=1)}
 
-    def __pre__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **kwargs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SingleInstanceILF.__name__
+
+    def __pre__(self, ctx, *args,
+                _logger_call, _logger_output, _args, _kwargs, **kwargs):
         """
 
         :param ctx:
@@ -157,22 +243,30 @@ class Decisions_keras(Decisions):
         pads.cache.run_add("probabilities", probabilities)
 
 
-class Decisions_torch(Decisions):
+class DecisionsTorchILF(SingleInstanceILF):
     """
     Function getting the prediction scores from torch models
     """
+    name = "DecisionsTorch"
+    category = "TorchDecisionsLogger"
 
-    def supported_libraries(self):
-        return {LibSelector("torch", "*", specificity=1)}
+    supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 
-    def __post__(self, ctx, *args, _pypads_env: LoggingEnv, _pypads_result, **kwargs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SingleInstanceILF.__name__
+
+    def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
+                 **kwargs):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 
-        if hasattr(ctx,"training") and ctx.training:
+        if hasattr(ctx, "training") and ctx.training:
             pass
         else:
             pads.cache.run_add("probabilities", _pypads_result.data.numpy())
             pads.cache.run_add("predictions", _pypads_result.argmax(dim=1).data.numpy())
 
-            return super().__post__(ctx, *args, _pypads_env=_pypads_env, _pypads_result=_pypads_result, **kwargs)
+            return super().__post__(ctx, *args, _logger_call=_logger_call, _pypads_pre_return=_pypads_pre_return,
+                                    _pypads_result=_pypads_result, _logger_output=_logger_output, _args=_args,
+                                    _kwargs=_kwargs, **kwargs)

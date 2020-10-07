@@ -1,32 +1,10 @@
 import numpy as np
-from boltons.funcutils import wraps
 from pypads import logger
-
-from pypads_padre.util import unpack
-
-
-def _logger():
-    def decorator(fn):
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            from pypads.app.pypads import get_current_pads
-            pads = get_current_pads()
-            splits = fn(*args, **kwargs)
-            for num, train, test, val in splits:
-                pads.cache.run_add("current_split", num)
-                pads.cache.run_add(num,
-                                   {"split_info": {"train": train, "test": test, "val": val, "track_decisions": True}})
-                yield train, test, val
-
-        return wrapper
-
-    return decorator
+from pypads_padre.concepts.util import _len
 
 
-@_logger()
-def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val_ratio=0,
+def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=None, val_ratio=0,
                   n_folds=3, shuffle=True, stratified=None, indices=None, index=None):
-    (data, shape, y) = unpack(ctx, "data", ("shape", None), ("targets", None))
     """
         The splitter creates index arrays into the dataset for different splitting startegies. It provides an iterator
         over the different splits.
@@ -64,7 +42,7 @@ def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val
     if random_seed is None:
         random_seed = 0
     r = np.random.RandomState(random_seed)
-    n = shape[0]
+    n = _len(X)
     idx = np.arange(n)
 
     def splitting_iterator():
@@ -92,40 +70,43 @@ def default_split(ctx, strategy="random", test_ratio=0.25, random_seed=None, val
                 yield num, train, test, None
         elif strategy == "cv":
             if stratified:
-                # StratifiedKfold implementation of sklearn
-                classes_, y_idx, y_inv, y_counts = np.unique(y, return_counts=True, return_index=True,
-                                                             return_inverse=True)
-                n_classes = len(y_idx)
-                _, class_perm = np.unique(y_idx, return_inverse=True)
-                y_encoded = class_perm[y_inv]
-                min_groups = np.min(y_counts)
-                if np.all(n_folds > y_counts):
-                    raise ValueError("n_folds=%d cannot be greater than the"
-                                     " number of members in each class."
-                                     % n_folds)
-                if n_folds > min_groups:
-                    logger.warning("The least populated class in y has only %d"
-                                  " members, which is less than n_splits=%d." % (min_groups, n_folds))
-                y_order = np.sort(y_encoded)
-                allocation = np.asarray([np.bincount(y_order[i::n_folds], minlength=n_classes)
-                                         for i in range(n_folds)])
-                test_folds = np.empty(len(y), dtype='i')
-                for k in range(n_classes):
-                    folds_for_class = np.arange(n_folds).repeat(allocation[:, k])
-                    if shuffle:
-                        r.shuffle(folds_for_class)
-                    test_folds[y_encoded == k] = folds_for_class
+                if y is not None:
+                    # StratifiedKfold implementation of sklearn
+                    classes_, y_idx, y_inv, y_counts = np.unique(y, return_counts=True, return_index=True,
+                                                                 return_inverse=True)
+                    n_classes = len(y_idx)
+                    _, class_perm = np.unique(y_idx, return_inverse=True)
+                    y_encoded = class_perm[y_inv]
+                    min_groups = np.min(y_counts)
+                    if np.all(n_folds > y_counts):
+                        raise ValueError("n_folds=%d cannot be greater than the"
+                                         " number of members in each class."
+                                         % n_folds)
+                    if n_folds > min_groups:
+                        logger.warning("The least populated class in y has only %d"
+                                      " members, which is less than n_splits=%d." % (min_groups, n_folds))
+                    y_order = np.sort(y_encoded)
+                    allocation = np.asarray([np.bincount(y_order[i::n_folds], minlength=n_classes)
+                                             for i in range(n_folds)])
+                    test_folds = np.empty(len(y), dtype='i')
+                    for k in range(n_classes):
+                        folds_for_class = np.arange(n_folds).repeat(allocation[:, k])
+                        if shuffle:
+                            r.shuffle(folds_for_class)
+                        test_folds[y_encoded == k] = folds_for_class
 
-                for i in range(n_folds):
-                    num += 1
-                    test_index = test_folds == i
-                    train = idx[np.logical_not(test_index)]
-                    test = idx[test_index]
-                    if val_ratio > 0:
-                        n_v = int(len(train) * val_ratio)
-                        yield num, train[:n_v], test, train[n_v:]
-                    else:
-                        yield num, train, test, None
+                    for i in range(n_folds):
+                        num += 1
+                        test_index = test_folds == i
+                        train = idx[np.logical_not(test_index)]
+                        test = idx[test_index]
+                        if val_ratio > 0:
+                            n_v = int(len(train) * val_ratio)
+                            yield num, train[:n_v], test, train[n_v:]
+                        else:
+                            yield num, train, test, None
+                else:
+                    logger.warning("Stratified CV is not possible because target values in y is None")
             else:
 
                 if shuffle:

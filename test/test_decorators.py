@@ -1,4 +1,3 @@
-from pypads_padre.concepts.util import get_by_tag
 from test.base_test import BaseTest, TEST_FOLDER
 
 
@@ -27,6 +26,7 @@ class PyPadsDecoratorsTest(BaseTest):
 
         # --------------------------- asserts ---------------------------
         import mlflow
+        from pypads_padre.concepts.util import get_by_tag
         datasets_repo = mlflow.get_experiment_by_name("datasets")
         datasets = get_by_tag("pypads.dataset", experiment_id=datasets_repo.experiment_id)
 

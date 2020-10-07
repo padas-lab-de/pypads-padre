@@ -1,12 +1,12 @@
 import sys
 
-from pypads.app.injections.base_logger import LoggingFunction
-from pypads.injections.analysis.call_tracker import LoggingEnv
+from pypads.app.injections.injection import InjectionLogger
+from pypads.app.env import InjectionLoggerEnv
 
 
-class HyperParameters(LoggingFunction):
+class HyperParameters(InjectionLogger):
 
-    def __call_wrapped__(self, ctx, *args, _pypads_env: LoggingEnv, _args, _kwargs, **_pypads_hook_params):
+    def __call_wrapped__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _args, _kwargs, **_pypads_hook_params):
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
 

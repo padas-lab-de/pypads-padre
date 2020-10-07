@@ -28,7 +28,7 @@ DEFAULT_PADRE_SETUP_FNS = set()
 DEFAULT_PADRE_CONFIG = {}
 
 
-def configure_plugin():
+def configure_plugin(pypads):
     """
     This function can be used to configure the plugin. It should be called at least once to allow for the usage of the
     plugin. Multiple executions should be possible.
@@ -41,7 +41,7 @@ def configure_plugin():
 
     mappings.default_mapping_file_paths.extend(
         glob.glob(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
-                                               "resources", "mapping", "**.json"))))
+                                               "resources", "mapping", "**.yml"))))
     base.DEFAULT_SETUP_FNS = base.DEFAULT_SETUP_FNS | DEFAULT_PADRE_SETUP_FNS
     base.DEFAULT_CONFIG = dict_merge_caches(base.DEFAULT_CONFIG, DEFAULT_PADRE_CONFIG)
     events.DEFAULT_LOGGING_FNS = dict_merge_caches(events.DEFAULT_LOGGING_FNS, DEFAULT_PADRE_LOGGING_FNS)
