@@ -10,6 +10,8 @@ from pypads.app.injections.injection import OriginalExecutor, MultiInjectionLogg
 from pypads.importext.mappings import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 
+from pypads_padre.concepts.util import _tolist
+
 
 def splitter_output(result, fn):
     # check if the output of the splitter is a tuple of indices
@@ -21,7 +23,7 @@ def splitter_output(result, fn):
                 return result[1], result[2], result[3], result[0]
             else:
                 if len(result) < 4:
-                    return result[0], result[1], result[3], None
+                    return _tolist(result[0]), _tolist(result[1]), _tolist(result[3]), None
         else:
             if "torch" in fn.__module__:
                 if hasattr(fn, "_dataset"):
@@ -29,7 +31,7 @@ def splitter_output(result, fn):
                         return result.tolist(), None, None, None
                     else:
                         return None, result.tolist(), None, None
-                return result, None, None, None
+                return result.tolist(), None, None, None
             else:
                 return None, None, None, None
     except Exception as e:
