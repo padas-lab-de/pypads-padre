@@ -22,7 +22,6 @@ mappings:
       "@rdf":
         mapped_by: "http://www.padre-lab.eu/PyPadsInjection"
         defined_in: "http://www.padre-lab.eu/onto/Sklearn#0.19.1"
-        in_context: "http://www.padre-lab.eu/onto/Estimata"
     !!python/pPath base.BaseEstimator:
       ;default_model: ~
       !!python/pPath __init__:

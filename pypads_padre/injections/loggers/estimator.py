@@ -66,6 +66,7 @@ class EstimatorILF(InjectionLogger):
                 estimator:
                     name: "DecisionTree"
                     description: "This is a great tree."
+                    other_names: []
                     parameters:
                         model_parameters:
                         - name: split_quality
@@ -86,6 +87,8 @@ class EstimatorILF(InjectionLogger):
                       execution_parameters: []
     """
 
+    name = "Estimator Logger"
+    category: str = "EstimatorLogger"
     supported_libraries = {all_libs}
 
     @classmethod
