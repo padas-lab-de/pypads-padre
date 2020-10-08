@@ -11,5 +11,6 @@ DEFAULT_PADRE_HOOK_MAPPING = {
     "parameter_search": {"on": ["pypads_param_search"], "order": sys.maxsize - 1},
     "parameter_search_executor": {"on": ["pypads_param_search_exec"], "order": sys.maxsize - 2},
     # "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]},
-    "metric": {"on": ["pypads_metric", "pypads_grad"], "with": {"artifact_fallback": True}}
+    "metric": {"on": ["pypads_metric", "pypads_grad"], "with": {"artifact_fallback": True}},
+    "estimator": {"on": ["pypads_estimator"]}
 }
