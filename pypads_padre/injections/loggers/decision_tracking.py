@@ -14,16 +14,20 @@ from pypads_padre.concepts.util import _tolist, validate_type, _len
 
 class SingleInstanceTO(TrackedObject):
     """
-        Tracking Object class for single instance results
-        """
+        Tracking Object class logging instance based results/decisions of your model.
+    """
 
     class SingleInstancesModel(TrackedObjectModel):
+        """
+        Model defining the values for the tracked object
+        """
         category: str = "SingleInstanceResult"
+        name: str = "Instance Based Results"
 
-        # context: Union[List[str], str] = str({
-        #     "split"
-        # })
         class DecisionModel(BaseModel):
+            """
+            Model defining the values for a individual model decision.
+            """
             instance: Union[str, int] = ...
             truth: Union[str, int] = None
             prediction: Union[str, int] = ...
@@ -33,6 +37,8 @@ class SingleInstanceTO(TrackedObject):
                 orm_mode = True
                 arbitrary_types_allowed = True
 
+        description = "Individual results of the model for each data sample, " \
+                      "e.g, [{'instance': 1, 'truth': 2, 'predicted': 1, probabilities: [0.1,0.5,0.4]}]"
         split_id: uuid.UUID = ...
         decisions: List[DecisionModel] = []
 
@@ -40,8 +46,8 @@ class SingleInstanceTO(TrackedObject):
     def get_model_cls(cls) -> Type[BaseModel]:
         return cls.SingleInstancesModel
 
-    def __init__(self, *args, split_id, part_of, **kwargs):
-        super().__init__(*args, split_id=split_id, part_of=part_of, **kwargs)
+    def __init__(self, *args, split_id, parent, **kwargs):
+        super().__init__(*args, split_id=split_id, parent=parent, **kwargs)
 
     def add_decision(self, instance, truth, prediction, probabilities):
         self.decisions.append(
@@ -50,24 +56,29 @@ class SingleInstanceTO(TrackedObject):
                                                     probabilities=validate_type(probabilities)))
 
 
+class SingleInstanceOuptut(OutputModel):
+    """
+    Output model of the SingleInstance Injection Logger.
+    """
+    individual_decisions: Union[List[str], str] = None
+
+    class Config:
+        orm_mode = True
+
+
 class SingleInstanceILF(InjectionLogger):
     """
     Function logging individual decisions
+
+        Hook:
+            Hook this logger to the inference function of your model (predict, forward,...)
     """
     name = "SingleInstance"
     category = "SingleInstanceLogger"
 
-    class SingleInstanceOuptut(OutputModel):
-        category: str = "SingleInstanceILF-Output"
-
-        individual_decisions: Union[List[str], str] = None
-
-        class Config:
-            orm_mode = True
-
     @classmethod
     def output_schema_class(cls) -> Type[OutputModel]:
-        return cls.SingleInstanceOuptut
+        return SingleInstanceOuptut
 
     def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
                  **kwargs):
@@ -103,7 +114,7 @@ class SingleInstanceILF(InjectionLogger):
         if pads.cache.run_exists("current_split"):
             split_id = pads.cache.run_get("current_split")
             splitter = pads.cache.run_get(pads.cache.run_get("split_tracker"))
-            splits = splitter.get("TO").splits
+            splits = splitter.get("output").splits.splits
             mode = pads.cache.get("tracking_mode", "single")
             current_split = splits.get(str(split_id), None)
 
@@ -115,29 +126,28 @@ class SingleInstanceILF(InjectionLogger):
             logger.info(
                 "Logging single instance / individual decisions depending on the availability of split information, "
                 "predictions, probabilites and target values.")
-            if mode == "multiple":
+            if mode == "multiple" and _len(preds) == _len(targets):
                 _logger_output.individual_decisions = []
-                if _len(preds) == _len(targets):
-                    for split_id, split in splits.items():
-                        decisions = SingleInstanceTO(split_id=uuid.UUID(split_id), part_of=_logger_output)
-                        if split.test_set is not None:
-                            try:
-                                for i, instance in enumerate(split.test_set):
-                                    prediction = preds[i]
-                                    probability_scores = []
-                                    if probabilities is not None:
-                                        probability_scores = _tolist(probabilities[i])
-                                    truth = None
-                                    if targets is not None:
-                                        truth = targets[instance]
-                                    decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
-                                                           probabilities=probability_scores)
-                                decisions.store(_logger_output, "individual_decisions")
-                            except Exception as e:
-                                logger.warning(
-                                    "Could not log single instance decisions due to this error '%s'" % str(e))
+                for split_id, split in splits.items():
+                    decisions = SingleInstanceTO(split_id=uuid.UUID(split_id), parent=_logger_output)
+                    if split.test_set is not None:
+                        try:
+                            for i, instance in enumerate(split.test_set):
+                                prediction = preds[i]
+                                probability_scores = []
+                                if probabilities is not None:
+                                    probability_scores = _tolist(probabilities[i])
+                                truth = None
+                                if targets is not None:
+                                    truth = targets[instance]
+                                decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
+                                                       probabilities=probability_scores)
+                            _logger_output.individual_decisions.append(decisions.store())
+                        except Exception as e:
+                            logger.warning(
+                                "Could not log single instance decisions due to this error '%s'" % str(e))
             else:
-                decisions = SingleInstanceTO(split_id=split_id, part_of=_logger_output)
+                decisions = SingleInstanceTO(split_id=split_id, parent=_logger_output)
                 if current_split.test_set is not None:
                     try:
                         for i, instance in enumerate(current_split.test_set):
@@ -150,7 +160,7 @@ class SingleInstanceILF(InjectionLogger):
                                 truth = targets[instance]
                             decisions.add_decision(instance=instance, truth=truth, prediction=prediction,
                                                    probabilities=probability_scores)
-                        decisions.store(_logger_output, "individual_decisions")
+                        _logger_output.individual_decisions = decisions.store()
                     except Exception as e:
                         logger.warning("Could not log single instance decisions due to this error '%s'" % str(e))
 
@@ -158,8 +168,10 @@ class SingleInstanceILF(InjectionLogger):
 class DecisionsSklearnILF(SingleInstanceILF):
     """
     Function getting the prediction scores from sklearn estimators
+        Hook:
+            Hook this logger to the inference function of your model, i.e. sklearn.BaseEstimator.predict.
     """
-    name = "DecisionsSklearn"
+    name = "Sklearn Decisions Logger"
     category = "SklearnDecisionsLogger"
 
     supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
@@ -211,9 +223,11 @@ class DecisionsSklearnILF(SingleInstanceILF):
 
 class DecisionsKerasILF(SingleInstanceILF):
     """
-    Function getting the prediction scores from keras models
+    Function getting the prediction scores from keras models.
+        Hook:
+            Hook this logger to the inference function of your model, i.e. keras.engine.training.Model.predict_classes.
     """
-    name = "DecisionsKeras"
+    name = "Keras Decisions Logger"
     category = "KerasDecisionsLogger"
 
     supported_libraries = {LibSelector(name="keras", constraint="*", specificity=1)}
@@ -245,9 +259,11 @@ class DecisionsKerasILF(SingleInstanceILF):
 
 class DecisionsTorchILF(SingleInstanceILF):
     """
-    Function getting the prediction scores from torch models
+    Function getting the prediction scores from torch models.
+        Hook:
+            Hook this logger to the inference function of your model, e.g, torch.modules.container.Sequential.forward.
     """
-    name = "DecisionsTorch"
+    name = "PyTorch Decisions Logger"
     category = "TorchDecisionsLogger"
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}

@@ -12,12 +12,18 @@ from pypads_padre.concepts.nlp import preprocess, ner_tagging, name_to_words
 
 class ExtractedDocs(TrackedObject):
     """
-    Tracking object logging extracted Named entities from the documentation of used functions to reference concepts from the ontology
+    Tracking object logging extracted Named entities from the documentation
+    of used functions to reference concepts from the ontology
     """
 
     class DocModel(TrackedObjectModel):
+        """
+        Model defining the values of the ExtractedDocs tracked object.
+        """
         category: str = "ExtractedConcepts"
-
+        name: str = "ParsedDocs"
+        description = "Nouns and Named Entities extracted " \
+                      "using NER and POS tagging on the documentation of every tracked class/function."
         nouns: str = ...
         named_entities: str = ...
 
@@ -28,8 +34,8 @@ class ExtractedDocs(TrackedObject):
     def get_model_cls(cls) -> Type[BaseModel]:
         return cls.DocModel
 
-    def __init__(self, *args, part_of, **kwargs):
-        super().__init__(*args, part_of=part_of, **kwargs)
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
         self.doc_map = {}
 
     def add_docs(self, call: Call):
@@ -72,11 +78,7 @@ class DocExtractionILF(MultiInjectionLogger):
         return cls.DocExtractionOutput
 
     @staticmethod
-    def finalize_output(pads, *args, **kwargs):
-
-        doc_tracker = pads.cache.run_get(pads.cache.run_get("doc_parser"))
-        call = doc_tracker.get("call")
-        output = doc_tracker.get("output")
+    def finalize_output(pads, logger_call, output, *args, **kwargs):
         to = output.docs
         docs = to.doc_map
         corpus = " ".join([doc for name, doc in docs.items()])
@@ -86,9 +88,8 @@ class DocExtractionILF(MultiInjectionLogger):
 
         to.nouns = nouns
         to.entities = entities
-        to.store(output, "docs")
-        call.output = output.store()
-        call.store()
+        output.docs = to.store()
+        logger_call.output = output.store()
 
     def __pre__(self, ctx, *args, _pypads_write_format=None, _logger_call: MultiInjectionLoggerCall, _logger_output,
                 _args, _kwargs,
@@ -97,7 +98,7 @@ class DocExtractionILF(MultiInjectionLogger):
         pads = get_current_pads()
         pads.cache.run_add("doc_parser", id(self))
         if _logger_output.docs is None:
-            docs = ExtractedDocs(part_of=_logger_output)
+            docs = ExtractedDocs(parent=_logger_output)
         else:
             docs = _logger_output.docs
         docs.add_docs(_logger_call.last_call)
