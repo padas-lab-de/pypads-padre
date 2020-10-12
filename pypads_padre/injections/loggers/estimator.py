@@ -24,11 +24,12 @@ class EstimatorRepositoryObject(BaseRepositoryObjectModel):
     location: str = ...  # Place where it is defined
 
 
-class EstimatorOutput(OutputModel):
+class EstimatorILFOutput(OutputModel):
     """
     Output of the logger. An output can reference multiple Tracked Objects or Values directly. In this case a own
     tracked object doesn't give a lot of benefit but enforcing a description a name and a category and could be omitted.
     """
+    category: str = "EstimatorILF-Output"
     estimator: str = ...  # Reference to estimator TO
 
 
@@ -93,7 +94,7 @@ class EstimatorILF(InjectionLogger):
 
     @classmethod
     def output_schema_class(cls) -> Optional[Type[OutputModel]]:
-        return EstimatorOutput
+        return EstimatorILFOutput
 
     def __post__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call: InjectionLoggerCallModel,
                  _logger_output, _pypads_result, **kwargs):
