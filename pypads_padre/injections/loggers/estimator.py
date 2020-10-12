@@ -128,14 +128,15 @@ class EstimatorILF(InjectionLogger):
                 ctx.__class__) + ". Saving without name.")
 
         # Create repository object
-        ero = EstimatorRepositoryObject(name=mapping_data[
-            'estimator_name'] if 'estimator_name' in mapping_data else ctx.__class__.__name__,
-                                        description=mapping_data[
-                                            'estimator_name'] if 'estimator_name' in mapping_data else
+        estimator_data = mapping_data['estimator'] if 'estimator' in mapping_data else {}
+        ero = EstimatorRepositoryObject(name=estimator_data[
+            'name'] if 'name' in estimator_data else ctx.__class__.__name__,
+                                        description=estimator_data[
+                                            'description'] if 'description' in estimator_data else
                                         "Some unknown estimator.",
                                         documentation=ctx.__class__.__doc__,
-                                        parameter_schema=mapping_data[
-                                            'estimator_name'] if 'estimator_name' in mapping_data else "unknown",
+                                        parameter_schema=estimator_data[
+                                            'parameters'] if 'parameters' in estimator_data else "unknown",
                                         location=_logger_call.original_call.call_id.context.reference)
 
         # Compile identifying hash

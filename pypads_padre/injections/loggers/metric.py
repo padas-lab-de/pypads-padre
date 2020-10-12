@@ -1,7 +1,7 @@
 import mlflow
 from mlflow.utils.autologging_utils import try_mlflow_log
 from pypads.importext.versioning import LibSelector
-from pypads.injections.loggers.metric import MetricILF
+from pypads.injections.loggers.metric import MetricILF, MetricTO
 
 
 class MetricTorch(MetricILF):
@@ -25,6 +25,7 @@ class MetricTorch(MetricILF):
         :return:
         """
         result = _pypads_result
+        metric = MetricTO(parent=_logger_output, as_artifact=_pypads_artifact_fallback)
         if result is not None:
             from torch import Tensor
             if isinstance(result, Tensor):
@@ -40,7 +41,6 @@ class MetricTorch(MetricILF):
                         weights_by_layer = group.get('params', None)
                         if weights_by_layer and isinstance(weights_by_layer, list):
                             for layer, weights in enumerate(weights_by_layer):
-                                try_mlflow_log(mlflow.log_metric,
-                                               _logger_call.original_call.call_id.context.container.__name__ + ".Layer_" + str(
-                                                   layer) + "_MEAN_GRADIENT.txt",
-                                               weights.grad.mean().item())
+                                metric.store_value(weights.grad.mean().item(),
+                                                   step=_logger_call.original_call.call_id.call_number,
+                                                   name="Layer_" + str(layer) + "_mean_gradient")

@@ -10,13 +10,13 @@ from pypads_padre.injections.loggers.metric import MetricTorch
 
 # Extended mappings. We allow to log parameters, output or input, datasets
 DEFAULT_PADRE_LOGGING_FNS = {
-    # "dataset": DatasetILF(),
-    # "predictions": [DecisionsSklearnILF(), DecisionsTorchILF(), DecisionsKerasILF(), SingleInstanceILF()],
+    "dataset": DatasetILF(),
+    "predictions": [DecisionsSklearnILF(), DecisionsTorchILF(), DecisionsKerasILF(), SingleInstanceILF()],
     # "parameter_search": ParameterSearchILF(),
     # "parameter_search_executor": ParameterSearchExecutor(),
-    # "splits": [SplitILF(), SplitILFTorch()],
+    "splits": [SplitILF(), SplitILFTorch()],
     # "hyperparameters": HyperParameters(),
-    # # "doc": DocExtractionILF(),
+    "doc": DocExtractionILF(),
     # "metric": [MetricTorch()],
     "estimator": EstimatorILF()
 }
