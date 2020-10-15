@@ -9,6 +9,7 @@ from pypads.app.injections.tracked_object import TrackedObject
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_call import InjectionLoggerCallModel
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads.utils.logging_util import data_str, data_path
 from pypads.utils.util import persistent_hash
 
 
@@ -22,6 +23,7 @@ class EstimatorRepositoryObject(BaseRepositoryObjectModel):
     documentation: str = ...  # Extracted documentation
     parameter_schema: Union[str, dict] = ...  # Schema for parameters
     location: str = ...  # Place where it is defined
+    category: str = "Estimator"
 
 
 class EstimatorILFOutput(OutputModel):
@@ -112,32 +114,26 @@ class EstimatorILF(InjectionLogger):
         :return:
         """
 
+        # Get data from mapping file
         mapping_data = _pypads_env.data
-
-        # Warn about partial mappings
-        if 'estimator' not in mapping_data or 'parameters' not in mapping_data['estimator']:
-            logger.warning("No parameters are defined on the mapping file for " + str(
-                ctx.__class__) + ". Logging estimator without parameters.")
-
-        if 'estimator' not in mapping_data or 'name' not in mapping_data['estimator']:
-            logger.warning("No name given for " + str(
-                ctx.__class__) + ". Extracting name from class.")
-
-        if 'estimator' not in mapping_data or 'description' not in mapping_data['estimator']:
-            logger.warning("No description given for " + str(
-                ctx.__class__) + ". Saving without name.")
+        estimator_data = data_str(mapping_data, "estimator", "@schema", default={})
 
         # Create repository object
-        estimator_data = mapping_data['estimator'] if 'estimator' in mapping_data else {}
-        ero = EstimatorRepositoryObject(name=estimator_data[
-            'name'] if 'name' in estimator_data else ctx.__class__.__name__,
-                                        description=estimator_data[
-                                            'description'] if 'description' in estimator_data else
-                                        "Some unknown estimator.",
-                                        documentation=ctx.__class__.__doc__,
-                                        parameter_schema=estimator_data[
-                                            'parameters'] if 'parameters' in estimator_data else "unknown",
-                                        location=_logger_call.original_call.call_id.context.reference)
+        ero = EstimatorRepositoryObject(
+            name=data_str(estimator_data, "rdfs:label", default=ctx.__class__.__name__,
+                          warning=f"No name given for {ctx.__class__}. "
+                                  f"Extracting name from class."),
+            description=data_str(estimator_data, "rdfs:description",
+                                 default="Some unknown estimator."),
+            documentation=data_str(estimator_data, "padre:documentation",
+                                   default=ctx.__class__.__doc__,
+                                   warning=f"No documentation defined on the mapping file for {ctx.__class__}. "
+                                           f"Taking code documentation instead."),
+            parameter_schema=data_path(estimator_data, "padre:parameters", default="unkown",
+                                       warning=f"No parameters are defined on the mapping file for {ctx.__class__}. "
+                                               f"Logging estimator without parameters."),
+            location=_logger_call.original_call.call_id.context.reference,
+            additional_data=estimator_data)
 
         # Compile identifying hash
         hash_id = persistent_hash(ero.json())
