@@ -24,6 +24,8 @@ class DatasetRepositoryObject(BaseRepositoryObjectModel):
     multiple runs.
     """
     name: str = ...  # Name of the dataset
+    category: str = "DatasetRepository"
+    description: str = ...
     documentation: str = ...
     binary_reference: str = ...  # Reference to the dataset binary
     location: str = ...  # Place where it is defined
@@ -174,10 +176,11 @@ class DatasetILF(InjectionLogger):
             repo_obj = pads.dataset_repository.get_object(uid=data_hash)
             binary_ref = repo_obj.log_mem_artifact(dto.name, dataset_object, write_format=_pypads_write_format,
                                                    description="Dataset binary",
-                                                   additional_data=metadata)
+                                                   additional_data=metadata, holder=dto)
             logger.info("Entry added in the dataset repository.")
             # create repository object
             dro = DatasetRepositoryObject(name=self.name,
+                                          description="Some unkonwn Dataset",
                                           documentation=ctx.__doc__ if ctx else _logger_call.original_call.call_id.wrappee.__doc__,
                                           binary_reference=binary_ref,
                                           location=_logger_call.original_call.call_id.context.reference)
