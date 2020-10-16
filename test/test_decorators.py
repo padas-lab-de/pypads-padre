@@ -182,6 +182,4 @@ class PyPadsDecoratorsTest(BaseTest):
             roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
             return roc_auc
 
-
-        # --------------------------- asserts ---------------------------
         # !-------------------------- asserts ---------------------------

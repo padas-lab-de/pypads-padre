@@ -14,9 +14,13 @@ class ParameterSearchTO(TrackedObject):
     """
     Tracking object for grid search and results
     """
-    name = "GridSearchResults"
     class ParamSearchModel(TrackedObjectModel):
+        """
+        Model defining values of the parameter search entries.
+        """
         catergory: str = "ParameterSearch"
+        name = "GridSearchResults"
+        description = "Tracked object holding the results of Sklearn CrossValidation Grid Search."
 
         class SearchModel(BaseModel):
             index: int = ...
@@ -36,8 +40,8 @@ class ParameterSearchTO(TrackedObject):
     def get_model_cls(cls) -> Type[BaseModel]:
         return cls.ParamSearchModel
 
-    def __init__(self, *args, part_of: LoggerOutput, **kwargs):
-        super().__init__(*args, part_of=part_of, **kwargs)
+    def __init__(self, *args, parent: LoggerOutput, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
         self.results = []
 
     def add_results(self, cv_results: dict):
@@ -58,8 +62,8 @@ class ParameterSearchILF(InjectionLogger):
     """
     Function logging the cv results of a parameter search
     """
-    name = "ParameterSearchILF"
-    category = f"ParameterSearchLogger"
+    name = "Parameter Search Logger"
+    category = "ParameterSearchLogger"
 
     supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
 
@@ -89,7 +93,7 @@ class ParameterSearchILF(InjectionLogger):
         pads.cache.run_pop("parameter_search")
         from sklearn.model_selection._search import BaseSearchCV
         if isinstance(ctx, BaseSearchCV):
-            gridsearch = ParameterSearchTO(part_of=_logger_output)
+            gridsearch = ParameterSearchTO(parent=_logger_output)
             gridsearch.number_of_splits = ctx.n_splits_
 
             # Track individual decisions for all splits
@@ -97,7 +101,7 @@ class ParameterSearchILF(InjectionLogger):
 
             gridsearch.best_candidate = ctx.best_index_
             gridsearch.add_results(ctx.cv_results_)
-            gridsearch.store(_logger_output, "gridsearch_cv")
+            _logger_output.gridsearch_cv = gridsearch.store()
 
 
 class ParameterSearchExecutor(InjectionLogger):

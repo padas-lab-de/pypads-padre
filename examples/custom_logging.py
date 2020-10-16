@@ -1,6 +1,6 @@
 from pypads.app.base import PyPads
 
-tracker = PyPads(uri="http://localhost:5000",autostart=True)
+tracker = PyPads(uri="http://mlflow.padre-lab.eu",autostart=True)
 # just changing stuff
 from sklearn import datasets
 from sklearn.metrics.classification import f1_score
@@ -11,7 +11,7 @@ from sklearn.model_selection import KFold
 dataset = datasets.load_iris()
 
 # Splitting the data
-splitter = KFold(n_splits=3)
+splitter = KFold(n_splits=3, shuffle=True)
 
 # fit a model to the data
 i = 0
@@ -24,8 +24,9 @@ for train_idx, test_idx in splitter.split(dataset.data, y=dataset.target):
     expected = dataset.target[test_idx]
     predicted = model.predict(dataset.data[test_idx])
     # summarize the fit of the model
-    print("Score: " + str(f1_score(expected, predicted, average="macro")))
-    scores.append(f1_score(expected, predicted, average="macro"))
+    f1score = f1_score(expected, predicted, average="macro")
+    print("Score: " + str(f1score))
+    scores.append(f1score)
     i += 1
 
 print("Average score over {} splits : {}".format(i + 1, sum(scores) / len(scores)))

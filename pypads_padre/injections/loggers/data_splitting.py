@@ -8,6 +8,7 @@ from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import OriginalExecutor, MultiInjectionLogger
 from pypads.importext.mappings import LibSelector
+from pypads.importext.versioning import all_libs
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 
 from pypads_padre.concepts.util import _tolist
@@ -47,7 +48,9 @@ class SplitTO(TrackedObject):
     name = "Splits"
 
     class SplitModel(TrackedObjectModel):
-        category: str = "Split"
+        """
+        Model defining the values of a split for the tracked object.
+        """
 
         class Split(BaseModel):
             train_set: List = []
@@ -59,14 +62,18 @@ class SplitTO(TrackedObject):
                 arbitrary_types_allowed = True
 
         # splits: List[Split] = []
+        category: str = "Split"
+        name: str = "Tracked Splits"
+        description = "This object holds the tracked splits in your workflow as " \
+                      "a dict of 'split_id': {'train_set': [...], 'test_set': [...], 'validation_set': [...]}"
         splits: Dict[(str, Split)] = {}
 
     @classmethod
     def get_model_cls(cls) -> Type[BaseModel]:
         return cls.SplitModel
 
-    def __init__(self, *args, part_of, **kwargs):
-        super().__init__(*args, part_of=part_of, **kwargs)
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
 
     def add_split(self, split_id=uuid.uuid4(), train_set=None, test_set=None, val_set=None):
         if val_set is None:
@@ -80,34 +87,35 @@ class SplitTO(TrackedObject):
         self.splits.update({str(split_id): split})
 
 
+class SplitsOutput(OutputModel):
+    """
+    Output of the Split Logger.
+    """
+    splits: str = None  # reference to the splits TO
+
+
 class SplitILF(MultiInjectionLogger):
     """
     Function logging the dataset splits
+
+        Hook:
+            Hook this logger to the splitting functionality in your code (function, ...).
     """
 
-    name = "SplitLogger"
+    name = "Split Logger"
     category = "SplitLogger"
 
-    class SplitsILFOutput(OutputModel):
-        category: str = "SplitILF-Output"
-        splits: str = None
-
-        class Config:
-            orm_mode = True
+    supported_libraries = {all_libs}
 
     @classmethod
     def output_schema_class(cls) -> Type[OutputModel]:
-        return cls.SplitsILFOutput
+        return SplitsOutput
 
     @staticmethod
-    def finalize_output(pads, *args, **kwargs):
-        split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
-        call = split_tracker.get("call")
-        output = split_tracker.get("output")
-        to = split_tracker.get("TO")
-        to.store(output, "splits")
-        call.output = output.store()
-        call.store()
+    def finalize_output(pads, logger_call, output, *args, **kwargs):
+        to = output.splits
+        output.splits = to.store()
+        logger_call.output = output.store()
 
     def __call_wrapped__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call, _logger_output, _args,
                          _kwargs):
@@ -129,41 +137,35 @@ class SplitILF(MultiInjectionLogger):
             items = list(_return)
 
             def generator():
-                split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
-                call = split_tracker.get("call")
-                output = split_tracker.get("output")
-                pads.cache.add("tracking_mode","single")
+                pads.cache.add("tracking_mode", "multiple")
                 logger.info("Detected splitting, Tracking splits started...")
-                if output.splits is None:
-                    splits = SplitTO(part_of=output)
+                if _logger_output.splits is None:
+                    splits = SplitTO(parent=_logger_output)
                 else:
-                    splits = output.splits
+                    splits = _logger_output.splits
                 for r in items:
                     split_id = uuid.uuid4()
                     pads.cache.run_add("current_split", split_id)
                     train, test, val, num = splitter_output(r, fn=_pypads_env.callback)
                     splits.add_split(split_id, train, test, val)
-                    # splits.store(output, "splits")
-                    pads.cache.run_add(pads.cache.run_get("split_tracker"),
-                                       {'call': call, 'output': output, 'TO': splits})
+                    _logger_output.splits = splits
+                    # # splits.store(output, "splits")
+                    # pads.cache.run_add(pads.cache.run_get("split_tracker"),
+                    #                    {'call': call, 'output': output, 'TO': splits})
                     yield r
         else:
             def generator():
                 logger.info("Detected splitting, Tracking splits started...")
-                split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
-                call = split_tracker.get("call")
-                output = split_tracker.get("output")
                 pads.cache.add("tracking_mode", "single")
-                if output.splits is None:
-                    splits = SplitTO(part_of=output)
+                if _logger_output.splits is None:
+                    splits = SplitTO(parent=_logger_output)
                 else:
-                    splits = output.splits
+                    splits = _logger_output.splits
                 train, test, val, num = splitter_output(_return, fn=_pypads_env.callback)
                 split_id = uuid.uuid4()
                 pads.cache.run_add("current_split", split_id)
                 splits.add_split(split_id, train, test, val)
-                # splits.store(output, "splits")
-                pads.cache.run_add(pads.cache.run_get("split_tracker"), {'call': call, 'output': output, 'TO': splits})
+                _logger_output.splits = splits
                 return _return
 
         return generator(), time
@@ -172,14 +174,17 @@ class SplitILF(MultiInjectionLogger):
 class SplitILFTorch(MultiInjectionLogger):
     """
     Function logging splits used by torch DataLoader
+
+        Hook:
+            Hook this logger to the splitting functionality of pytorch dataloader (e.g: DataLoader._next_index)
     """
-    name = "SplitTorchLogger"
-    category = "Splitogger"
+    name = "SplitTorch Logger"
+    category = "SplitLogger"
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 
     def get_model_cls(cls) -> Type[BaseModel]:
-        return SplitILF.SplitsILFOutput
+        return SplitsOutput
 
     def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):
         if isinstance(error, StopIteration):
@@ -190,14 +195,10 @@ class SplitILFTorch(MultiInjectionLogger):
             super()._handle_error(*args, ctx, _pypads_env, error, **kwargs)
 
     @staticmethod
-    def finalize_output(pads, *args, **kwargs):
-        split_tracker = pads.cache.run_get(pads.cache.run_get("split_tracker"))
-        call = split_tracker.get("call")
-        output = split_tracker.get("output")
-        to = split_tracker.get("TO")
-        to.store(output, "splits")
-        call.output = output.store(split_tracker.get("base_path"))
-        call.store()
+    def finalize_output(pads, logger_call, output, *args, **kwargs):
+        to = output.splits
+        output.splits = to.store()
+        logger_call.output = output.store()
 
     def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
                  **kwargs):
@@ -205,7 +206,7 @@ class SplitILFTorch(MultiInjectionLogger):
         pads = get_current_pads()
         pads.cache.run_add("split_tracker", id(self))
         if _logger_output.splits is None:
-            splits = SplitTO(part_of=_logger_output)
+            splits = SplitTO(parent=_logger_output)
         else:
             splits = _logger_output.splits
         logger.info("Detected splitting, Tracking splits started...")
@@ -214,5 +215,4 @@ class SplitILFTorch(MultiInjectionLogger):
         pads.cache.run_add("current_split", split_id)
         splits.add_split(split_id, train, test, val)
         # splits.store(_logger_output, "splits")
-        pads.cache.run_add(pads.cache.run_get("split_tracker"),
-                           {'call': _logger_call, 'output': _logger_output, 'TO': splits})
+        _logger_output.splits = splits

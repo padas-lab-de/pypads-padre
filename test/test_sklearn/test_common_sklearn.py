@@ -1,9 +1,6 @@
 import os
 
-from pypads.injections.analysis.strace import STrace
-from pypads.injections.setup.git import IGit
-from pypads.injections.setup.hardware import ISystem, IRam, ICpu, IDisk, IPid, ISocketInfo, IMacAddress
-from pypads.injections.setup.misc_setup import RunInfo, RunLogger
+from pypads.injections.setup.misc_setup import DependencyRSF, LoguruRSF
 
 from test.base_test import _get_mapping, TEST_FOLDER
 from test.test_sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
@@ -75,7 +72,7 @@ def cross_validation_on_diabetes():
               format(k, lasso_cv.alpha_, lasso_cv.score(X[test], y[test])))
     print()
     print("Answer: Not very much since we obtained different alphas for different")
-    print("subsets of the data and moreover, the scores for these alphas differ")
+    print("subsets of the doata and moreover, the scores for these alphas differ")
     print("quite substantially.")
 
     # plt.show()
@@ -130,6 +127,10 @@ class PyPadsTest(BaseSklearnTest):
         # !-------------------------- asserts ---------------------------
 
     def test_decision_tree(self):
+        from pypads.injections.setup.git import IGitRSF
+        from pypads.injections.setup.hardware import ISystemRSF, IRamRSF, ICpuRSF, IDiskRSF, IPidRSF, ISocketInfoRSF, \
+            IMacAddressRSF
+
         """
         This example will track the experiment exection with the default configuration.
         :return:
@@ -138,10 +139,10 @@ class PyPadsTest(BaseSklearnTest):
         # Activate tracking of pypads
         from pypads.app.base import PyPads
         tracker = PyPads(uri=TEST_FOLDER,
-                         setup_fns=[RunInfo(), RunLogger(), IGit(_pypads_timeout=3), ISystem(), IRam(), ICpu(),
-                                    IDisk(), IPid(),
-                                    ISocketInfo(),
-                                    IMacAddress()], mappings=sklearn_padre, autostart=True)
+                         setup_fns=[DependencyRSF(), LoguruRSF(), IGitRSF(_pypads_timeout=3), ISystemRSF(), IRamRSF(), ICpuRSF(),
+                                    IDiskRSF(), IPidRSF(),
+                                    ISocketInfoRSF(),
+                                    IMacAddressRSF()], mappings=sklearn_padre, autostart=True)
 
         import timeit
         t = timeit.Timer(sklearn_simple_decision_tree_experiment)
