@@ -145,7 +145,7 @@ class EstimatorILF(InjectionLogger):
 
         # Create referencing object
         eto = EstimatorTO(repository_reference=hash_id, repository_type=_pypads_env.pypads.estimator_repository.name,
-                          parent=_logger_output)
+                          parent=_logger_output, additional_data=mapping_data)
 
         # Store object
         _logger_output.estimator = eto.store()
