@@ -7,6 +7,7 @@ from pypads.app.base import tracking_active
 from pypads.utils.util import is_package_available
 from pypads import logger
 
+
 class Types(Enum):
     if is_package_available('sklearn') and tracking_active:
         from sklearn.utils import Bunch
@@ -146,7 +147,9 @@ class Crawler:
 # --- Numpy array object ---
 def numpy_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a dataset object of type 'numpy.ndarray'. Crawling any available metadata...")
-    metadata = {"type": str(obj.format), "shape": obj.data.shape}
+    features = [(str(i), str(obj.data[:, i].dtype), False, (obj.data[:, i].min(), obj.data[:, i].max())) for i in
+                range(obj.data.shape[1])]
+    metadata = {"type": str(obj.format), "shape": obj.data.shape, "features": features}
     metadata = {**metadata, **kwargs}
     targets = None
     try:
@@ -158,6 +161,7 @@ def numpy_crawler(obj: Crawler, **kwargs):
                     break
         if targets_col:
             targets = obj.data[:, targets_col]
+            metadata["features"][targets_col][2] = True
     except Exception as e:
         print(str(e))
     return obj.data, metadata, targets
@@ -170,7 +174,10 @@ Crawler.register_fn(Types.ndarray.value, numpy_crawler)
 def dataframe_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a dataset object of type 'pandas.DataFrame'. Crawling any available metadata...")
     data = obj.data
-    metadata = {"type": obj.format, "shape": data.shape, "features": data.columns}
+    features = []
+    for i, col in enumerate(data.columns):
+        features.append((col, str(data[col].dtype), False, (data[col].min(), data[col].max())))
+    metadata = {"type": obj.format, "shape": data.shape, "features": features}
     metadata = {**metadata, **kwargs}
     if "target" in data.columns:
         targets = data[[col for col in data.columns if "target" in col]].values
@@ -199,8 +206,8 @@ def bunch_crawler(obj: Crawler, **kwargs):
     data = np.concatenate([bunch.get('data'), bunch.get("target").reshape(len(bunch.get("target")), 1)], axis=1)
     features = []
     for i, name in enumerate(bunch.get("feature_names")):
-        features.append((name, str(data[:,i].dtype), False, (data[:,i].min(), data[:,i].max())))
-    features.append(("class", str(data[:,-1].dtype), True, tuple(bunch.get("target_names"))))
+        features.append((name, str(data[:, i].dtype), False, (data[:, i].min(), data[:, i].max())))
+    features.append(("class", str(data[:, -1].dtype), True, tuple(bunch.get("target_names"))))
     metadata = {"type": str(obj.format), "features": features, "description": bunch.get("DESCR"), "shape": data.shape}
     metadata = {**metadata, **kwargs}
     return data, metadata, bunch.get("target")
@@ -212,8 +219,9 @@ def sklearn_crawler(obj: Crawler, **kwargs):
     if "return_X_y" in kwargs and kwargs.get("return_X_y"):
         X, y = obj.data
         data = np.concatenate([X, y.reshape(len(y), 1)], axis=1)
-        features = [(str(i), str(X[:,i].dtype), False, (data[:,i].min(), data[:,i].max())) for i in range(X.shape[1])]
-        features.append(("class", str(y.dtype), True, (y.min(),y.max())))
+        features = [(str(i), str(X[:, i].dtype), False, (data[:, i].min(), data[:, i].max())) for i in
+                    range(X.shape[1])]
+        features.append(("class", str(y.dtype), True, (y.min(), y.max())))
         metadata = {"type": str(obj.format), "features": features, "shape": (X.shape[0], X.shape[1] + 1)}
         metadata = {**metadata, **kwargs}
         return data, metadata, y

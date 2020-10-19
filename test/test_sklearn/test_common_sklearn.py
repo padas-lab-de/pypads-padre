@@ -137,12 +137,10 @@ class PyPadsTest(BaseSklearnTest):
         """
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
+        config = {"mongo_db":False}
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER,
-                         setup_fns=[DependencyRSF(), LoguruRSF(), IGitRSF(_pypads_timeout=3), ISystemRSF(), IRamRSF(), ICpuRSF(),
-                                    IDiskRSF(), IPidRSF(),
-                                    ISocketInfoRSF(),
-                                    IMacAddressRSF()], mappings=sklearn_padre, autostart=True)
+        tracker = PyPads(uri=TEST_FOLDER, config=config,
+                         setup_fns=[], mappings=sklearn_padre, autostart=True)
 
         import timeit
         t = timeit.Timer(sklearn_simple_decision_tree_experiment)
