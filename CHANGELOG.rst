@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+0.3.0 (2020-10-20)
+------------------
+
+New
+~~~
+- Added estimator extraction. [Thomas Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.2.7 → 0.3.0. [Thomas Weißgerber]
+
+
 0.2.7 (2020-06-23)
 ------------------
 - Bump version: 0.2.6 → 0.2.7. [Thomas Weißgerber]
