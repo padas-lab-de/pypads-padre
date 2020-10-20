@@ -1,5 +1,3 @@
-import mlflow
-from mlflow.utils.autologging_utils import try_mlflow_log
 from pypads.importext.versioning import LibSelector
 from pypads.injections.loggers.metric import MetricILF, MetricTO
 
@@ -16,7 +14,6 @@ class MetricTorch(MetricILF):
     def __post__(self, ctx, *args, _pypads_artifact_fallback=False, _logger_call, _logger_output, _pypads_result,
                  **kwargs):
         """
-
         :param ctx:
         :param args:
         :param _pypads_artifact_fallback: Write to artifact if metric can not be logged as an double value into mlflow

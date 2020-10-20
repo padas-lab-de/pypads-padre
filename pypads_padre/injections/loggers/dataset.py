@@ -10,9 +10,9 @@ from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_call import InjectionLoggerCallModel
 
-from pypads_padre.arguments import ontology_uri
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.utils.logging_util import FileFormats
+from pypads_onto.arguments import ontology_uri
 
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, validate_type

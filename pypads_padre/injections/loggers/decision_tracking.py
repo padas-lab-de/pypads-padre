@@ -1,11 +1,10 @@
 import uuid
-from typing import Type, Any, List, Union
+from typing import Type, List, Union
 
-from pydantic import HttpUrl, BaseModel
+from pydantic import BaseModel
 from pypads import logger
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
-from pypads_padre.arguments import ontology_uri
 from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 

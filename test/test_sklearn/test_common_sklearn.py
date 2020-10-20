@@ -137,7 +137,7 @@ class PyPadsTest(BaseSklearnTest):
         """
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        config = {"mongo_db":False}
+        config = {"mongo_db": False}
         from pypads.app.base import PyPads
         tracker = PyPads(uri=TEST_FOLDER, config=config,
                          setup_fns=[], mappings=sklearn_padre, autostart=True)

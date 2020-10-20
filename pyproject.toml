@@ -13,7 +13,8 @@ classifiers = ["Development Status :: 3 - Alpha", "Intended Audience :: Develope
 
 [tool.poetry.dependencies]
 python = "^3.7.0"
-pypads = "^0.3.2"
+pypads = "^0.4.0"
+pypads-onto = "^0.2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2.5"
@@ -29,7 +30,7 @@ sphinx = "^2.0.1"
 sphinx_rtd_theme = "^0.4.3"
 taskipy = "^1.1.2"
 bump2version = "^1.0.0"
-coverage = {version = "^5.0", extras = ["toml"]}
+coverage = { version = "^5.0", extras = ["toml"] }
 gitchangelog = "^3.0.4"
 
 [tool.poetry.extras]

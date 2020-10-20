@@ -13,6 +13,9 @@ class PadrePadsApi(IApi):
 
     @cmd
     def track_dataset(self, fn, ctx=None, name=None, metadata=None, mapping: Mapping = None, **kwargs):
+        """
+        Manually wrap a function to track as dataset
+        """
         if metadata is None:
             metadata = {}
         self.pypads.cache.run_add('dataset_name', name)
@@ -22,12 +25,21 @@ class PadrePadsApi(IApi):
 
     @cmd
     def track_splits(self, fn, ctx=None, mapping: Mapping = None):
+        """
+        Manually wrap a function to track as split
+        """
         return self.pypads.api.track(fn, ctx, ["pypads_split"], mapping=mapping)
 
     @cmd
     def track_parameters(self, fn, ctx=None, mapping: Mapping = None):
+        """
+        Manually wrap a function to track as parameter provider
+        """
         return self.pypads.api.track(fn, ctx, ["pypads_params"], mapping=mapping)
 
     @cmd
     def track_parameter_search(self, fn, ctx=None, mapping: Mapping = None):
+        """
+        Manually wrap a function to track as parameter search
+        """
         return self.pypads.api.track(fn, ctx, ["pypads_param_search"], mapping=mapping)

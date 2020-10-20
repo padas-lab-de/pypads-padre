@@ -12,6 +12,7 @@ from pypads_padre.app.actuators import PadrePadsActuators
 from pypads_padre.app.api import PadrePadsApi
 from pypads_padre.app.backends.repository import DatasetRepository, EstimatorRepository
 from pypads_padre.app.decorators import PadrePadsDecorators
+from pypads_padre.app.results import PadrePadsResults
 from pypads_padre.app.validators import PadrePadsValidators
 from pypads_padre.bindings.anchors import init_anchors
 from pypads_padre.bindings.event_types import init_event_types
@@ -40,6 +41,7 @@ def configure_plugin(pypads):
     validators = PadrePadsValidators()
     decorators = PadrePadsDecorators()
     api = PadrePadsApi()
+    results = PadrePadsResults()
 
     mappings.default_mapping_file_paths.extend(
         glob.glob(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
@@ -61,4 +63,4 @@ def configure_plugin(pypads):
     pypads.add_instance_modifier(add_repositories)
 
     print("Trying to configure padre plugin for pypads...")
-    return actuators, validators, decorators, api
+    return actuators, validators, decorators, api, results
