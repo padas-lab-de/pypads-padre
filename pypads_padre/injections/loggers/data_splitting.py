@@ -1,8 +1,8 @@
 import uuid
 from types import GeneratorType
-from typing import Tuple, List, Type, Dict
+from typing import Tuple, List, Type, Dict, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pypads import logger
 from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.base_logger import TrackedObject
@@ -10,6 +10,8 @@ from pypads.app.injections.injection import OriginalExecutor, MultiInjectionLogg
 from pypads.importext.mappings import LibSelector
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads_onto.arguments import ontology_uri
+from pypads_onto.model.ontology import EmbeddedOntologyEntry
 
 from pypads_padre.concepts.util import _tolist
 
@@ -45,14 +47,26 @@ class SplitTO(TrackedObject):
     Tracking Object class for splits of your tracked dataset. Splits are defined
     """
 
-    name = "Splits"
-
     class SplitModel(TrackedObjectModel):
         """
         Model defining the values of a split for the tracked object.
         """
-
-        class Split(BaseModel):
+        class Split(EmbeddedOntologyEntry):
+            context: Union[List[str], str, dict] = Field(alias="@context", default={
+                "train_set": {
+                    "@id": f"{ontology_uri}has_trainSet",
+                    "@type": "rdf:XMLLiteral"
+                },
+                "test_set": {
+                    "@id": f"{ontology_uri}has_testSet",
+                    "@type": "rdf:xsd:list"
+                },
+                "validation_set": {
+                    "@id": f"{ontology_uri}has_valSet",
+                    "@type": "rdf:xsd:list"
+                }
+            })
+            category = "Split"
             train_set: List = []
             test_set: List = []
             validation_set: List = []
@@ -61,8 +75,7 @@ class SplitTO(TrackedObject):
                 orm_mode = True
                 arbitrary_types_allowed = True
 
-        # splits: List[Split] = []
-        category: str = "Split"
+        category: str = "Splits"
         name: str = "Tracked Splits"
         description = "This object holds the tracked splits in your workflow as " \
                       "a dict of 'split_id': {'train_set': [...], 'test_set': [...], 'validation_set': [...]}"
@@ -179,11 +192,12 @@ class SplitILFTorch(MultiInjectionLogger):
             Hook this logger to the splitting functionality of pytorch dataloader (e.g: DataLoader._next_index)
     """
     name = "SplitTorch Logger"
-    category = "SplitLogger"
+    category = "TorchSplitLogger"
 
     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
 
-    def get_model_cls(cls) -> Type[BaseModel]:
+    @classmethod
+    def output_schema_class(cls) -> Type[BaseModel]:
         return SplitsOutput
 
     def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):

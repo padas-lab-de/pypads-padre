@@ -1,6 +1,7 @@
 from pypads.app.base import PyPads
+from pypads.injections.setup.git import IGitRSF
 
-tracker = PyPads(uri="http://mlflow.padre-lab.eu",autostart=True)
+tracker = PyPads(uri="http://mlflow.padre-lab.eu",autostart=True, setup_fns={IGitRSF()})
 # just changing stuff
 from sklearn import datasets
 from sklearn.metrics.classification import f1_score
