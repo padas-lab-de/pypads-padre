@@ -171,7 +171,7 @@ class DecisionsSklearnILF(SingleInstanceILF):
             Hook this logger to the inference function of your model, i.e. sklearn.BaseEstimator.predict.
     """
     name = "Sklearn Decisions Logger"
-    category = "SklearnDecisionsLogger"
+    type = "SklearnDecisionsLogger"
 
     supported_libraries = {LibSelector(name="sklearn", constraint="*", specificity=1)}
 

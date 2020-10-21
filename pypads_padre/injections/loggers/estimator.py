@@ -23,7 +23,7 @@ class EstimatorRepositoryObject(BaseRepositoryObjectModel):
     documentation: str = ...  # Extracted documentation
     parameter_schema: Union[str, dict] = ...  # Schema for parameters
     location: str = ...  # Place where it is defined
-    category: str = "Estimator"
+    category: str = "EstimatorRepositoryEntry"
 
 
 class EstimatorILFOutput(OutputModel):

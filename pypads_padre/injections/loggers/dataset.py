@@ -1,7 +1,6 @@
-import os
 from typing import List, Any, Type, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pypads import logger
 from pypads.app.backends.repository import BaseRepositoryObjectModel
 from pypads.app.env import InjectionLoggerEnv
@@ -9,10 +8,11 @@ from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_call import InjectionLoggerCallModel
-
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads.model.models import ResultType
 from pypads.utils.logging_util import FileFormats
 from pypads_onto.arguments import ontology_uri
+from pypads_onto.model.ontology import IdBasedOntologyEntry, EmbeddedOntologyEntry
 
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, validate_type
@@ -24,7 +24,7 @@ class DatasetRepositoryObject(BaseRepositoryObjectModel):
     multiple runs.
     """
     name: str = ...  # Name of the dataset
-    category: str = "DatasetRepository"
+    category: str = "DatasetRepositoryEntry"
     description: str = ...
     documentation: str = ...
     binary_reference: str = ...  # Reference to the dataset binary
@@ -38,17 +38,32 @@ class DatasetOutput(OutputModel):
     dataset: str = ...  # Reference to dataset TO
 
 
+class DatasetPropertyValue(EmbeddedOntologyEntry):
+    """
+    Represents the property value. This can be any dataset property which can be saved as a simple value.
+    This subclass allows for valid json-ld representation with nested resources.
+    """
+    context: Union[List[Union[str, dict]], str, dict] = Field(alias="@context", default={
+        "has_value": {
+            "@id": f"{ontology_uri}has_value",
+            "@type": "rdf:XMLLiteral"
+        }
+    })
+    has_value: str = ...
+    category: str = "DatasetPropertyValue"
+
+
 class DatasetTO(TrackedObject):
     """
     Tracking Object logging the used dataset in your run.
     """
 
     class DatasetModel(TrackedObjectModel):
-        """
+        """ƒ
         Model defining the values for the tracked object.
         """
 
-        context: Union[List[str], str] = str({
+        context: Union[List[str], str, dict] = {
             "number_of_instances": {
                 "@id": f"{ontology_uri}has_instances",
                 "@type": f"{ontology_uri}DatasetProperty"
@@ -57,23 +72,38 @@ class DatasetTO(TrackedObject):
                 "@id": f"{ontology_uri}has_features",
                 "@type": f"{ontology_uri}DatasetProperty"
             },
-            "features": {
-                "type": {
-                    "@id": f"{ontology_uri}has_type",
-                    "@type": f"{ontology_uri}FeatureProperty"
-                },
-                "default_target": {
-                    "@id": f"{ontology_uri}is_target",
-                    "@type": f"{ontology_uri}FeatureProperty"
-                }
-            },
+            # "features": {
+            #     "type": {
+            #         "@id": f"{ontology_uri}has_type",
+            #         "@type": f"{ontology_uri}FeatureProperty"
+            #     },
+            #     "default_target": {
+            #         "@id": f"{ontology_uri}is_target",
+            #         "@type": f"{ontology_uri}FeatureProperty"
+            #     }
+            # },
             "data": {
                 "@id": f"{ontology_uri}stored_at",
                 "@type": f"{ontology_uri}Data"
             }
-        })
+        }
 
-        class Feature(BaseModel):
+        class Feature(EmbeddedOntologyEntry):
+            context: Union[List[Union[str, dict]], str, dict] = Field(alias="@context", default={
+                "type": {
+                    "@id": f"{ontology_uri}has_type",
+                    "@type": "rdf:XMLLiteral"  # TODO which type?
+                },
+                "default_target": {
+                    "@id": f"{ontology_uri}is_default_target",
+                    "@type": "rdf:XMLLiteral"  # TODO which type?
+                },
+                "range": {
+                    "@id": f"{ontology_uri}has_range",  # TODO maybe add owl rules?
+                    "@type": "rdf:XMLLiteral"  # TODO which type?
+                }
+            })
+            category: str = "Feature"
             name: str = ...
             type: str = ...
             default_target: bool = False
@@ -85,8 +115,8 @@ class DatasetTO(TrackedObject):
         category: str = "Dataset"
         name: str = ...
         description = "This tracked object references a dataset used in the experiment. "
-        number_of_instances: int = ...
-        number_of_features: int = ...
+        number_of_instances: DatasetPropertyValue = ...
+        number_of_features: DatasetPropertyValue = ...
         features: List[Feature] = []
         repository_reference: str = ...  # reference to the dataset in the repository
         repository_type: str = ...  # type of the repository. Will always be extracted from the repository aka
@@ -97,8 +127,9 @@ class DatasetTO(TrackedObject):
         return cls.DatasetModel
 
     def __init__(self, *args, parent, name, shape, metadata, **kwargs):
-        super().__init__(*args, parent=parent, name=name, number_of_instances=shape[0],
-                         number_of_features=shape[1], **kwargs)
+        super().__init__(*args, parent=parent, name=name,
+                         number_of_instances=DatasetPropertyValue(has_value=str(shape[0])),
+                         number_of_features=DatasetPropertyValue(has_value=shape[1]), **kwargs)
         features = metadata.get("features", None)
         if features is not None:
             for name, type, default_target, range in features:
@@ -121,7 +152,7 @@ class DatasetILF(InjectionLogger):
         Hook this logger to the loader of a dataset (it can be a function, or class)
     """
     name = "Dataset Logger"
-    category: str = "DatasetLogger"
+    type: str = "DatasetLogger"
     supported_libraries = {all_libs}
 
     @classmethod
