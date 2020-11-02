@@ -3,12 +3,13 @@ from typing import Type, List, Union
 
 from pydantic import BaseModel, Field
 from pypads import logger
+from pypads.app.backends.repository import RepositoryEntryModel
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads.model.models import BaseStorageModel, ResultType
 from pypads_onto.arguments import ontology_uri
-from pypads_onto.model.ontology import EmbeddedOntologyEntry
 
 from pypads_padre.concepts.util import _tolist, validate_type, _len
 
@@ -28,7 +29,8 @@ class SingleInstanceTO(TrackedObject):
                 "@type": "rdf:xsd:string"
             }
         }
-        class DecisionModel(EmbeddedOntologyEntry):
+
+        class DecisionModel(BaseStorageModel):
             """
             Model defining the values for a individual model decision.
             """
@@ -52,6 +54,7 @@ class SingleInstanceTO(TrackedObject):
             truth: Union[str, int] = None
             prediction: Union[str, int] = ...
             probabilities: List[float] = []
+            storage_type: Union[str, ResultType] = "decisions"
 
             class Config:
                 orm_mode = True

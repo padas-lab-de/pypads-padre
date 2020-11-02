@@ -60,6 +60,10 @@ def mac_os_disabled(f):
 class BaseTest(unittest.TestCase):
 
     def setUp(self) -> None:
+        # TODO boto3 throws false positive warnings fix in the future https://github.com/boto/boto3/issues/454
+        import warnings
+        warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed <socket.*")
+
         if not os.path.isdir(TEST_FOLDER):
             os.mkdir(TEST_FOLDER)
 

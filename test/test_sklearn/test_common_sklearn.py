@@ -1,7 +1,5 @@
 import os
 
-from pypads.injections.setup.misc_setup import DependencyRSF, LoguruRSF
-
 from test.base_test import _get_mapping, TEST_FOLDER
 from test.test_sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
     sklearn_simple_decision_tree_experiment
@@ -127,20 +125,17 @@ class PyPadsTest(BaseSklearnTest):
         # !-------------------------- asserts ---------------------------
 
     def test_decision_tree(self):
-        from pypads.injections.setup.git import IGitRSF
-        from pypads.injections.setup.hardware import ISystemRSF, IRamRSF, ICpuRSF, IDiskRSF, IPidRSF, ISocketInfoRSF, \
-            IMacAddressRSF
-
         """
         This example will track the experiment exection with the default configuration.
         :return:
         """
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        config = {"mongo_db": False}
+        config = {"mongo_db": True}
+
         from pypads.app.base import PyPads
         tracker = PyPads(uri=TEST_FOLDER, config=config,
-                         setup_fns=[], mappings=sklearn_padre, autostart=True)
+                         setup_fns=[], mappings=sklearn_padre, autostart="27.Oct Meeting")
 
         import timeit
         t = timeit.Timer(sklearn_simple_decision_tree_experiment)

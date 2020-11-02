@@ -2,23 +2,23 @@ from typing import List, Any, Type, Union
 
 from pydantic import BaseModel, Field
 from pypads import logger
-from pypads.app.backends.repository import BaseRepositoryObjectModel
+from pypads.app.backends.repository import RepositoryEntryModel
 from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_call import InjectionLoggerCallModel
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
-from pypads.model.models import ResultType
+from pypads.model.models import BaseStorageModel, ResultType, IdReference
 from pypads.utils.logging_util import FileFormats
 from pypads_onto.arguments import ontology_uri
-from pypads_onto.model.ontology import IdBasedOntologyEntry, EmbeddedOntologyEntry
+from pypads_onto.model.ontology import EmbeddedOntologyModel
 
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, validate_type
 
 
-class DatasetRepositoryObject(BaseRepositoryObjectModel):
+class DatasetRepositoryObject(BaseStorageModel):
     """
     Class to be used in the repository holding a dataset. Repositories are supposed to store objects used over
     multiple runs.
@@ -29,16 +29,17 @@ class DatasetRepositoryObject(BaseRepositoryObjectModel):
     documentation: str = ...
     binary_reference: str = ...  # Reference to the dataset binary
     location: str = ...  # Place where it is defined
+    storage_type: Union[str, ResultType] = "dataset"
 
 
 class DatasetOutput(OutputModel):
     """
     Output of the logger
     """
-    dataset: str = ...  # Reference to dataset TO
+    dataset: IdReference = ...  # Reference to dataset TO
 
 
-class DatasetPropertyValue(EmbeddedOntologyEntry):
+class DatasetPropertyValue(EmbeddedOntologyModel):
     """
     Represents the property value. This can be any dataset property which can be saved as a simple value.
     This subclass allows for valid json-ld representation with nested resources.
@@ -88,7 +89,7 @@ class DatasetTO(TrackedObject):
             }
         }
 
-        class Feature(EmbeddedOntologyEntry):
+        class Feature(EmbeddedOntologyModel):
             context: Union[List[Union[str, dict]], str, dict] = Field(alias="@context", default={
                 "type": {
                     "@id": f"{ontology_uri}has_type",

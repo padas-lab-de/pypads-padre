@@ -1,19 +1,18 @@
 from typing import Type, Union, Optional
 
 from pydantic import BaseModel
-from pypads import logger
-from pypads.app.backends.repository import BaseRepositoryObjectModel
 from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.injection import InjectionLogger
 from pypads.app.injections.tracked_object import TrackedObject
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_call import InjectionLoggerCallModel
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads.model.models import BaseStorageModel, ResultType
 from pypads.utils.logging_util import data_str, data_path
 from pypads.utils.util import persistent_hash
 
 
-class EstimatorRepositoryObject(BaseRepositoryObjectModel):
+class EstimatorRepositoryObject(BaseStorageModel):
     """
     Class to be used in the repository holding an estimator. Repositories are supposed to store objects used over
     multiple runs.
@@ -24,6 +23,7 @@ class EstimatorRepositoryObject(BaseRepositoryObjectModel):
     parameter_schema: Union[str, dict] = ...  # Schema for parameters
     location: str = ...  # Place where it is defined
     category: str = "EstimatorRepositoryEntry"
+    storage_type: Union[str, ResultType] = "estimator"
 
 
 class EstimatorILFOutput(OutputModel):
