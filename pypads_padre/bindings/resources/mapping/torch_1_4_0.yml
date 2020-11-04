@@ -1,0 +1,26 @@
+metadata:
+  author: "Mehdi Ben Amor"
+  version: "0.1.0"
+  library:
+    name: "torch"
+    version: "1.4.0+cpu"
+
+mappings:
+  !!python/pPath torch:
+    !!python/pPath optim.optimizer.Optimizer:
+      !!python/pPath step:
+        hooks: ["pypads_grad"]
+    !!python/pPath utils.data.dataloader._BaseDataLoaderIter:
+      !!python/pPath _next_index:
+        hooks: ["pypads_split"]
+    !!python/pPath nn:
+      !!python/pPath parameter.Parameter:
+        !!python/pPath backward:
+          hooks: "pypads_grad"
+      !!python/pPath modules:
+        !!python/pPath container.Sequential:
+          !!python/pPath forward:
+            hooks: "pypads_predict"
+        !!python/pPath loss._Loss:
+          !!python/pPath forward:
+            hooks: ["pypads_metric"]

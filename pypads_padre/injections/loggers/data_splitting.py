@@ -10,6 +10,7 @@ from pypads.app.injections.injection import OriginalExecutor, MultiInjectionLogg
 from pypads.importext.mappings import LibSelector
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
+from pypads.model.models import IdReference
 from pypads_onto.arguments import ontology_uri
 from pypads_onto.model.ontology import EmbeddedOntologyModel
 
@@ -21,25 +22,28 @@ def splitter_output(result, fn):
     try:
         if isinstance(result, Tuple):
             if "sklearn" in fn.__module__:
-                return result[0].tolist(), result[1].tolist(), None, None
+                return result[0].tolist(), result[1].tolist(), None
             elif "default_splitter" in fn.__name__:
-                return result[1], result[2], result[3], result[0]
+                return result
             else:
                 if len(result) < 4:
-                    return _tolist(result[0]), _tolist(result[1]), _tolist(result[3]), None
+                    result_ = [_tolist(r) for r in result]
+                    return tuple(result_ + [None]*(3-len(result_)))
+                else:
+                    return None, None, None
         else:
             if "torch" in fn.__module__:
                 if hasattr(fn, "_dataset"):
                     if fn._dataset.train:
-                        return result.tolist(), None, None, None
+                        return result.tolist(), None, None
                     else:
-                        return None, result.tolist(), None, None
-                return result.tolist(), None, None, None
+                        return None, result.tolist(), None
+                return result.tolist(), None, None
             else:
-                return None, None, None, None
+                return None, None, None
     except Exception as e:
         logger.warning("Split tracking ommitted due to exception {}".format(str(e)))
-        return None, None, None, None
+        return None, None, None
 
 
 class SplitTO(TrackedObject):
@@ -104,7 +108,7 @@ class SplitsOutput(OutputModel):
     """
     Output of the Split Logger.
     """
-    splits: str = None  # reference to the splits TO
+    splits: IdReference = None  # reference to the splits TO
 
 
 class SplitILF(MultiInjectionLogger):
@@ -159,12 +163,9 @@ class SplitILF(MultiInjectionLogger):
                 for r in items:
                     split_id = uuid.uuid4()
                     pads.cache.run_add("current_split", split_id)
-                    train, test, val, num = splitter_output(r, fn=_pypads_env.callback)
+                    train, test, val = splitter_output(r, fn=_pypads_env.callback)
                     splits.add_split(split_id, train, test, val)
                     _logger_output.splits = splits
-                    # # splits.store(output, "splits")
-                    # pads.cache.run_add(pads.cache.run_get("split_tracker"),
-                    #                    {'call': call, 'output': output, 'TO': splits})
                     yield r
         else:
             def generator():
@@ -174,7 +175,7 @@ class SplitILF(MultiInjectionLogger):
                     splits = SplitTO(parent=_logger_output)
                 else:
                     splits = _logger_output.splits
-                train, test, val, num = splitter_output(_return, fn=_pypads_env.callback)
+                train, test, val = splitter_output(_return, fn=_pypads_env.callback)
                 split_id = uuid.uuid4()
                 pads.cache.run_add("current_split", split_id)
                 splits.add_split(split_id, train, test, val)
@@ -224,7 +225,7 @@ class SplitILFTorch(MultiInjectionLogger):
         else:
             splits = _logger_output.splits
         logger.info("Detected splitting, Tracking splits started...")
-        train, test, val, num = splitter_output(_pypads_result, fn=ctx)
+        train, test, val = splitter_output(_pypads_result, fn=ctx)
         split_id = uuid.uuid4()
         pads.cache.run_add("current_split", split_id)
         splits.add_split(split_id, train, test, val)

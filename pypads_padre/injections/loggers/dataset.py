@@ -180,8 +180,8 @@ class DatasetILF(InjectionLogger):
         pads.cache.run_add("targets", targets)
 
         # Look for metadata information given by the user when using the decorators
-        if pads.cache.run_exists("dataset_meta"):
-            metadata = {**metadata, **pads.cache.run_get("dataset_meta")}
+        if pads.cache.run_exists("dataset_metadata"):
+            metadata = {**metadata, **pads.cache.run_get("dataset_metadata")}
 
         # getting the dataset object name
         if hasattr(dataset_object, "name"):

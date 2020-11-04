@@ -153,17 +153,20 @@ def numpy_crawler(obj: Crawler, **kwargs):
     metadata = {**metadata, **kwargs}
     targets = None
     try:
-        targets_col = None
-        for k in kwargs:
-            if isinstance(kwargs.get(k), Iterable):
-                if "target" in k or "class" in k:
-                    targets_col = kwargs.get(k)
-                    break
-        if targets_col:
-            targets = obj.data[:, targets_col]
-            metadata["features"][targets_col][2] = True
+        targets_cols = None
+        if "target_columns" in kwargs:
+            targets_cols = kwargs.get("target_columns")
+        if targets_cols:
+            targets = obj.data[:, targets_cols]
+            if isinstance(targets_cols, Iterable):
+                for c in targets_cols:
+                    feature = metadata["features"][c]
+                    metadata["features"][c] = (feature[0], feature[1], True, feature[3])
+            else:
+                feature = metadata["features"][targets_cols]
+                metadata["features"][targets_cols] = (feature[0], feature[1], True, feature[3])
     except Exception as e:
-        print(str(e))
+        logger.warning(str(e))
     return obj.data, metadata, targets
 
 
@@ -175,11 +178,17 @@ def dataframe_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a dataset object of type 'pandas.DataFrame'. Crawling any available metadata...")
     data = obj.data
     features = []
+    target_columns = None
+    if "target_columns" in kwargs and kwargs.get("target_columns") is not None:
+        target_columns = kwargs.get("target_columns")
     for i, col in enumerate(data.columns):
-        features.append((col, str(data[col].dtype), False, (data[col].min(), data[col].max())))
+        flag = col in target_columns if target_columns is not None else False
+        features.append((col, str(data[col].dtype), flag, (data[col].min(), data[col].max())))
     metadata = {"type": obj.format, "shape": data.shape, "features": features}
     metadata = {**metadata, **kwargs}
-    if "target" in data.columns:
+    if target_columns is not None:
+        targets = data[target_columns].values
+    elif "target" in data.columns:
         targets = data[[col for col in data.columns if "target" in col]].values
     else:
         logger.warning("Target values might be innaccurate.")

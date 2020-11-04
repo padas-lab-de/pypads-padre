@@ -22,10 +22,10 @@ class PadrePadsDecorators(IDecorators):
 
     # ------------------------------------------- decorators --------------------------------
     @decorator
-    def dataset(self, mapping=None, name=None, metadata=None, **kwargs):
+    def dataset(self, mapping=None, name=None, target_columns=None, metadata=None, **kwargs):
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.api.track_dataset(ctx=ctx, fn=fn, name=name, metadata=metadata, mapping=mapping,
+            return self.api.track_dataset(ctx=ctx, fn=fn, name=name, target_columns=target_columns,metadata=metadata, mapping=mapping,
                                           **kwargs)
 
         return track_decorator

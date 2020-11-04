@@ -12,15 +12,16 @@ class PadrePadsApi(IApi):
         return get_current_pads()
 
     @cmd
-    def track_dataset(self, fn, ctx=None, name=None, metadata=None, mapping: Mapping = None, **kwargs):
+    def track_dataset(self, fn, ctx=None, name=None, target_columns=None, metadata=None, mapping: Mapping = None,
+                      **kwargs):
         """
         Manually wrap a function to track as dataset
         """
         if metadata is None:
             metadata = {}
         self.pypads.cache.run_add('dataset_name', name)
-        self.pypads.cache.run_add('dataset_meta', metadata)
-        self.pypads.cache.run_add('dataset_kwargs', kwargs)
+        self.pypads.cache.run_add('dataset_metadata', metadata)
+        self.pypads.cache.run_add('dataset_kwargs', {**{"target_columns": target_columns}, **kwargs})
         return self.pypads.api.track(fn, ctx, ["pypads_dataset"], mapping=mapping)
 
     @cmd

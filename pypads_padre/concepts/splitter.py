@@ -47,27 +47,23 @@ def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=Non
 
     def splitting_iterator():
         # Enable the tracking
-        num = -1
         # now apply splitting strategy
         if strategy is None:
-            num += 1
-            yield num, idx, None, None
+            yield idx, None, None
         elif strategy == "explicit":
             for i in indices:
                 train, val, test = i
-                num += 1
-                yield num, train, test, val
+                yield train, test, val
         elif strategy == "random":
             if shuffle:  # Reshuffle every "fold"
                 r.shuffle(idx)
             n_tr = int(n * (1.0 - test_ratio))
             train, test = idx[:n_tr], idx[n_tr:]
-            num += 1
             if val_ratio > 0:  # create a validation set out of the test set
                 n_v = int(len(train) * val_ratio)
-                yield num, train[:n_v], test, train[n_v:]
+                yield train[:n_v], test, train[n_v:]
             else:
-                yield num, train, test, None
+                yield train, test, None
         elif strategy == "cv":
             if stratified:
                 if y is not None:
@@ -96,15 +92,14 @@ def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=Non
                         test_folds[y_encoded == k] = folds_for_class
 
                     for i in range(n_folds):
-                        num += 1
                         test_index = test_folds == i
                         train = idx[np.logical_not(test_index)]
                         test = idx[test_index]
                         if val_ratio > 0:
                             n_v = int(len(train) * val_ratio)
-                            yield num, train[:n_v], test, train[n_v:]
+                            yield train[:n_v], test, train[n_v:]
                         else:
-                            yield num, train, test, None
+                            yield train, test, None
                 else:
                     logger.warning("Stratified CV is not possible because target values in y is None")
             else:
@@ -122,12 +117,11 @@ def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=Non
                     # The training array is the set difference of the complete array and the testing array
                     train = np.asarray(list(set(idx) - set(test)))
 
-                    num += 1
                     if val_ratio > 0:  # create a validation set out of the test set
                         n_v = int(len(train) * val_ratio)
-                        yield num, train[:n_v], test, train[n_v:]
+                        yield train[:n_v], test, train[n_v:]
                     else:
-                        yield num, train, test, None
+                        yield train, test, None
 
         elif strategy == "index":
             # If a list of dictionaries are given to the experiment as indices, pop each one out and return
@@ -143,8 +137,7 @@ def default_split(X, y=None, strategy="random", test_ratio=0.25, random_seed=Non
                 val = index[i].get('val', None)
                 if val is not None:
                     val = np.array(val)
-                num += 1
-                yield num, train, test, val
+                yield train, test, val
 
         else:
             raise ValueError(f"Unknown splitting strategy {strategy}")
