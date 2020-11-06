@@ -10,7 +10,7 @@ from pypads.importext.versioning import all_libs
 from pypads.model.logger_call import InjectionLoggerCallModel
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import BaseStorageModel, ResultType, IdReference
-from pypads.utils.logging_util import FileFormats
+from pypads.utils.logging_util import FileFormats, data_str
 from pypads_onto.arguments import ontology_uri
 from pypads_onto.model.ontology import EmbeddedOntologyModel
 
@@ -167,6 +167,9 @@ class DatasetILF(InjectionLogger):
         # if the return object is None, take the object instance ctx
         dataset_object = _pypads_result if _pypads_result is not None else ctx
 
+        mapping_data = _pypads_env.data
+        dataset_data = data_str(mapping_data, "dataset", "@schema", default={})
+
         # Get additional arguments if given by the user
         _dataset_kwargs = dict()
         if pads.cache.run_exists("dataset_kwargs"):
@@ -211,11 +214,15 @@ class DatasetILF(InjectionLogger):
                                                    additional_data=metadata, holder=dto)
             logger.info("Entry added in the dataset repository.")
             # create repository object
-            dro = DatasetRepositoryObject(name=self.name,
-                                          description="Some unkonwn Dataset",
-                                          documentation=ctx.__doc__ if ctx else _logger_call.original_call.call_id.wrappee.__doc__,
+            dro = DatasetRepositoryObject(name=data_str(dataset_data, "rdfs:label", default=self.name),
+                                          uid=data_hash,
+                                          description=data_str(dataset_data, "rdfs:description",
+                                                               default="Some unkonwn Dataset"),
+                                          documentation=data_str(dataset_data, "padre:documentation",
+                                                                 default=ctx.__doc__ if ctx else _logger_call.original_call.call_id.wrappee.__doc__),
                                           binary_reference=binary_ref,
-                                          location=_logger_call.original_call.call_id.context.reference)
+                                          location=_logger_call.original_call.call_id.context.reference,
+                                          additional_data=dataset_data)
             repo_obj.log_json(dro)
 
         # Store object
