@@ -7,6 +7,7 @@ from pypads.bindings import events
 from pypads.bindings import hooks
 from pypads.importext import mappings
 from pypads.utils.util import dict_merge_caches, dict_merge
+from pypads_onto.app import plugin
 
 from pypads_padre.app.actuators import PadrePadsActuators
 from pypads_padre.app.api import PadrePadsApi
@@ -29,6 +30,9 @@ DEFAULT_PADRE_SETUP_FNS = set()
 # This config defines such a listening structure.
 # {"recursive": track functions recursively. Otherwise check the callstack to only track the top level function.}
 DEFAULT_PADRE_CONFIG = {}
+
+DEFAULT_PADRE_CONVERTERS = []
+plugin.DEFAULT_ONTO_CONVERTERS.update(DEFAULT_PADRE_CONVERTERS)
 
 
 def configure_plugin(pypads):

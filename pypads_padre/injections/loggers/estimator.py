@@ -10,8 +10,37 @@ from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import BaseStorageModel, ResultType
 from pypads.utils.logging_util import data_str, data_path
 from pypads.utils.util import persistent_hash
+from pypads_onto.injections.converter import ObjectConverter
 
 
+
+# # Estimators
+# @json_ld(path="estimator.@schema")
+# class EstimatorSchemaModel(EmbeddedOntologyModel):
+#     type: str = Field(alias="@type", default=f"{ontology_uri}/MetricAlgorithm")
+#     label: str = Field(alias="rdfs:label", default=...)
+#     description: str = Field(alias="rdfs:description", default=...)
+#     documentation: str = Field(alias=f"{ontology_uri}/documentation", default=...)
+#     implements: str = Field(alias=f"{ontology_uri}/implements", default=...)
+#
+#     class Config:
+#         extra = Extra.allow
+#         allow_population_by_field_name = True
+#
+#
+# @json_ld(path="estimator.@schema.algorithm.@schema")
+# class EstimatorAlgorithmSchemaModel(EmbeddedOntologyModel):
+#     type: str = Field(alias="@type", default=f"{ontology_uri}/EstimatorAlgorithm")
+#     label: str = Field(alias="rdfs:label", default=...)
+#     description: str = Field(alias="rdfs:description", default=...)
+#     documentation: str = Field(alias=f"{ontology_uri}/documentation", default=...)
+#
+#     class Config:
+#         extra = Extra.allow
+#         allow_population_by_field_name = True
+
+
+@json_ld(path="estimator.@schema")
 class EstimatorRepositoryObject(BaseStorageModel):
     """
     Class to be used in the repository holding an estimator. Repositories are supposed to store objects used over
@@ -25,6 +54,8 @@ class EstimatorRepositoryObject(BaseStorageModel):
     category: str = "EstimatorRepositoryEntry"
     storage_type: Union[str, ResultType] = "estimator"
 
+    class Config:
+        allow_population_by_field_name = True
 
 class EstimatorILFOutput(OutputModel):
     """
@@ -149,3 +180,28 @@ class EstimatorILF(InjectionLogger):
 
         # Store object
         _logger_output.estimator = eto.store()
+
+
+class EstimatorConverter(ObjectConverter):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(storage_type="estimator", *args, **kwargs)
+
+    def _prepare_insertion(self, entry: EstimatorSchemaModel, json_ld, graph):
+        if (entry.is_a, None, None) not in graph:
+            entry, json_ld, models = super()._prepare_insertion(entry, json_ld, graph)
+            if EstimatorSchemaModel in models:
+                estimator_schemata: List[EstimatorSchemaModel] = models[EstimatorSchemaModel]
+                for e in estimator_schemata:
+                    if e.uri == entry.uri:
+
+                    break
+            json_ld = self._re_append_models(json_ld, models)
+        return entry, json_ld, models
+
+    def _convert(self, entry, graph):
+        # TODO add basic parameter t-box. This should be done by parsing additional data
+        def parse():
+            graph.parse(data=entry.json(by_alias=True), format="json-ld")
+
+        threading.Thread(target=parse).start()
