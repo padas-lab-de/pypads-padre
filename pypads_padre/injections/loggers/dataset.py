@@ -2,7 +2,6 @@ from typing import List, Any, Type, Union
 
 from pydantic import BaseModel, Field
 from pypads import logger
-from pypads.app.backends.repository import RepositoryEntryModel
 from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
@@ -67,11 +66,11 @@ class DatasetTO(TrackedObject):
         context: Union[List[str], str, dict] = {
             "number_of_instances": {
                 "@id": f"{ontology_uri}has_instances",
-                "@type": f"{ontology_uri}DatasetProperty"
+                "@type": f"{ontology_uri}:DatasetProperty"
             },
             "number_of_features": {
                 "@id": f"{ontology_uri}has_features",
-                "@type": f"{ontology_uri}DatasetProperty"
+                "@type": f"{ontology_uri}:DatasetProperty"
             },
             # "features": {
             #     "type": {
@@ -85,7 +84,7 @@ class DatasetTO(TrackedObject):
             # },
             "data": {
                 "@id": f"{ontology_uri}stored_at",
-                "@type": f"{ontology_uri}Data"
+                "@type": f"{ontology_uri}:Data"
             }
         }
 
@@ -106,9 +105,10 @@ class DatasetTO(TrackedObject):
             })
             category: str = "Feature"
             name: str = ...
-            type: str = ...
+            value_type: str = ...
             default_target: bool = False
             range: tuple = None
+            type: str = ""
 
             class Config:
                 orm_mode = True
@@ -135,7 +135,7 @@ class DatasetTO(TrackedObject):
         if features is not None:
             for name, type, default_target, range in features:
                 self.features.append(
-                    self.DatasetModel.Feature(name=validate_type(name), type=validate_type(type),
+                    self.DatasetModel.Feature(name=validate_type(name), value_type=validate_type(type),
                                               default_target=default_target,
                                               range=validate_type(range)))
 

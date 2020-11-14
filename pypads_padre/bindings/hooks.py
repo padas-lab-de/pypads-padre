@@ -1,9 +1,6 @@
 import sys
 
 DEFAULT_PADRE_HOOK_MAPPING = {
-    "input": {"with": {"no_intermediate": True}},
-    "output": {"with": {"no_intermediate": True}},
-    "hardware": {"with": {"no_intermediate": True}},
     "dataset": {"on": ["pypads_dataset"]},
     "predictions": {"on": ["pypads_predict"]},
     "splits": {"on": ["pypads_split"]},

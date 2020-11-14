@@ -17,6 +17,6 @@ DEFAULT_PADRE_LOGGING_FNS = {
     "splits": [SplitILF(), SplitILFTorch()],
     # "hyperparameters": HyperParameters(),
     "doc": DocExtractionILF(),
-    # "metric": [MetricTorch()],
+    "metric": [MetricTorch()],
     "estimator": EstimatorILF()
 }

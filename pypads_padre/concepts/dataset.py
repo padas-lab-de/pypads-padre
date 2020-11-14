@@ -247,9 +247,11 @@ def torch_crawler(obj: Crawler, *args, **kwargs):
     logger.info("Detecting a torchvision dataset loaded object. Crawling any available metadata...")
     data = obj.data.data.numpy()
     targets = obj.data.targets.numpy()
+    train = obj.data.train
+    source = obj.data.training_file if train else obj.data.test_file
     metadata = {"format": obj.format, "shape": data.shape, "classes": obj.data.classes,
-                "Description": obj.data.__repr__()}
-    metadata = {**metadata, **kwargs}
+                "Description": obj.data.__repr__(), "training_data": train, "source": source}
+    # metadata = {**metadata, **kwargs}
     return data, metadata, targets
 
 
