@@ -3,7 +3,7 @@ metadata:
   version: "0.1.0"
   library:
     name: "torch"
-    version: ">= 1.4.0+cpu"
+    version: ">= 1.4.0"
 
 mappings:
   !!python/pPath torch:
@@ -23,7 +23,10 @@ mappings:
       !!python/pPath modules:
         !!python/pPath container.Sequential:
           !!python/pPath forward:
-            hooks: "pypads_predict"
+            hooks: ["pypads_predict"]
         !!python/pPath loss._Loss:
           !!python/pPath forward:
+            data:
+              '@rdf':
+                in_context: http://www.padre-lab.eu/onto/Metric
             hooks: ["pypads_metric"]

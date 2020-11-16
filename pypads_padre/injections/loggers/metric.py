@@ -1,5 +1,8 @@
+from typing import Union
+
 from pypads.importext.versioning import LibSelector
 from pypads.injections.loggers.metric import MetricILF, MetricTO
+from pypads.model.logger_output import MetricMetaModel
 
 
 class MetricTorch(MetricILF):
@@ -11,7 +14,8 @@ class MetricTorch(MetricILF):
 
     _dependencies = {"torch"}
 
-    def __post__(self, ctx, *args, _pypads_artifact_fallback=False, _logger_call, _logger_output, _pypads_result,
+    def __post__(self, ctx, *args, _pypads_artifact_fallback=False, _pypads_env, _logger_call, _logger_output,
+                 _pypads_result,
                  **kwargs):
         """
         :param ctx:
@@ -22,7 +26,9 @@ class MetricTorch(MetricILF):
         :return:
         """
         result = _pypads_result
-        metric = MetricTO(parent=_logger_output, as_artifact=_pypads_artifact_fallback)
+        metric: Union[MetricTO, MetricMetaModel] = MetricTO(parent=_logger_output,
+                                                            as_artifact=_pypads_artifact_fallback,
+                                                            additional_data=_pypads_env.data)
         if result is not None:
             from torch import Tensor
             if isinstance(result, Tensor):

@@ -28,7 +28,9 @@ DEFAULT_PADRE_SETUP_FNS = set()
 # but define events on which different logging functions can listen.
 # This config defines such a listening structure.
 # {"recursive": track functions recursively. Otherwise check the callstack to only track the top level function.}
-DEFAULT_PADRE_CONFIG = {}
+DEFAULT_PADRE_CONFIG = {
+    "use_pypads_default_mappings": False
+}
 
 
 def configure_plugin(pypads):
@@ -43,9 +45,14 @@ def configure_plugin(pypads):
     api = PadrePadsApi()
     results = PadrePadsResults()
 
-    mappings.default_mapping_file_paths.extend(
-        glob.glob(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
-                                               "resources", "mapping", "**.yml"))))
+    if DEFAULT_PADRE_CONFIG.get("use_pypads_default_mappings", True):
+        mappings.default_mapping_file_paths.extend(
+            glob.glob(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
+                                                   "resources", "mapping", "**.yml"))))
+    else:
+        mappings.default_mapping_file_paths = glob.glob(
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bindings",
+                                         "resources", "mapping", "**.yml")))
     base.DEFAULT_SETUP_FNS = base.DEFAULT_SETUP_FNS | DEFAULT_PADRE_SETUP_FNS
     base.DEFAULT_CONFIG = dict_merge(base.DEFAULT_CONFIG, DEFAULT_PADRE_CONFIG, str_to_set=True)
     events.DEFAULT_LOGGING_FNS = dict_merge(events.DEFAULT_LOGGING_FNS, DEFAULT_PADRE_LOGGING_FNS, str_to_set=True)

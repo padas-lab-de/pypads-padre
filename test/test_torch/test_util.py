@@ -61,7 +61,7 @@ def torch_simple_example():
     ]))
 
     # N is batch size;
-    N, epochs = 500, 1
+    N, epochs = 5, 1
 
     # Training Loader
     train_loader = DataLoader(train_mnist, batch_size=N)
@@ -100,17 +100,28 @@ def torch_simple_example():
         test(model=model, device=device, test_loader=test_loader)
 
 
+def array_to_color(array, cmap="Oranges"):
+    import matplotlib.pyplot as plt
+    s_m = plt.cm.ScalarMappable(cmap=cmap)
+    return s_m.to_rgba(array)[:, :-1]
+
+
 def data_transform(data, sample_shape):
     import numpy as np
     data_t = []
     for i in range(data.shape[0]):
-        data_t.append(data[i].reshape(sample_shape))
+        data_t.append(array_to_color(data[i]).reshape(sample_shape))
     return np.asarray(data_t, dtype=np.float32)
 
 
-def torch_3d_mnist_example(tracker, train_data, test_data):
+def torch_3d_mnist_example():
+    # Activate tracking of pypads
+    from pypads.app.base import PyPads
+    tracker = PyPads(autostart="3D-MNIST-Torch", setup_fns=[])
+
     import torch
     from torch import nn
+    from torch.autograd import Variable
     import h5py
     import numpy as np
 
@@ -166,6 +177,7 @@ def torch_3d_mnist_example(tracker, train_data, test_data):
             )
             return conv_layer
 
+        @tracker.decorators.track(event=['pypads_predict'])
         def forward(self, x):
             # Set 1
             out = self.conv_layer1(x)
@@ -180,14 +192,14 @@ def torch_3d_mnist_example(tracker, train_data, test_data):
             return out
 
     # Sample shape
-    sample_shape = (16, 16, 16)
+    sample_shape = (16, 16, 16, 3)
 
     # Load 3d Mnist data
-    path = "/home/mehdi/Desktop/Workspace/Padre_project/PyPadre/pypads-examples/Notebooks-DataScience Lab/data/" \
-           "3d-mnist/full_dataset_vectors.h5"
+    path = "/home/mehdi/Desktop/research_assistant_236/PyPadre/pypads-examples/Notebooks-DataScience Lab/" \
+           "data/3d-mnist/full_dataset_vectors.h5"
     data = load_3d_mnist(path)
-    X_train, y_train = data[:10000, :-1], data[:10000, -1]
-    X_test, y_test = data[:10000, :-1], data[:10000, -1]
+    X_train, y_train = data[:100, :-1], data[:100, -1]
+    X_test, y_test = data[11900:, :-1], data[11900:, -1]
 
     # Reshape data into 3D format (16,16,16)
     X_train = data_transform(X_train, sample_shape)
@@ -202,12 +214,11 @@ def torch_3d_mnist_example(tracker, train_data, test_data):
     train = torch.utils.data.TensorDataset(train_x, train_y)
     test = torch.utils.data.TensorDataset(test_x, test_y)
 
-
     # Definition of hyperparameters
-    batch_size = 100
-    n_iters = 4500
-    num_epochs = n_iters / (len(train_x) / batch_size)
-    num_epochs = int(num_epochs)
+    batch_size = 10
+    tracker.api.log_param('batch_size', batch_size, description="Batch size")
+    num_epochs = 10
+    tracker.api.log_param('num_epochs', num_epochs, description="Number of training epochs")
 
     # Data Loader
     train_loader = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=False)
@@ -223,4 +234,55 @@ def torch_3d_mnist_example(tracker, train_data, test_data):
 
     # SGD Optimizer
     learning_rate = 0.001
+    tracker.api.log_param('learning_rate', learning_rate, description="Learning rate of the optimizer")
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+    # CNN model training
+    count = 0
+    loss_list = []
+    iteration_list = []
+    accuracy_list = []
+    for epoch in range(num_epochs):
+        for i, (images, labels) in enumerate(train_loader):
+
+            train = Variable(images.view(100, 3, 16, 16, 16))
+            labels = Variable(labels)
+            # Clear gradients
+            optimizer.zero_grad()
+            # Forward propagation
+            outputs = model(train)
+            # Calculate softmax and ross entropy loss
+            loss = error(outputs, labels)
+            # Calculating gradients
+            loss.backward()
+            # Update parameters
+            optimizer.step()
+
+            count += 1
+            if count % 50 == 0:
+                # Calculate Accuracy
+                correct = 0
+                total = 0
+                # Iterate through test dataset
+                for images, labels in test_loader:
+                    test = Variable(images.view(100, 1, 16, 16, 16))
+                    # Forward propagation
+                    outputs = model(test)
+
+                    # Get predictions from the maximum value
+                    predicted = torch.max(outputs.data, 1)[1]
+
+                    # Total number of labels
+                    total += len(labels)
+                    correct += (predicted == labels).sum()
+
+                accuracy = 100 * correct / float(total)
+
+                # store loss and iteration
+                loss_list.append(loss.data)
+                iteration_list.append(count)
+                accuracy_list.append(accuracy)
+
+                if count % 500 == 0:
+                    # Print Loss
+                    print('Iteration: {}  Loss: {}  Accuracy: {} %'.format(count, loss.data, accuracy))
