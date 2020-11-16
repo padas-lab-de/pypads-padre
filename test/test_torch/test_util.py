@@ -157,6 +157,7 @@ def torch_3d_mnist_example():
             data = np.concatenate([train_data, test_data], axis=0)
         return data
 
+    @tracker.decorators.watch_model()
     class CNNModel(nn.Module):
         def __init__(self, dim_output):
             super(CNNModel, self).__init__()

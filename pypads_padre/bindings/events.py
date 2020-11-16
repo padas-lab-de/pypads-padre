@@ -1,6 +1,6 @@
 from pypads_padre.injections.analysis.doc_parsing import DocExtractionILF
 from pypads_padre.injections.analysis.parameter_search import ParameterSearchILF, ParameterSearchExecutor
-from pypads_padre.injections.loggers.data_splitting import SplitILF
+from pypads_padre.injections.loggers.data_splitting import SplitILF, SplitILFTorch
 from pypads_padre.injections.loggers.dataset import DatasetILF
 from pypads_padre.injections.loggers.decision_tracking import SingleInstanceILF, DecisionsKerasILF, DecisionsSklearnILF, \
     DecisionsTorchILF
@@ -14,7 +14,7 @@ DEFAULT_PADRE_LOGGING_FNS = {
     # "predictions": [DecisionsSklearnILF(), DecisionsTorchILF(), DecisionsKerasILF(), SingleInstanceILF()],
     # "parameter_search": ParameterSearchILF(),
     # "parameter_search_executor": ParameterSearchExecutor(),
-    "splits": [SplitILF()],
+    "splits": [SplitILF(),SplitILFTorch()],
     # "hyperparameters": HyperParameters(),
     # "doc": DocExtractionILF(),
     "metric": [MetricTorch()],

@@ -186,15 +186,15 @@ def dataframe_crawler(obj: Crawler, **kwargs):
     for i, col in enumerate(data.columns):
         flag = col in target_columns if target_columns is not None else False
         features.append((col, str(data[col].dtype), flag))
-    metadata = {"type": obj.format, "shape": data.shape, "features": features}
+    metadata = {"type": str(obj.format), "shape": data.shape, "features": features}
     metadata = {**metadata, **kwargs}
+    targets = None
     if target_columns is not None:
         targets = data[target_columns].values
     elif "target" in data.columns:
         targets = data[[col for col in data.columns if "target" in col]].values
     else:
         logger.warning("Target values might be innaccurate.")
-        targets = data[[data.columns[-1]]].values
     return data, metadata, targets
 
 

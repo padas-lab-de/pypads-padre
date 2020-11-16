@@ -36,10 +36,10 @@ def splitter_output(result, fn):
                 if hasattr(fn, "_dataset"):
                     if hasattr(fn._dataset,"train"):
                         if fn._dataset.train:
-                            return result.tolist(), None, None
+                            return _tolist(result), None, None
                         else:
-                            return None, result.tolist(), None
-                return result.tolist(), None, None
+                            return None, _tolist(result), None
+                return _tolist(result), None, None
             else:
                 return None, None, None
     except Exception as e:
@@ -148,7 +148,6 @@ class SplitILF(MultiInjectionLogger):
 
         from pypads.app.pypads import get_current_pads
         pads = get_current_pads()
-        pads.cache.run_add("split_tracker", id(self))
         _return, time = OriginalExecutor(fn=_pypads_env.callback)(*_args, **_kwargs)
 
         if isinstance(_return, GeneratorType):
@@ -186,49 +185,52 @@ class SplitILF(MultiInjectionLogger):
         return generator(), time
 
 
-# class SplitILFTorch(MultiInjectionLogger):
-#     """
-#     Function logging splits used by torch DataLoader
-#
-#         Hook:
-#             Hook this logger to the splitting functionality of pytorch dataloader (e.g: DataLoader._next_index)
-#     """
-#     name = "SplitTorch Logger"
-#     category = "TorchSplitLogger"
-#
-#     supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
-#
-#     @classmethod
-#     def output_schema_class(cls) -> Type[BaseModel]:
-#         return SplitsOutput
-#
-#     def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):
-#         if isinstance(error, StopIteration):
-#             logger.warning("Ignoring recovery of this StopIteration error: {}".format(error))
-#             original = _pypads_env.call.call_id.context.original(_pypads_env.callback)
-#             return original(ctx, *args, **kwargs)
-#         else:
-#             super()._handle_error(*args, ctx, _pypads_env, error, **kwargs)
-#
-#     @staticmethod
-#     def finalize_output(pads, logger_call, output, *args, **kwargs):
-#         to = output.splits
-#         output.splits = to.store()
-#         logger_call.output = output.store()
-#
-#     def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
-#                  **kwargs):
-#         from pypads.app.pypads import get_current_pads
-#         pads = get_current_pads()
-#         pads.cache.run_add("split_tracker", id(self))
-#         if _logger_output.splits is None:
-#             splits = SplitTO(parent=_logger_output)
-#         else:
-#             splits = _logger_output.splits
-#         logger.info("Detected splitting, Tracking splits started...")
-#         train, test, val = splitter_output(_pypads_result, fn=ctx)
-#         split_id = uuid.uuid4()
-#         pads.cache.run_add("current_split", split_id)
-#         splits.add_split(split_id, train, test, val)
-#         # splits.store(_logger_output, "splits")
-#         _logger_output.splits = splits
+class SplitILFTorch(MultiInjectionLogger):
+    """
+    Function logging splits used by torch DataLoader
+
+        Hook:
+            Hook this logger to the splitting functionality of pytorch dataloader (e.g: DataLoader._next_index)
+    """
+    name = "SplitTorch Logger"
+    category = "TorchSplitLogger"
+
+    supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = SplitILF.__name__
+
+    @classmethod
+    def output_schema_class(cls) -> Type[BaseModel]:
+        return SplitsOutput
+
+    def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):
+        if isinstance(error, StopIteration):
+            logger.warning("Ignoring recovery of this StopIteration error: {}".format(error))
+            original = _pypads_env.call.call_id.context.original(_pypads_env.callback)
+            return original(ctx, *args, **kwargs)
+        else:
+            super()._handle_error(*args, ctx, _pypads_env, error, **kwargs)
+
+    @staticmethod
+    def finalize_output(pads, logger_call, output, *args, **kwargs):
+        to = output.splits
+        output.splits = to.store()
+        logger_call.output = output.store()
+
+    def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _logger_output, _args, _kwargs,
+                 **kwargs):
+        from pypads.app.pypads import get_current_pads
+        pads = get_current_pads()
+        if _logger_output.splits is None:
+            splits = SplitTO(parent=_logger_output)
+        else:
+            splits = _logger_output.splits
+        logger.info("Detected splitting, Tracking splits started...")
+        train, test, val = splitter_output(_pypads_result, fn=ctx)
+        split_id = uuid.uuid4()
+        pads.cache.run_add("current_split", split_id)
+        splits.add_split(split_id, train, test, val)
+        # splits.store(_logger_output, "splits")
+        _logger_output.splits = splits

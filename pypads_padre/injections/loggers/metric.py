@@ -14,6 +14,10 @@ class MetricTorch(MetricILF):
 
     _dependencies = {"torch"}
 
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.identity = MetricILF.__name__
+
     def __post__(self, ctx, *args, _pypads_artifact_fallback=False, _pypads_env, _logger_call, _logger_output,
                  _pypads_result,
                  **kwargs):
@@ -32,7 +36,7 @@ class MetricTorch(MetricILF):
         if result is not None:
             from torch import Tensor
             if isinstance(result, Tensor):
-                super().__post__(ctx, *args, _pypads_artifact_fallback=_pypads_artifact_fallback,
+                super().__post__(ctx, *args, _pypads_env=_pypads_env,_pypads_artifact_fallback=_pypads_artifact_fallback,
                                  _logger_call=_logger_call, _logger_output=_logger_output,
                                  _pypads_result=result.item(), **kwargs)
             # else:
