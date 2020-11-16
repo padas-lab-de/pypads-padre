@@ -1,5 +1,6 @@
 from pypads_padre.injections.analysis.doc_parsing import DocExtractionILF
 from pypads_padre.injections.analysis.parameter_search import ParameterSearchILF, ParameterSearchExecutor
+from pypads_padre.injections.analysis.parameters import ParametersTorchILF
 from pypads_padre.injections.loggers.data_splitting import SplitILF, SplitILFTorch
 from pypads_padre.injections.loggers.dataset import DatasetILF
 from pypads_padre.injections.loggers.decision_tracking import SingleInstanceILF, DecisionsKerasILF, DecisionsSklearnILF, \
@@ -11,6 +12,7 @@ from pypads_padre.injections.loggers.metric import MetricTorch
 # Extended mappings. We allow to log parameters, output or input, datasets
 DEFAULT_PADRE_LOGGING_FNS = {
     "dataset": DatasetILF(),
+    "hyperparameters": [ParametersTorchILF()],
     # "predictions": [DecisionsSklearnILF(), DecisionsTorchILF(), DecisionsKerasILF(), SingleInstanceILF()],
     # "parameter_search": ParameterSearchILF(),
     # "parameter_search_executor": ParameterSearchExecutor(),

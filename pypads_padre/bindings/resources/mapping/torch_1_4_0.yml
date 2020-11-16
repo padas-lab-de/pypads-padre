@@ -7,18 +7,21 @@ metadata:
 
 mappings:
   !!python/pPath torch:
-#    !!python/pPath optim.optimizer.Optimizer:
-#      data:
-#        '@rdf':
-#          in_context: http://www.padre-lab.eu/onto/Optimizer
-#      !!python/pPath step:
-#        hooks: ["pypads_metric"]
-    !!python/pPath utils.data.dataloader._BaseDataLoaderIter:
-      !!python/pPath _next_index:
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/Split
-        hooks: ["pypads_split"]
+    !!python/pPath optim:
+      !!python/rSeg '(?!^optimizer$)(?!^lr_scheduler$).+':
+        !!python/rSeg '^(?!_).+':
+          data:
+            '@rdf':
+              in_context: http://www.padre-lab.eu/onto/Optimizer
+          !!python/pPath __init__:
+            hooks: ["pypads_params"]
+    !!python/pPath utils.data.dataloader:
+      !!python/rSeg '(?!^_BaseDataLoaderIter$).+':
+        !!python/pPath _next_index:
+          data:
+            '@rdf':
+              in_context: http://www.padre-lab.eu/onto/Split
+          hooks: ["pypads_split"]
     !!python/pPath nn:
       !!python/pPath modules.loss:
         !!python/rSeg '^(?!_).+':

@@ -1,6 +1,4 @@
-import os
-
-from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
+from test.base_test import BaseTest
 from test.test_torch.test_util import torch_simple_example, torch_3d_mnist_example
 
 # noinspection PyMethodMayBeStatic

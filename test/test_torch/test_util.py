@@ -157,7 +157,7 @@ def torch_3d_mnist_example():
             data = np.concatenate([train_data, test_data], axis=0)
         return data
 
-    @tracker.decorators.watch_model()
+    # @tracker.decorators.watch_model()
     class CNNModel(nn.Module):
         def __init__(self, dim_output):
             super(CNNModel, self).__init__()
@@ -243,8 +243,11 @@ def torch_3d_mnist_example():
     iteration_list = []
     accuracy_list = []
     for epoch in range(num_epochs):
+        training = True
+        model.train()
         for i, (images, labels) in enumerate(train_loader):
-
+            if not training:
+                model.train()
             train = Variable(images.view(batch_size, 3, 16, 16, 16))
             labels = Variable(labels)
             # Clear gradients
@@ -265,6 +268,8 @@ def torch_3d_mnist_example():
                 total = 0
                 # Iterate through test dataset
                 for images, labels in test_loader:
+                    model.eval()
+                    training = False
                     test = Variable(images.view(batch_size, 3, 16, 16, 16))
                     # Forward propagation
                     outputs = model(test)

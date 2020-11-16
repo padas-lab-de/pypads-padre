@@ -205,7 +205,7 @@ Crawler.register_fn(Types.dataframe.value, dataframe_crawler)
 def series_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a dataset object of type 'pandas.Series'. Crawling any available metadata...")
     data = obj.data
-    metadata = {"type": obj.format, "shape": data.shape}
+    metadata = {"type": str(obj.format), "shape": data.shape}
     metadata = {**metadata, **kwargs}
     return data, metadata, None
 
