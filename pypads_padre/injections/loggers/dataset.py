@@ -35,7 +35,7 @@ class DatasetOutput(OutputModel):
     """
     Output of the logger
     """
-    dataset: IdReference = ...  # Reference to dataset TO
+    dataset: IdReference = None  # Reference to dataset TO
 
 
 class DatasetPropertyValue(EmbeddedOntologyModel):
@@ -107,7 +107,6 @@ class DatasetTO(TrackedObject):
             name: str = ...
             value_type: str = ...
             default_target: bool = False
-            range: tuple = None
             type: str = ""
 
             class Config:
@@ -133,11 +132,10 @@ class DatasetTO(TrackedObject):
                          number_of_features=DatasetPropertyValue(has_value=shape[1]), **kwargs)
         features = metadata.get("features", None)
         if features is not None:
-            for name, type, default_target, range in features:
+            for name, value_type, default_target in features:
                 self.features.append(
-                    self.DatasetModel.Feature(name=validate_type(name), value_type=validate_type(type),
-                                              default_target=default_target,
-                                              range=validate_type(range)))
+                    self.DatasetModel.Feature(name=validate_type(name), value_type=validate_type(value_type),
+                                              default_target=default_target))
 
     def store_data(self, obj: Any, metadata, format):
         # Fill the tracked object for the current run

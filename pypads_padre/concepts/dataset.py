@@ -144,10 +144,12 @@ class Crawler:
         return obj.data, metadata, targets
 
 
+# TODO feature metadata extraction (type: [categorical, continuous,..] and statistics [range, freq, ...])
 # --- Numpy array object ---
 def numpy_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a dataset object of type 'numpy.ndarray'. Crawling any available metadata...")
-    features = [(str(i), str(obj.data[:, i].dtype), False, (obj.data[:, i].min(), obj.data[:, i].max())) for i in
+    # , (obj.data[:, i].min(), obj.data[:, i].max())
+    features = [(str(i), str(obj.data[:, i].dtype), False) for i in
                 range(obj.data.shape[1])]
     metadata = {"type": str(obj.format), "shape": obj.data.shape, "features": features}
     metadata = {**metadata, **kwargs}
@@ -161,10 +163,10 @@ def numpy_crawler(obj: Crawler, **kwargs):
             if isinstance(targets_cols, Iterable):
                 for c in targets_cols:
                     feature = metadata["features"][c]
-                    metadata["features"][c] = (feature[0], feature[1], True, feature[3])
+                    metadata["features"][c] = (feature[0], feature[1], True)
             else:
                 feature = metadata["features"][targets_cols]
-                metadata["features"][targets_cols] = (feature[0], feature[1], True, feature[3])
+                metadata["features"][targets_cols] = (feature[0], feature[1], True)
     except Exception as e:
         logger.warning(str(e))
     return obj.data, metadata, targets
@@ -183,7 +185,7 @@ def dataframe_crawler(obj: Crawler, **kwargs):
         target_columns = kwargs.get("target_columns")
     for i, col in enumerate(data.columns):
         flag = col in target_columns if target_columns is not None else False
-        features.append((col, str(data[col].dtype), flag, (data[col].min(), data[col].max())))
+        features.append((col, str(data[col].dtype), flag))
     metadata = {"type": obj.format, "shape": data.shape, "features": features}
     metadata = {**metadata, **kwargs}
     if target_columns is not None:
@@ -215,9 +217,10 @@ def bunch_crawler(obj: Crawler, **kwargs):
     data = np.concatenate([bunch.get('data'), bunch.get("target").reshape(len(bunch.get("target")), 1)], axis=1)
     features = []
     for i, name in enumerate(bunch.get("feature_names")):
-        features.append((name, str(data[:, i].dtype), False, (data[:, i].min(), data[:, i].max())))
-    features.append(("class", str(data[:, -1].dtype), True, tuple(bunch.get("target_names"))))
-    metadata = {"type": str(obj.format), "features": features, "description": bunch.get("DESCR"), "shape": data.shape}
+        features.append((name, str(data[:, i].dtype), False))
+    features.append(("class", str(data[:, -1].dtype), True))
+    metadata = {"type": str(obj.format), "features": features, "classes": bunch.get("target_names"),
+                "description": bunch.get("DESCR"), "shape": data.shape}
     metadata = {**metadata, **kwargs}
     return data, metadata, bunch.get("target")
 
@@ -228,9 +231,9 @@ def sklearn_crawler(obj: Crawler, **kwargs):
     if "return_X_y" in kwargs and kwargs.get("return_X_y"):
         X, y = obj.data
         data = np.concatenate([X, y.reshape(len(y), 1)], axis=1)
-        features = [(str(i), str(X[:, i].dtype), False, (data[:, i].min(), data[:, i].max())) for i in
+        features = [(str(i), str(X[:, i].dtype), False) for i in
                     range(X.shape[1])]
-        features.append(("class", str(y.dtype), True, (y.min(), y.max())))
+        features.append(("class", str(y.dtype), True))
         metadata = {"type": str(obj.format), "features": features, "shape": (X.shape[0], X.shape[1] + 1)}
         metadata = {**metadata, **kwargs}
         return data, metadata, y

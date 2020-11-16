@@ -26,24 +26,24 @@ class MetricTorch(MetricILF):
         :return:
         """
         result = _pypads_result
-        metric: Union[MetricTO, MetricMetaModel] = MetricTO(parent=_logger_output,
-                                                            as_artifact=_pypads_artifact_fallback,
-                                                            additional_data=_pypads_env.data)
+        # metric: Union[MetricTO, MetricMetaModel] = MetricTO(parent=_logger_output,
+        #                                                     as_artifact=_pypads_artifact_fallback,
+        #                                                     additional_data=_pypads_env.data)
         if result is not None:
             from torch import Tensor
             if isinstance(result, Tensor):
                 super().__post__(ctx, *args, _pypads_artifact_fallback=_pypads_artifact_fallback,
                                  _logger_call=_logger_call, _logger_output=_logger_output,
                                  _pypads_result=result.item(), **kwargs)
-            else:
-                from torch.optim.optimizer import Optimizer
-                if isinstance(ctx, Optimizer):
-                    # Logging the gradient of the weigths after the optimizer step
-                    param_groups = ctx.param_groups
-                    for group in param_groups:
-                        weights_by_layer = group.get('params', None)
-                        if weights_by_layer and isinstance(weights_by_layer, list):
-                            for layer, weights in enumerate(weights_by_layer):
-                                metric.store_value(weights.grad.mean().item(),
-                                                   step=_logger_call.original_call.call_id.call_number,
-                                                   name="Layer_" + str(layer) + "_mean_gradient")
+            # else:
+            #     from torch.optim.optimizer import Optimizer
+            #     if isinstance(ctx, Optimizer):
+            #         # Logging the gradient of the weigths after the optimizer step
+            #         param_groups = ctx.param_groups
+            #         for group in param_groups:
+            #             weights_by_layer = group.get('params', None)
+            #             if weights_by_layer and isinstance(weights_by_layer, list):
+            #                 for layer, weights in enumerate(weights_by_layer):
+            #                     metric.store_value(weights.grad.mean().item(),
+            #                                        step=_logger_call.original_call.call_id.call_number,
+            #                                        name="Layer_" + str(layer) + "_mean_gradient")

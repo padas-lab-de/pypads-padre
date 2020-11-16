@@ -195,8 +195,7 @@ def torch_3d_mnist_example():
     sample_shape = (16, 16, 16, 3)
 
     # Load 3d Mnist data
-    path = "/home/mehdi/Desktop/research_assistant_236/PyPadre/pypads-examples/Notebooks-DataScience Lab/" \
-           "data/3d-mnist/full_dataset_vectors.h5"
+    path = "full_dataset_vectors.h5"
     data = load_3d_mnist(path)
     X_train, y_train = data[:100, :-1], data[:100, -1]
     X_test, y_test = data[11900:, :-1], data[11900:, -1]
@@ -245,7 +244,7 @@ def torch_3d_mnist_example():
     for epoch in range(num_epochs):
         for i, (images, labels) in enumerate(train_loader):
 
-            train = Variable(images.view(100, 3, 16, 16, 16))
+            train = Variable(images.view(batch_size, 3, 16, 16, 16))
             labels = Variable(labels)
             # Clear gradients
             optimizer.zero_grad()
@@ -265,7 +264,7 @@ def torch_3d_mnist_example():
                 total = 0
                 # Iterate through test dataset
                 for images, labels in test_loader:
-                    test = Variable(images.view(100, 1, 16, 16, 16))
+                    test = Variable(images.view(batch_size, 3, 16, 16, 16))
                     # Forward propagation
                     outputs = model(test)
 
