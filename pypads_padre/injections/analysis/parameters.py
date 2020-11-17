@@ -82,7 +82,7 @@ class ParametersTorchILF(InjectionLogger):
         return cls.ParametersTorchILFOutput
 
     def __post__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call,
-                 _logger_output: Union['ParametersTorchILFOutput', LoggerOutput], **kwargs):
+                 _logger_output: Union['ParametersTorchILFOutput', LoggerOutput], _args, _kwargs, **kwargs):
         """
         Function logging the parameters of the current pipeline object function call.
         """
@@ -136,10 +136,17 @@ class ParametersTorchILF(InjectionLogger):
                     # Extracting hyperparameters via defaults dict (valid for torch optimizers)
                     relevant_parameters = [{"name": k, "value": v} for k, v in defaults.items()]
                 else:
-
-                    # TODO Hyper Parameters extraction for DataLoader and nn.Module custom networks
-                    logger.warning('Hyper Parameters extraction for DataLoader and nn.Module custom networks')
-
+                    logger.warning('Hyper Parameters extraction of optimizer {} failed'.format(str(ctx)))
+            # TODO Hyper Parameters extraction for DataLoader and nn.Module custom networks
+            elif isinstance(ctx, torch.utils.data.DataLoader):
+                # Get all the named arguments along with default values if not given
+                import inspect
+                signature = inspect.signature(_pypads_env.callback)
+                defaults = {k: v.default for k, v in signature.parameters.items() if
+                            v.default is not inspect.Parameter.empty}
+                relevant_parameters = [{"name": k, "value": v} for k, v in {**defaults, **_kwargs}.items()]
+            else:
+                logger.warning('Hyper Parameters extraction of {} failed'.format(str(ctx)))
         for i, param in enumerate(relevant_parameters):
             name = data_path(param, "name", default="UnknownParameter" + str(i))
             description = data_path(param, "description")

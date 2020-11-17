@@ -4,7 +4,7 @@ from pypads.app.api import ApiPluginManager, PyPadsApi
 from pypads.app.decorators import IDecorators, decorator
 
 from pypads_padre.app.api import PadrePadsApi
-from pypads_padre.util import get_class_that_defined_method
+from pypads_padre.util import get_class_that_defined_method, get_module_that_defined_class
 
 
 class PadrePadsDecorators(IDecorators):
@@ -25,7 +25,8 @@ class PadrePadsDecorators(IDecorators):
     def dataset(self, mapping=None, name=None, target_columns=None, metadata=None, **kwargs):
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.api.track_dataset(ctx=ctx, fn=fn, name=name, target_columns=target_columns,metadata=metadata, mapping=mapping,
+            return self.api.track_dataset(ctx=ctx, fn=fn, name=name, target_columns=target_columns, metadata=metadata,
+                                          mapping=mapping,
                                           **kwargs)
 
         return track_decorator
@@ -54,3 +55,26 @@ class PadrePadsDecorators(IDecorators):
 
         return track_decorator
 
+    #
+    @decorator
+    def watch(self, track="all", mappings=None):
+        def track_decorator(cls):
+            ctx = get_module_that_defined_class(cls)
+            fn_anchors = dict()
+            if track == "all":
+                fn_anchors.update({"__init__": ["pypads_model"], 'parameters': ['pypads_weights']})
+                if hasattr(ctx, "forward"):
+                    fn_anchors.update({"forward": ["pypads_predict"]})
+            elif track == "model":
+                fn_anchors.update({"__init__": ["pypads_model"]})
+            elif track == "weights":
+                fn_anchors.update({"parameters": ["pypads_weights"]})
+            elif track == "output":
+                if hasattr(ctx, "forward"):
+                    fn_anchors.update({"forward": ["pypads_predict"]})
+            if fn_anchors != {}:
+                return self.api.track_model(cls, ctx=ctx, fn_anchors=fn_anchors,mappings=mappings)
+            else:
+                return cls
+
+        return track_decorator

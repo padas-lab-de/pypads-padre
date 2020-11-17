@@ -1,4 +1,5 @@
 import inspect
+from types import ModuleType
 
 from typing import Tuple
 
@@ -15,6 +16,14 @@ def get_class_that_defined_method(meth):
         if isinstance(cls, type):
             return cls
     return getattr(meth, '__objclass__', None)  # handle special descriptor objects
+
+
+def get_module_that_defined_class(clazz):
+    if inspect.isclass(clazz):
+        module = inspect.getmodule(clazz)
+        if isinstance(module, ModuleType):
+            return module
+    return getattr(clazz, '__module__', None)
 
 
 def unpack(kwargs_obj: dict, *args):

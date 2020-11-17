@@ -22,6 +22,9 @@ mappings:
             '@rdf':
               in_context: http://www.padre-lab.eu/onto/Split
           hooks: ["pypads_split"]
+      !!python/pPath DataLoader:
+        !!python/pPath __init__:
+          hooks: ['pypads_params']
     !!python/pPath nn:
       !!python/pPath modules.loss:
         !!python/rSeg '^(?!_).+':

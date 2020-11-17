@@ -157,7 +157,7 @@ def torch_3d_mnist_example():
             data = np.concatenate([train_data, test_data], axis=0)
         return data
 
-    # @tracker.decorators.watch_model()
+    # @tracker.decorators.watch(track="model")
     class CNNModel(nn.Module):
         def __init__(self, dim_output):
             super(CNNModel, self).__init__()
@@ -178,7 +178,6 @@ def torch_3d_mnist_example():
             )
             return conv_layer
 
-        @tracker.decorators.track(event=['pypads_predict'])
         def forward(self, x):
             # Set 1
             out = self.conv_layer1(x)

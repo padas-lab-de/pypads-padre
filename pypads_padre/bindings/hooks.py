@@ -5,7 +5,7 @@ DEFAULT_PADRE_HOOK_MAPPING = {
     "predictions": {"on": ["pypads_predict"]},
     "splits": {"on": ["pypads_split"]},
     # "hyperparameters": {"on": ["pypads_params"]},
-    "hyperparameters": {"on": ["pypads_params"]},
+    "hyperparameters": {"on": ["pypads_params", "pypads_model"]},
     "parameter_search": {"on": ["pypads_param_search"], "order": sys.maxsize - 1},
     "parameter_search_executor": {"on": ["pypads_param_search_exec"], "order": sys.maxsize - 2},
     # "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]},

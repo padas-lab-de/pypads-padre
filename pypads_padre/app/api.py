@@ -1,3 +1,5 @@
+from typing import Dict
+
 from pypads.app.api import IApi, cmd
 from pypads.importext.mappings import Mapping
 
@@ -44,3 +46,10 @@ class PadrePadsApi(IApi):
         Manually wrap a function to track as parameter search
         """
         return self.pypads.api.track(fn, ctx, ["pypads_param_search"], mapping=mapping)
+
+    @cmd
+    def track_model(self, cls, ctx=None, fn_anchors: dict = None, mappings: Dict[str, Mapping] = None):
+        """
+        Manually wrap a pytorch model to track its layers, dimensions
+        """
+        return self.pypads.api.track_class(cls, ctx, fn_anchors, mappings=mappings)
