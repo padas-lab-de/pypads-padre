@@ -1,56 +1,57 @@
-from typing import List, Type, Union
-
-from pydantic import BaseModel
+from typing import Union, Iterable
 
 from pypads import logger
 from pypads.app.env import InjectionLoggerEnv
-from pypads.app.injections.injection import InjectionLogger
-from pypads.app.injections.tracked_object import TrackedObject, LoggerOutput
-from pypads.importext.versioning import LibSelector
-from pypads.model.logger_call import ContextModel
-from pypads.model.logger_output import OutputModel, TrackedObjectModel
-from pypads.model.models import IdReference
+from pypads.app.injections.tracked_object import LoggerOutput
+from pypads.injections.analysis.parameters import ParametersILF, FunctionParametersTO
 from pypads.utils.logging_util import data_str, data_path, add_data
 
 
-class FunctionParametersTO(TrackedObject):
-    """
-    Tracking object class for model hyper parameters.
-    """
+def _get_relevant_parameters(model):
+    import torch
+    import inspect
+    layers = dict()
+    n = 0
+    total_params = 0
+    trainable_params = 0
+    for i, m in enumerate(model.modules()):
+        if i == 0:
+            continue
+        else:
+            if isinstance(m, torch.nn.Sequential):
+                continue
+            else:
+                n += 1
+                trainable = False
+                params = 0
+                signature = inspect.signature(m.__init__)
+                keys = [k for k in signature.parameters.keys()]
+                # extracting information from the layer
+                for k in keys:
+                    if k in m.__dict__:
+                        p = m.__dict__.get(k)
+                        if isinstance(p, Iterable):
+                            p = str(p)
+                        layers["{}.{}".format(m.__class__.__name__, k)] = p
+                if hasattr(m, "weight") and hasattr(m.weight, "size"):
+                    params += torch.prod(torch.LongTensor(list(m.weight.size()))).item()
+                    trainable = m.weight.requires_grad
+                if hasattr(m, "bias") and hasattr(m.bias, "size"):
+                    params += torch.prod(torch.LongTensor(list(m.bias.size()))).item()
+                layers["{}.{}".format(m.__class__.__name__, "parameters")] = params
+                total_params += params
+                if trainable:
+                    trainable_params += params
 
-    class FunctionParametersModel(TrackedObjectModel):
-        type: str = "ModelHyperParameter"
-        description = "The parameters of the experiment."
-        module: str = ...
-        contextmodel: ContextModel = ...
-        hyper_parameters: List[IdReference] = []
+    layers["{}.Trainable_parameters".format(model.__class__.__name__)] = trainable_params
+    layers["{}.Total_parameters".format(model.__class__.__name__)] = total_params
+    layers["{}.Number_of_layers".format(model.__class__.__name__)] = n
 
-    def __init__(self, *args, parent: Union[OutputModel, 'TrackedObject'], **kwargs):
-        super().__init__(*args, parent=parent, **kwargs)
-        self.contextmodel = self.producer.original_call.call_id.context
-
-    @classmethod
-    def get_model_cls(cls) -> Type[BaseModel]:
-        return cls.FunctionParametersModel
-
-    def persist_parameter(self: Union['FunctionParametersTO', FunctionParametersModel], key, value, param_type=None,
-                          description=None, additional_data=None):
-        """
-        Persist a new parameter to the tracking object.
-        :param key: Name of the parameter
-        :param value: Value of the parameter. This has to be convert-able to string
-        :param param_type: Type of the parameter. This should store the real type of the parameter. It could be used
-        to load the data in the right format from the stored string.
-        :param description: A description of the parameter to be stored.
-        :param additional_data: Additional data to store about the parameter.
-        :return:
-        """
-        description = description or "Parameter named {} of context {}".format(key, self.contextmodel)
-        self.hyper_parameters.append(self.store_param(key, value, param_type=param_type, description=description,
-                                                      additional_data=additional_data))
+    return layers
 
 
-class ParametersTorchILF(InjectionLogger):
+# noinspection PyMethodMayBeStatic, DuplicatedCode
+class ParametersTorchILF(ParametersILF):
     """
     Function logging the hyper parameters of the current pipeline object. This stores parameters as pypads parameters.
     Mapping files should give data in the format of:
@@ -69,20 +70,8 @@ class ParametersTorchILF(InjectionLogger):
 
     _dependencies = {"torch"}
 
-    class ParametersTorchILFOutput(OutputModel):
-        """
-        Output of the logger. An output can reference multiple Tracked Objects or Values directly. In this case a own
-        tracked object doesn't give a lot of benefit but enforcing a description a name and a category and could be omitted.
-        """
-        type: str = "ParametersTorchILF-Output"
-        hyper_parameter_to: IdReference = ...
-
-    @classmethod
-    def output_schema_class(cls) -> Type[OutputModel]:
-        return cls.ParametersTorchILFOutput
-
     def __post__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call,
-                 _logger_output: Union['ParametersTorchILFOutput', LoggerOutput], _args, _kwargs, **kwargs):
+                 _logger_output: Union['ParametersILF.ParametersILFOutput', LoggerOutput], _args, _kwargs, **kwargs):
         """
         Function logging the parameters of the current pipeline object function call.
         """
@@ -93,8 +82,8 @@ class ParametersTorchILF(InjectionLogger):
         module = data_str(mapping_data, "module", "@schema", "rdfs:label",
                           default=ctx.__class__.__name__)
 
-        hyper_params = FunctionParametersTO(module=module,
-                                            description=f"The parameters of estimator {module} with {ctx}.",
+        hyper_params = FunctionParametersTO(estimator=module,
+                                            description=f"The parameters of model {module} with {ctx}.",
                                             parent=_logger_output)
 
         # List of parameters to extract. Either provided by a mapping file or by get_params function or by _kwargs
@@ -134,17 +123,21 @@ class ParametersTorchILF(InjectionLogger):
                 if defaults is not None:
 
                     # Extracting hyperparameters via defaults dict (valid for torch optimizers)
-                    relevant_parameters = [{"name": k, "value": v} for k, v in defaults.items()]
+                    relevant_parameters = [{"name": "{}.{}".format(ctx.__class__.__name__, k), "value": v} for k, v in
+                                           defaults.items()]
                 else:
                     logger.warning('Hyper Parameters extraction of optimizer {} failed'.format(str(ctx)))
-            # TODO Hyper Parameters extraction for DataLoader and nn.Module custom networks
             elif isinstance(ctx, torch.utils.data.DataLoader):
                 # Get all the named arguments along with default values if not given
                 import inspect
                 signature = inspect.signature(_pypads_env.callback)
                 defaults = {k: v.default for k, v in signature.parameters.items() if
                             v.default is not inspect.Parameter.empty}
-                relevant_parameters = [{"name": k, "value": v} for k, v in {**defaults, **_kwargs}.items()]
+                relevant_parameters = [{"name": "{}.{}".format(ctx.__class__.__name__, k), "value": v} for k, v in
+                                       {**defaults, **_kwargs}.items()]
+            elif isinstance(ctx, torch.nn.Module):
+                params = _get_relevant_parameters(ctx)
+                relevant_parameters = [{"name": k, "value": v} for k,v in params.items()]
             else:
                 logger.warning('Hyper Parameters extraction of {} failed'.format(str(ctx)))
         for i, param in enumerate(relevant_parameters):
