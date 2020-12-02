@@ -52,6 +52,23 @@ def sklearn_pipeline_experiment():
     search.predict(X_digits)
 
 
+def sklearn_ensemble_learning_experiment():
+    from sklearn import datasets
+    from sklearn.metrics.classification import f1_score
+    from sklearn.ensemble import RandomForestClassifier
+
+    # load the iris datasets
+    dataset = datasets.load_iris()
+
+    # fit a model to the data
+    model = RandomForestClassifier()
+    model.fit(dataset.data, dataset.target)
+    # make predictions
+    expected = dataset.target
+    predicted = model.predict(dataset.data)
+    # summarize the fit of the model
+    print("Score: " + str(f1_score(expected, predicted, average="macro")))
+
 # !---- Experiments ----
 
 class BaseSklearnTest(BaseTest):

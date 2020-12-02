@@ -4,7 +4,7 @@ fragments:
       hooks: pypads_init
     !!python/rSeg '(fit|.fit_predict|fit_transform)$':
       hooks: pypads_fit
-    !!python/rSeg '(fit_predict|predict|score)$':
+    !!python/rSeg '(fit_predict|predict)$':
       hooks: pypads_predict
     !!python/rSeg '(fit_transform|transform)$':
       hooks: pypads_transform
@@ -42,419 +42,420 @@ mappings:
           '@rdf':
             in_context: http://www.padre-lab.eu/onto/Metric
         hooks: pypads_metric
-    !!python/pPath 'metrics.cluster':
-      !!python/rSeg '^(?!_).+':
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/ClusterMetric
-        hooks: pypads_metric
-    !!python/pPath 'metrics.cluster.supervised':
-      !!python/rSeg '^(?!_).+':
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/SupervisedClusterMetric
-        hooks: pypads_metric
-    !!python/pPath 'metrics.cluster.unsupervised':
-      !!python/rSeg '^(?!_).+':
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/UnsupervisedClusterMetric
-        hooks: pypads_metric
-    !!python/pPath 'metrics.regression':
-      !!python/rSeg '^(?!_).+':
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/RegressionMetric
-        hooks: pypads_metric
-    !!python/pPath 'metrics.classification':
-      !!python/rSeg '^(?!_).+':
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/ClassificationMetric
-        hooks: pypads_metric
-      !!python/pPath 'accuracy_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.AccuracyScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html#sklearn.metrics.accuracy_score
-              padre:implements: padre:AccuracyScore
-              rdfs:description: In multilabel classification, this function computes subset accuracy;
-                the set of labels predicted for a sample must *exactly* match the
-                corresponding set of labels in y_true.
-              rdfs:label: Sklearn implementation of Accuracy classification score
-              algorithm:
-                '@schema':
-                  '@id': padre:AccuracyScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://en.wikipedia.org/wiki/Accuracy_and_precision', 'https://scikit-learn.org/stable/modules/model_evaluation.html#accuracy-score']
-                  rdfs:description: Fraction (default) or the count (normalize=False) of correct predictions.
-                  rdfs:label: Accuracy classification score
-      !!python/pPath 'confusion_matrix':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.ConfusionMatrix
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix
-              padre:implements: padre:ConfusionMatrix
-              rdfs:description: Compute confusion matrix to evaluate the accuracy of a classification.
-              rdfs:label: Sklearn implementation of Confusion matrix
-              algorithm:
-                '@schema':
-                  '@id': padre:ConfusionMatrix
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix', 'https://en.wikipedia.org/wiki/Confusion_matrix']
-                  rdfs:description: By definition a confusion matrix :math:`C` is such that :math:`C_{i, j}`
-                    is equal to the number of observations known to be in group :math:`i` but
-                    predicted to be in group :math:`j`.
-                  rdfs:label: Confusion matrix
-      !!python/pPath 'multilabel_confusion_matrix':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.MultilabelConfusionMatrix
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html#sklearn.metrics.multilabel_confusion_matrix
-              padre:implements: padre:MultilabelConfusionMatrix
-              rdfs:description: Compute class-wise (default) or sample-wise (samplewise=True) multilabel
-                confusion matrix to evaluate the accuracy of a classification, and output
-                confusion matrices for each class or sample.
-              rdfs:label: Sklearn implementation of Multilabel Confusion matrix
-              algorithm:
-                '@schema':
-                  '@id': padre:MultilabelConfusionMatrix
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#multilabel-confusion-matrix
-                  rdfs:description: In multilabel confusion matrix :math:`MCM`, the count of true negatives
-                    is :math:`MCM_{:,0,0}`, false negatives is :math:`MCM_{:,1,0}`,
-                    true positives is :math:`MCM_{:,1,1}` and false positives is
-                    :math:`MCM_{:,0,1}`.
-                  rdfs:label: Multilabel Confusion matrix
-      !!python/pPath 'cohen_kappa_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.CohenKappaScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html#sklearn.metrics.cohen_kappa_score
-              padre:implements: padre:CohenKappaScore
-              rdfs:description: This function computes Cohen's kappa [1]_, a score that expresses the level
-                of agreement between two annotators on a classification problem.
-              rdfs:label: Sklearn implementation of Cohen's kappa
-              algorithm:
-                '@schema':
-                  '@id': padre:CohenKappaScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#cohen-kappa', 'https://en.wikipedia.org/wiki/Cohen%27s_kappa']
-                  rdfs:description: "A statistic that measures inter-annotator agreement."
-                  rdfs:label: Cohen's kappa
-      !!python/pPath 'jaccard_similarity_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.JaccardSimilarityScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html#sklearn.metrics.jaccard_score
-              padre:implements: padre:JaccardScore
-              rdfs:description: null
-              rdfs:label: Old sklearn implementation of Jaccard Score
-      !!python/pPath 'jaccard_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.JaccardScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html#sklearn.metrics.jaccard_score
-              padre:implements: padre:JaccardScore
-              rdfs:description: The Jaccard index [1], or Jaccard similarity coefficient, defined as the size of the intersection divided by the size of the union of two label sets, is used to compare set of predicted labels for a sample to the corresponding set of labels in y_true.
-              rdfs:label: Sklearn implementation of Jaccard Similarity Score
-              algorithm:
-                '@schema':
-                  '@id': padre:JaccardScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#jaccard-similarity-score', 'https://en.wikipedia.org/wiki/Jaccard_index']
-                  rdfs:description: Aaverage of Jaccard similarity coefficients, also called the Jaccard index, between pairs of label sets.
-                  rdfs:label: Jaccard Similarity Score
-      !!python/pPath 'matthews_corrcoef':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.MatthewsCorrelationCoefficient
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.matthews_corrcoef.html#sklearn.metrics.matthews_corrcoef
-              padre:implements: padre:MatthewsCorrelationCoefficient
-              rdfs:description: Compute the Matthews correlation coefficient (MCC)
-              rdfs:label: Sklearn implementation of Matthews correlation coefficient
-              algorithm:
-                '@schema':
-                  '@id': padre:MatthewsCorrelationCoefficient
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#matthews-corrcoef', 'https://en.wikipedia.org/wiki/Matthews_correlation_coefficient']
-                  rdfs:description: The Matthews correlation coefficient is used in machine learning as a measure of the quality of binary and multiclass classifications. It takes into account true and false positives and negatives and is generally regarded as a balanced measure which can be used even if the classes are of very different sizes. The MCC is in essence a correlation coefficient value between -1 and +1. A coefficient of +1 represents a perfect prediction, 0 an average random prediction and -1 an inverse prediction. The statistic is also known as the phi coefficient.
-                  rdfs:label: Matthews correlation coefficient (MCC)
-      !!python/pPath 'zero_one_loss':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.ZeroOneLoss
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.zero_one_loss.html#sklearn.metrics.zero_one_loss
-              padre:implements: padre:ZeroOneLoss
-              rdfs:description: Zero-one classification loss.
-              rdfs:label: Sklearn implementation of Zero-one classification loss
-              algorithm:
-                '@schema':
-                  '@id': padre:ZeroOneLoss
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#zero-one-loss']
-                  rdfs:description: Sum or the average of the 0-1 classification loss.
-                  rdfs:label: Zero-one classification loss
-      !!python/pPath 'f1_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.F1Score
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html#sklearn.metrics.f1_score
-              padre:implements: padre:FBetaScore
-              rdfs:description: The F1 score can be interpreted as a weighted average of the precision and recall, where an F1 score reaches its best value at 1 and worst score at 0. The relative contribution of precision and recall to the F1 score are equal.
-              rdfs:label: Sklearn implementation of balanced F-score
-      !!python/pPath 'fbeta_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.FBetaScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fbeta_score.html#sklearn.metrics.fbeta_score
-              padre:implements: padre:FScore
-              rdfs:description: Compute the F-beta score
-              rdfs:label: Sklearn implementation of F-score
-              algorithm:
-                '@schema':
-                  '@id': padre:FBetaScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics', 'https://en.wikipedia.org/wiki/F-score']
-                  rdfs:description: The F-beta score is the weighted harmonic mean of precision and recall, reaching its optimal value at 1 and its worst value at 0.
-                  rdfs:label: F-score
-      !!python/pPath 'precision_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.PrecisionScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html#sklearn.metrics.precision_score
-              padre:implements: padre:PrecisionScore
-              rdfs:description: The precision is the ratio tp / (tp + fp) where tp is the number of true positives and fp the number of false positives. The precision is intuitively the ability of the classifier not to label as positive a sample that is negative.
-              rdfs:label: Sklearn implementation of Precision
-              algorithm:
-                '@schema':
-                  '@id': padre:PrecisionScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics
-                  rdfs:description: Intuitively, precision is the ability of the classifier not to label as positive a sample that is negative.
-                  rdfs:label: Precision
-      !!python/pPath 'recall_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.RecallScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.recall_score.html#sklearn.metrics.recall_score
-              padre:implements: padre:RecallScore
-              rdfs:description: The recall is the ratio tp / (tp + fn) where tp is the number of true positives and fn the number of false negatives. The recall is intuitively the ability of the classifier to find all the positive samples.
-              rdfs:label: Sklearn implementation of Recall
-              algorithm:
-                '@schema':
-                  '@id': padre:RecallScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics
-                  rdfs:description: Intuitively, recall is the ability of the classifier to find all the positive samples.
-                  rdfs:label: Recall
-      !!python/pPath 'balanced_accuracy_score':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.BalancedAccuracyScore
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html#sklearn.metrics.balanced_accuracy_score
-              padre:implements: padre:BalancedAccuracyScore
-              rdfs:description: The balanced accuracy in binary and multiclass classification problems to deal with imbalanced datasets. It is defined as the average of recall obtained on each class.
-              rdfs:label: Sklearn implementation of Balanced Accuracy
-              algorithm:
-                '@schema':
-                  '@id': padre:BalancedAccuracyScore
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#balanced-accuracy-score
-                  rdfs:description: Balanced Accuracy is the macro-average of recall scores per class or, equivalently, raw accuracy where each sample is weighted according to the inverse prevalence of its true class. Thus for balanced datasets, the score is equal to accuracy.
-                  rdfs:label: Balanced Accuracy
-      !!python/pPath 'hamming_loss':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.HammingLoss
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.hamming_loss.html#sklearn.metrics.hamming_loss
-              padre:implements: padre:HammingLoss
-              rdfs:description: Computes the average Hamming loss.
-              rdfs:label: Sklearn implementation of Hamming Loss
-              algorithm:
-                '@schema':
-                  '@id': padre:HammingLoss
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#hamming-loss', 'https://en.wikipedia.org/wiki/Hamming_distance']
-                  rdfs:description: The Hamming loss is the fraction of labels that are incorrectly predicted.
-                  rdfs:label: Hamming Loss
-      !!python/pPath 'log_loss':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.LogLoss
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html#sklearn.metrics.log_loss
-              padre:implements: padre:LogLoss
-              rdfs:description: Computes the logistic loss.
-              rdfs:label: Sklearn implementation of Logistic Loss
-              algorithm:
-                '@schema':
-                  '@id': padre:LogLoss
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#log-loss
-                  rdfs:description: Log loss, also called logistic regression loss or cross-entropy loss, is defined on probability estimates. It is commonly used in (multinomial) logistic regression and neural networks, as well as in some variants of expectation-maximization, and can be used to evaluate the probability outputs of a classifier instead of its discrete predictions.
-                  rdfs:label: ['logistic loss', 'cross-entropy loss']
-      !!python/pPath 'hinge_loss':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.HingeLoss
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.hinge_loss.html#sklearn.metrics.hinge_loss
-              padre:implements: padre:HingeLoss
-              rdfs:description: The hinge_loss function computes the average distance between the model and the data using hinge loss, a one-sided metric that considers only prediction errors. (Hinge loss is used in maximal margin classifiers such as support vector machines.)
-              rdfs:label: Sklearn implementation of Average Hinge Loss
-              algorithm:
-                '@schema':
-                  '@id': padre:HingeLoss
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#hinge-loss', 'https://en.wikipedia.org/wiki/Hinge_loss']
-                  rdfs:description: In machine learning, the hinge loss is a loss function used for training classifiers. The hinge loss is used for "maximum-margin" classification, most notably for support vector machines.
-                  rdfs:label: Average hinge loss
-      !!python/pPath 'brier_score_loss':
-        hooks: pypads_metric
-        data:
-          metric:
-            '@schema':
-              '@id': padre:sklearn.metrics.classification.BrierScoreLoss
-              '@type': padre:MetricImplementation
-              padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.brier_score_loss.html#sklearn.metrics.brier_score_loss
-              padre:implements: padre:BrierScoreLoss
-              rdfs:description: Compute the Brier score.
-              rdfs:label: Sklearn implementation of Brier Score
-              algorithm:
-                '@schema':
-                  '@id': padre:BrierScoreLoss
-                  '@type': padre:MetricAlgorithm
-                  padre:documentation: 'https://en.wikipedia.org/wiki/Brier_score'
-                  rdfs:description: The smaller the Brier score, the better, hence the naming with “loss”. Across all items in a set N predictions, the Brier score measures the mean squared difference between (1) the predicted probability assigned to the possible outcomes for item i, and (2) the actual outcome. Therefore, the lower the Brier score is for a set of predictions, the better the predictions are calibrated. Note that the Brier score always takes on a value between zero and one, since this is the largest possible difference between a predicted probability (which must be between zero and one) and the actual outcome (which can take on values of only 0 and 1). The Brier loss is composed of refinement loss and calibration loss. The Brier score is appropriate for binary and categorical outcomes that can be structured as true or false, but is inappropriate for ordinal variables which can take on three or more values (this is because the Brier score assumes that all possible outcomes are equivalently “distant” from one another). Which label is considered to be the positive label is controlled via the parameter pos_label, which defaults to 1.
-                  rdfs:label: Brier Score
-    !!python/pPath 'datasets.base':
-      !!python/rSeg '(?!^load_data$)load_.*':
-        data:
-          '@rdf':
-            in_context: http://www.padre-lab.eu/onto/Dataset
-        hooks: pypads_dataset
-      !!python/rSeg 'load_iris':
-        data:
-          dataset:
-            "@schema":
-              '@id': padre:Iris
-              '@type': padre:MultivariatDataset
-              padre:documentation: https://scikit-learn.org/stable/datasets/index.html#iris-dataset
-              padre:author: R.A. Fisher
-              rdfs:label: Iris plants dataset
-              rdfs:description: The famous Iris database, first used by Sir R.A. Fisher. The dataset is taken from Fisher’s paper. Note that it’s the same as in R, but not as in the UCI Machine Learning Repository, which has two wrong data points. This is perhaps the best known database to be found in the pattern recognition literature. Fisher’s paper is a classic in the field and is referenced frequently to this day. (See Duda & Hart, for example.) The data set contains 3 classes of 50 instances each, where each class refers to a type of iris plant. One class is linearly separable from the other 2; the latter are NOT linearly separable from each other.
-              padre:hasCharacteristic:
-                - '@id': padre:Iris#InstanceNumber
-                  '@type': padre:InstanceNumber
-                  rdfs:label: Instance Number
-                  padre:dataType: padre:Integer
-                  padre:hasData: 150
-                - '@id': padre:Iris#ClassDistribution
-                  '@type': padre:ClassDistribution
-                  rdfs:label: Class Distribution
-                  padre:dataType: padre:Float
-                  padre:hasData:
-                    - '@id': padre:Iris#SetosaShare
-                      '@type': padre:ClassShare
-                      padre:share: 33.3
-                      padre:of: padre:Iris#Setosa
-                    - '@id': padre:Iris#VersicolourShare
-                      '@type': padre:ClassShare
-                      padre:share: 33.3
-                      padre:of: padre:Iris#Versicolour
-                    - '@id': padre:Iris#VirginicaShare
-                      '@type': padre:ClassShare
-                      padre:share: 33.3
-                      padre:of: padre:Iris#Virginica
-              padre:hasFeature:
-                - '@id': padre:Iris#SepalLength
-                  '@type': padre:Feature
-                  rdfs:label: Sepal Length
-                  padre:unitType: padre:Length
-                  padre:unit: padre:CentiMeter
-                  padre:dataType: padre:Integer
-                  padre:measurement: padre:Ratio
-                - '@id': padre:Iris#SepalWidth
-                  '@type': padre:Feature
-                  rdfs:label: Sepal Width
-                  padre:unitType: padre:Length
-                  padre:unit: padre:CentiMeter
-                  padre:dataType: padre:Integer
-                  padre:measurement: padre:Ratio
-                - '@id': padre:Iris#PetalLength
-                  '@type': padre:Feature
-                  rdfs:label: Petal Length
-                  padre:unitType: padre:Length
-                  padre:unit: padre:CentiMeter
-                  padre:dataType: padre:Integer
-                  padre:measurement: padre:Ratio
-                - '@id': padre:Iris#PetalWidth
-                  '@type': padre:Feature
-                  rdfs:label: Petal Width
-                  padre:unitType: padre:Length
-                  padre:unit: padre:CentiMeter
-                  padre:dataType: padre:Integer
-                  padre:measurement: padre:Ratio
-                - '@id': padre:Iris#Class
-                  '@type': padre:Classification
-                  rdfs:label: Classification
-                  padre:dataType: padre:Character
-                  padre:measurement: padre:Nominal
-                  padre:hasClass:
-                    - '@id': padre:Iris#Setosa
-                      '@type': padre:ClassData
-                    - '@id': padre:Iris#Versicolour
-                      '@type': padre:ClassData
-                    - '@id': padre:Iris#Virginica
-                      '@type': padre:ClassData
-        hooks: pypads_dataset
+      !!python/pPath 'cluster':
+        !!python/rSeg '^(?!_).+':
+          data:
+            '@rdf':
+              in_context: http://www.padre-lab.eu/onto/ClusterMetric
+          hooks: pypads_metric
+        !!python/rSeg '.*supervised':
+          !!python/rSeg '^(?!_).+':
+            data:
+              '@rdf':
+                in_context: http://www.padre-lab.eu/onto/SupervisedClusterMetric
+            hooks: pypads_metric
+        !!python/rSeg '.*unsupervised':
+          !!python/rSeg '^(?!_).+':
+            data:
+              '@rdf':
+                in_context: http://www.padre-lab.eu/onto/UnsupervisedClusterMetric
+            hooks: pypads_metric
+      !!python/rSeg '.*regression':
+        !!python/rSeg '^(?!_).+':
+          data:
+            '@rdf':
+              in_context: http://www.padre-lab.eu/onto/RegressionMetric
+          hooks: pypads_metric
+      !!python/rSeg '.*classification':
+        !!python/rSeg '^(?!_).+':
+          data:
+            '@rdf':
+              in_context: http://www.padre-lab.eu/onto/ClassificationMetric
+          hooks: pypads_metric
+        !!python/pPath 'accuracy_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.AccuracyScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html#sklearn.metrics.accuracy_score
+                padre:implements: padre:AccuracyScore
+                rdfs:description: In multilabel classification, this function computes subset accuracy;
+                  the set of labels predicted for a sample must *exactly* match the
+                  corresponding set of labels in y_true.
+                rdfs:label: Sklearn implementation of Accuracy classification score
+                algorithm:
+                  '@schema':
+                    '@id': padre:AccuracyScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://en.wikipedia.org/wiki/Accuracy_and_precision', 'https://scikit-learn.org/stable/modules/model_evaluation.html#accuracy-score']
+                    rdfs:description: Fraction (default) or the count (normalize=False) of correct predictions.
+                    rdfs:label: Accuracy classification score
+        !!python/pPath 'confusion_matrix':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.ConfusionMatrix
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix
+                padre:implements: padre:ConfusionMatrix
+                rdfs:description: Compute confusion matrix to evaluate the accuracy of a classification.
+                rdfs:label: Sklearn implementation of Confusion matrix
+                algorithm:
+                  '@schema':
+                    '@id': padre:ConfusionMatrix
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix', 'https://en.wikipedia.org/wiki/Confusion_matrix']
+                    rdfs:description: By definition a confusion matrix :math:`C` is such that :math:`C_{i, j}`
+                      is equal to the number of observations known to be in group :math:`i` but
+                      predicted to be in group :math:`j`.
+                    rdfs:label: Confusion matrix
+        !!python/pPath 'multilabel_confusion_matrix':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.MultilabelConfusionMatrix
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html#sklearn.metrics.multilabel_confusion_matrix
+                padre:implements: padre:MultilabelConfusionMatrix
+                rdfs:description: Compute class-wise (default) or sample-wise (samplewise=True) multilabel
+                  confusion matrix to evaluate the accuracy of a classification, and output
+                  confusion matrices for each class or sample.
+                rdfs:label: Sklearn implementation of Multilabel Confusion matrix
+                algorithm:
+                  '@schema':
+                    '@id': padre:MultilabelConfusionMatrix
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#multilabel-confusion-matrix
+                    rdfs:description: In multilabel confusion matrix :math:`MCM`, the count of true negatives
+                      is :math:`MCM_{:,0,0}`, false negatives is :math:`MCM_{:,1,0}`,
+                      true positives is :math:`MCM_{:,1,1}` and false positives is
+                      :math:`MCM_{:,0,1}`.
+                    rdfs:label: Multilabel Confusion matrix
+        !!python/pPath 'cohen_kappa_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.CohenKappaScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html#sklearn.metrics.cohen_kappa_score
+                padre:implements: padre:CohenKappaScore
+                rdfs:description: This function computes Cohen's kappa [1]_, a score that expresses the level
+                  of agreement between two annotators on a classification problem.
+                rdfs:label: Sklearn implementation of Cohen's kappa
+                algorithm:
+                  '@schema':
+                    '@id': padre:CohenKappaScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#cohen-kappa', 'https://en.wikipedia.org/wiki/Cohen%27s_kappa']
+                    rdfs:description: "A statistic that measures inter-annotator agreement."
+                    rdfs:label: Cohen's kappa
+        !!python/pPath 'jaccard_similarity_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.JaccardSimilarityScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html#sklearn.metrics.jaccard_score
+                padre:implements: padre:JaccardScore
+                rdfs:description: null
+                rdfs:label: Old sklearn implementation of Jaccard Score
+        !!python/pPath 'jaccard_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.JaccardScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html#sklearn.metrics.jaccard_score
+                padre:implements: padre:JaccardScore
+                rdfs:description: The Jaccard index [1], or Jaccard similarity coefficient, defined as the size of the intersection divided by the size of the union of two label sets, is used to compare set of predicted labels for a sample to the corresponding set of labels in y_true.
+                rdfs:label: Sklearn implementation of Jaccard Similarity Score
+                algorithm:
+                  '@schema':
+                    '@id': padre:JaccardScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#jaccard-similarity-score', 'https://en.wikipedia.org/wiki/Jaccard_index']
+                    rdfs:description: Aaverage of Jaccard similarity coefficients, also called the Jaccard index, between pairs of label sets.
+                    rdfs:label: Jaccard Similarity Score
+        !!python/pPath 'matthews_corrcoef':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.MatthewsCorrelationCoefficient
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.matthews_corrcoef.html#sklearn.metrics.matthews_corrcoef
+                padre:implements: padre:MatthewsCorrelationCoefficient
+                rdfs:description: Compute the Matthews correlation coefficient (MCC)
+                rdfs:label: Sklearn implementation of Matthews correlation coefficient
+                algorithm:
+                  '@schema':
+                    '@id': padre:MatthewsCorrelationCoefficient
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#matthews-corrcoef', 'https://en.wikipedia.org/wiki/Matthews_correlation_coefficient']
+                    rdfs:description: The Matthews correlation coefficient is used in machine learning as a measure of the quality of binary and multiclass classifications. It takes into account true and false positives and negatives and is generally regarded as a balanced measure which can be used even if the classes are of very different sizes. The MCC is in essence a correlation coefficient value between -1 and +1. A coefficient of +1 represents a perfect prediction, 0 an average random prediction and -1 an inverse prediction. The statistic is also known as the phi coefficient.
+                    rdfs:label: Matthews correlation coefficient (MCC)
+        !!python/pPath 'zero_one_loss':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.ZeroOneLoss
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.zero_one_loss.html#sklearn.metrics.zero_one_loss
+                padre:implements: padre:ZeroOneLoss
+                rdfs:description: Zero-one classification loss.
+                rdfs:label: Sklearn implementation of Zero-one classification loss
+                algorithm:
+                  '@schema':
+                    '@id': padre:ZeroOneLoss
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#zero-one-loss']
+                    rdfs:description: Sum or the average of the 0-1 classification loss.
+                    rdfs:label: Zero-one classification loss
+        !!python/pPath 'f1_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.F1Score
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html#sklearn.metrics.f1_score
+                padre:implements: padre:FBetaScore
+                rdfs:description: The F1 score can be interpreted as a weighted average of the precision and recall, where an F1 score reaches its best value at 1 and worst score at 0. The relative contribution of precision and recall to the F1 score are equal.
+                rdfs:label: Sklearn implementation of balanced F-score
+        !!python/pPath 'fbeta_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.FBetaScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fbeta_score.html#sklearn.metrics.fbeta_score
+                padre:implements: padre:FScore
+                rdfs:description: Compute the F-beta score
+                rdfs:label: Sklearn implementation of F-score
+                algorithm:
+                  '@schema':
+                    '@id': padre:FBetaScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics', 'https://en.wikipedia.org/wiki/F-score']
+                    rdfs:description: The F-beta score is the weighted harmonic mean of precision and recall, reaching its optimal value at 1 and its worst value at 0.
+                    rdfs:label: F-score
+        !!python/pPath 'precision_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.PrecisionScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html#sklearn.metrics.precision_score
+                padre:implements: padre:PrecisionScore
+                rdfs:description: The precision is the ratio tp / (tp + fp) where tp is the number of true positives and fp the number of false positives. The precision is intuitively the ability of the classifier not to label as positive a sample that is negative.
+                rdfs:label: Sklearn implementation of Precision
+                algorithm:
+                  '@schema':
+                    '@id': padre:PrecisionScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics
+                    rdfs:description: Intuitively, precision is the ability of the classifier not to label as positive a sample that is negative.
+                    rdfs:label: Precision
+        !!python/pPath 'recall_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.RecallScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.recall_score.html#sklearn.metrics.recall_score
+                padre:implements: padre:RecallScore
+                rdfs:description: The recall is the ratio tp / (tp + fn) where tp is the number of true positives and fn the number of false negatives. The recall is intuitively the ability of the classifier to find all the positive samples.
+                rdfs:label: Sklearn implementation of Recall
+                algorithm:
+                  '@schema':
+                    '@id': padre:RecallScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics
+                    rdfs:description: Intuitively, recall is the ability of the classifier to find all the positive samples.
+                    rdfs:label: Recall
+        !!python/pPath 'balanced_accuracy_score':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.BalancedAccuracyScore
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html#sklearn.metrics.balanced_accuracy_score
+                padre:implements: padre:BalancedAccuracyScore
+                rdfs:description: The balanced accuracy in binary and multiclass classification problems to deal with imbalanced datasets. It is defined as the average of recall obtained on each class.
+                rdfs:label: Sklearn implementation of Balanced Accuracy
+                algorithm:
+                  '@schema':
+                    '@id': padre:BalancedAccuracyScore
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#balanced-accuracy-score
+                    rdfs:description: Balanced Accuracy is the macro-average of recall scores per class or, equivalently, raw accuracy where each sample is weighted according to the inverse prevalence of its true class. Thus for balanced datasets, the score is equal to accuracy.
+                    rdfs:label: Balanced Accuracy
+        !!python/pPath 'hamming_loss':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.HammingLoss
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.hamming_loss.html#sklearn.metrics.hamming_loss
+                padre:implements: padre:HammingLoss
+                rdfs:description: Computes the average Hamming loss.
+                rdfs:label: Sklearn implementation of Hamming Loss
+                algorithm:
+                  '@schema':
+                    '@id': padre:HammingLoss
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#hamming-loss', 'https://en.wikipedia.org/wiki/Hamming_distance']
+                    rdfs:description: The Hamming loss is the fraction of labels that are incorrectly predicted.
+                    rdfs:label: Hamming Loss
+        !!python/pPath 'log_loss':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.LogLoss
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html#sklearn.metrics.log_loss
+                padre:implements: padre:LogLoss
+                rdfs:description: Computes the logistic loss.
+                rdfs:label: Sklearn implementation of Logistic Loss
+                algorithm:
+                  '@schema':
+                    '@id': padre:LogLoss
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: https://scikit-learn.org/stable/modules/model_evaluation.html#log-loss
+                    rdfs:description: Log loss, also called logistic regression loss or cross-entropy loss, is defined on probability estimates. It is commonly used in (multinomial) logistic regression and neural networks, as well as in some variants of expectation-maximization, and can be used to evaluate the probability outputs of a classifier instead of its discrete predictions.
+                    rdfs:label: ['logistic loss', 'cross-entropy loss']
+        !!python/pPath 'hinge_loss':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.HingeLoss
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.hinge_loss.html#sklearn.metrics.hinge_loss
+                padre:implements: padre:HingeLoss
+                rdfs:description: The hinge_loss function computes the average distance between the model and the data using hinge loss, a one-sided metric that considers only prediction errors. (Hinge loss is used in maximal margin classifiers such as support vector machines.)
+                rdfs:label: Sklearn implementation of Average Hinge Loss
+                algorithm:
+                  '@schema':
+                    '@id': padre:HingeLoss
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: ['https://scikit-learn.org/stable/modules/model_evaluation.html#hinge-loss', 'https://en.wikipedia.org/wiki/Hinge_loss']
+                    rdfs:description: In machine learning, the hinge loss is a loss function used for training classifiers. The hinge loss is used for "maximum-margin" classification, most notably for support vector machines.
+                    rdfs:label: Average hinge loss
+        !!python/pPath 'brier_score_loss':
+          hooks: pypads_metric
+          data:
+            metric:
+              '@schema':
+                '@id': padre:sklearn.metrics.classification.BrierScoreLoss
+                '@type': padre:MetricImplementation
+                padre:documentation: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.brier_score_loss.html#sklearn.metrics.brier_score_loss
+                padre:implements: padre:BrierScoreLoss
+                rdfs:description: Compute the Brier score.
+                rdfs:label: Sklearn implementation of Brier Score
+                algorithm:
+                  '@schema':
+                    '@id': padre:BrierScoreLoss
+                    '@type': padre:MetricAlgorithm
+                    padre:documentation: 'https://en.wikipedia.org/wiki/Brier_score'
+                    rdfs:description: The smaller the Brier score, the better, hence the naming with “loss”. Across all items in a set N predictions, the Brier score measures the mean squared difference between (1) the predicted probability assigned to the possible outcomes for item i, and (2) the actual outcome. Therefore, the lower the Brier score is for a set of predictions, the better the predictions are calibrated. Note that the Brier score always takes on a value between zero and one, since this is the largest possible difference between a predicted probability (which must be between zero and one) and the actual outcome (which can take on values of only 0 and 1). The Brier loss is composed of refinement loss and calibration loss. The Brier score is appropriate for binary and categorical outcomes that can be structured as true or false, but is inappropriate for ordinal variables which can take on three or more values (this is because the Brier score assumes that all possible outcomes are equivalently “distant” from one another). Which label is considered to be the positive label is controlled via the parameter pos_label, which defaults to 1.
+                    rdfs:label: Brier Score
+    !!python/pPath 'datasets':
+      !!python/rSeg '.*base':
+        !!python/rSeg '(?!^load_data$)load_.*':
+          data:
+            '@rdf':
+              in_context: http://www.padre-lab.eu/onto/Dataset
+          hooks: pypads_dataset
+        !!python/rSeg 'load_iris':
+          data:
+            dataset:
+              "@schema":
+                '@id': padre:Iris
+                '@type': padre:MultivariatDataset
+                padre:documentation: https://scikit-learn.org/stable/datasets/index.html#iris-dataset
+                padre:author: R.A. Fisher
+                rdfs:label: Iris plants dataset
+                rdfs:description: The famous Iris database, first used by Sir R.A. Fisher. The dataset is taken from Fisher’s paper. Note that it’s the same as in R, but not as in the UCI Machine Learning Repository, which has two wrong data points. This is perhaps the best known database to be found in the pattern recognition literature. Fisher’s paper is a classic in the field and is referenced frequently to this day. (See Duda & Hart, for example.) The data set contains 3 classes of 50 instances each, where each class refers to a type of iris plant. One class is linearly separable from the other 2; the latter are NOT linearly separable from each other.
+                padre:hasCharacteristic:
+                  - '@id': padre:Iris#InstanceNumber
+                    '@type': padre:InstanceNumber
+                    rdfs:label: Instance Number
+                    padre:dataType: padre:Integer
+                    padre:hasData: 150
+                  - '@id': padre:Iris#ClassDistribution
+                    '@type': padre:ClassDistribution
+                    rdfs:label: Class Distribution
+                    padre:dataType: padre:Float
+                    padre:hasData:
+                      - '@id': padre:Iris#SetosaShare
+                        '@type': padre:ClassShare
+                        padre:share: 33.3
+                        padre:of: padre:Iris#Setosa
+                      - '@id': padre:Iris#VersicolourShare
+                        '@type': padre:ClassShare
+                        padre:share: 33.3
+                        padre:of: padre:Iris#Versicolour
+                      - '@id': padre:Iris#VirginicaShare
+                        '@type': padre:ClassShare
+                        padre:share: 33.3
+                        padre:of: padre:Iris#Virginica
+                padre:hasFeature:
+                  - '@id': padre:Iris#SepalLength
+                    '@type': padre:Feature
+                    rdfs:label: Sepal Length
+                    padre:unitType: padre:Length
+                    padre:unit: padre:CentiMeter
+                    padre:dataType: padre:Integer
+                    padre:measurement: padre:Ratio
+                  - '@id': padre:Iris#SepalWidth
+                    '@type': padre:Feature
+                    rdfs:label: Sepal Width
+                    padre:unitType: padre:Length
+                    padre:unit: padre:CentiMeter
+                    padre:dataType: padre:Integer
+                    padre:measurement: padre:Ratio
+                  - '@id': padre:Iris#PetalLength
+                    '@type': padre:Feature
+                    rdfs:label: Petal Length
+                    padre:unitType: padre:Length
+                    padre:unit: padre:CentiMeter
+                    padre:dataType: padre:Integer
+                    padre:measurement: padre:Ratio
+                  - '@id': padre:Iris#PetalWidth
+                    '@type': padre:Feature
+                    rdfs:label: Petal Width
+                    padre:unitType: padre:Length
+                    padre:unit: padre:CentiMeter
+                    padre:dataType: padre:Integer
+                    padre:measurement: padre:Ratio
+                  - '@id': padre:Iris#Class
+                    '@type': padre:Classification
+                    rdfs:label: Classification
+                    padre:dataType: padre:Character
+                    padre:measurement: padre:Nominal
+                    padre:hasClass:
+                      - '@id': padre:Iris#Setosa
+                        '@type': padre:ClassData
+                      - '@id': padre:Iris#Versicolour
+                        '@type': padre:ClassData
+                      - '@id': padre:Iris#Virginica
+                        '@type': padre:ClassData
+          hooks: pypads_dataset
     !!python/pPath 'model_selection':
       !!python/pPath '_search.BaseSearchCV':
         !!python/pPath 'fit':

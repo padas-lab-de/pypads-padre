@@ -70,7 +70,7 @@ class ParameterSearchILF(InjectionLogger):
     class ParameterSearchOutput(OutputModel):
         category: str = "ParameterSearchOutput"
 
-        gridsearch_cv: str = ...
+        gridsearch_cv: str = None
 
         class Config:
             orm_mode = True

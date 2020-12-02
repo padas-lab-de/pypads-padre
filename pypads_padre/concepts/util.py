@@ -79,7 +79,10 @@ def _tolist(x):
     elif hasattr(x, 'values'):
         return x.values.tolist()
     else:
-        raise TypeError("%s cannot be converted to a list" % type(x))
+        try:
+            list(x)
+        except Exception as e:
+            raise TypeError("%s cannot be converted to a list due to error: %s" % (type(x), str(e)))
 
 
 def validate_type(value):

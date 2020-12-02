@@ -30,9 +30,7 @@ class MetricTorch(MetricILF):
         :return:
         """
         result = _pypads_result
-        # metric: Union[MetricTO, MetricMetaModel] = MetricTO(parent=_logger_output,
-        #                                                     as_artifact=_pypads_artifact_fallback,
-        #                                                     additional_data=_pypads_env.data)
+
         if result is not None:
             from torch import Tensor
             if isinstance(result, Tensor):

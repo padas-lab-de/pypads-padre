@@ -1,16 +1,11 @@
-from typing import List, Type, Union
+from typing import Type, Union
 
 from pydantic import BaseModel
-
-from pypads import logger
 from pypads.app.env import InjectionLoggerEnv
-from pypads.app.injections.injection import InjectionLogger
+from pypads.app.injections.injection import MultiInjectionLogger
 from pypads.app.injections.tracked_object import TrackedObject, LoggerOutput
-from pypads.importext.versioning import LibSelector
-from pypads.model.logger_call import ContextModel
 from pypads.model.logger_output import OutputModel, TrackedObjectModel
 from pypads.model.models import IdReference
-from pypads.utils.logging_util import data_str, data_path, add_data
 
 
 class ModelTO(TrackedObject):
@@ -31,7 +26,7 @@ class ModelTO(TrackedObject):
         return cls.TorchModel
 
 
-class TorchModelILF(InjectionLogger):
+class TorchModelILF(MultiInjectionLogger):
     """
     Function logging everything we can about a pytorch model. This stores information on layers, weights, gradients, etc.
 
@@ -51,6 +46,10 @@ class TorchModelILF(InjectionLogger):
         type: str = "TorchModelILF-Output"
         model_to: IdReference = ...
 
+    @staticmethod
+    def finalize_output(pads, logger_call, output, *args, **kwargs):
+        pass
+
     @classmethod
     def output_schema_class(cls) -> Type[OutputModel]:
         return cls.TorchModelILFOutput
@@ -62,5 +61,12 @@ class TorchModelILF(InjectionLogger):
         """
 
         mapping_data = _pypads_env.data
+
         # Todo registering hooks and extracting information on the torch model.
+        def gradient_hook():
+            pass
+
+        def weights_hook():
+            pass
+
         pass

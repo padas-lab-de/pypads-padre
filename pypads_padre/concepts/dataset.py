@@ -7,6 +7,8 @@ from pypads.app.base import tracking_active
 from pypads.utils.util import is_package_available
 from pypads import logger
 
+from pypads_padre.concepts.util import _tolist
+
 
 class Types(Enum):
     if is_package_available('sklearn') and tracking_active:
@@ -102,7 +104,8 @@ class Crawler:
             self._use_args = True
         else:
             for _ctx in self._modules:
-                if _ctx.value == self._callback.__module__ or _ctx.value in self._callback.__module__ or self._callback.__module__ in _ctx.value:
+                if _ctx.value == self._callback.__module__ or _ctx.value in self._callback.__module__ or \
+                        self._callback.__module__ in _ctx.value:
                     self._format = _ctx.value
                     self._fn = self._fns.get(_ctx.value, self._fn)
                     self._use_args = True
@@ -219,7 +222,7 @@ def bunch_crawler(obj: Crawler, **kwargs):
     for i, name in enumerate(bunch.get("feature_names")):
         features.append((name, str(data[:, i].dtype), False))
     features.append(("class", str(data[:, -1].dtype), True))
-    metadata = {"type": str(obj.format), "features": features, "classes": bunch.get("target_names"),
+    metadata = {"type": str(obj.format), "features": features, "classes": _tolist(bunch.get("target_names")),
                 "description": bunch.get("DESCR"), "shape": data.shape}
     metadata = {**metadata, **kwargs}
     return data, metadata, bunch.get("target")
@@ -288,3 +291,5 @@ def graph_crawler(obj: Crawler, **kwargs):
 
 
 Crawler.register_fn(Types.graph.value, graph_crawler)
+
+# --- tuple returned d

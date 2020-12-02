@@ -3,12 +3,11 @@ from typing import Type, List, Union
 
 from pydantic import BaseModel, Field
 from pypads import logger
-from pypads.app.backends.repository import RepositoryEntryModel
 from pypads.app.injections.base_logger import TrackedObject
 from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
-from pypads.model.models import BaseStorageModel, ResultType
+from pypads.model.models import BaseStorageModel, ResultType, IdReference
 from pypads_onto.arguments import ontology_uri
 
 from pypads_padre.concepts.util import _tolist, validate_type, _len
@@ -85,7 +84,7 @@ class SingleInstanceOuptut(OutputModel):
     """
     Output model of the SingleInstance Injection Logger.
     """
-    individual_decisions: Union[List[str], str] = None
+    individual_decisions: Union[List[IdReference], IdReference] = None
 
     class Config:
         orm_mode = True

@@ -2,7 +2,7 @@ import os
 
 from test.base_test import _get_mapping, TEST_FOLDER
 from test.test_sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
-    sklearn_simple_decision_tree_experiment
+    sklearn_simple_decision_tree_experiment, sklearn_ensemble_learning_experiment
 
 sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "bindings", "sklearn_0_19_1.yml"))
 
@@ -131,14 +131,33 @@ class PyPadsTest(BaseSklearnTest):
         """
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
-        config = {"mongo_db": True}
 
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER, config=config,
-                         setup_fns=[], mappings=sklearn_padre, autostart="27.Oct Meeting")
+        tracker = PyPads(autostart="27.Oct Meeting")
 
         import timeit
         t = timeit.Timer(sklearn_simple_decision_tree_experiment)
+        print(t.timeit(1))
+
+        tracker.api.end_run()
+
+        # --------------------------- asserts ---------------------------
+        # TODO Add asserts
+        # !-------------------------- asserts ---------------------------
+
+    def test_ensemble_rf(self):
+        """
+        This example will track the experiment exection with the default configuration.
+        :return:
+        """
+        # --------------------------- setup of the tracking ---------------------------
+        # Activate tracking of pypads
+
+        from pypads.app.base import PyPads
+        tracker = PyPads(autostart="RandomForest example")
+
+        import timeit
+        t = timeit.Timer(sklearn_ensemble_learning_experiment)
         print(t.timeit(1))
 
         tracker.api.end_run()
