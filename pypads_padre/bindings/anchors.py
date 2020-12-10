@@ -5,7 +5,8 @@ DEFAULT_ANCHORS = [Anchor("pypads_dataset", "Used if a dataset is being detected
                    Anchor("pypads_params", "TODO"),
                    Anchor("pypads_param_search", "TODO"),
                    Anchor("pypads_param_search_exec", "TODO"),
-                   Anchor("pypads_grad", "TODO")]
+                   Anchor("pypads_grad", "TODO"),
+                   Anchor("pypads_step", "Used to log when the optimizer takes a step")]
 
 
 def init_anchors():

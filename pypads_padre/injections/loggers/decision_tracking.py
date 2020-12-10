@@ -1,5 +1,7 @@
 import uuid
 from typing import Type, List, Union
+from copy import deepcopy
+
 
 from pydantic import BaseModel, Field
 from pypads import logger
@@ -9,7 +11,7 @@ from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import BaseStorageModel, ResultType, IdReference
 from pypads_onto.arguments import ontology_uri
-
+from pypads.utils.logging_util import FileFormats
 from pypads_padre.concepts.util import _tolist, validate_type, _len
 
 
@@ -310,3 +312,34 @@ class DecisionsTorchILF(SingleInstanceILF):
             return super().__post__(ctx, *args, _logger_call=_logger_call, _pypads_pre_return=_pypads_pre_return,
                                     _pypads_result=_pypads_result, _logger_output=_logger_output, _args=_args,
                                     _kwargs=_kwargs, **kwargs)
+
+
+class PyTorchUpdateDebuggerILF(InjectionLogger):
+
+    name = "PyTorch Weight Update Logger"
+    category = "TorchWeighUpdateLogger"
+
+    supported_libraries = {LibSelector(name="torch", constraint="*", specificity=1)}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parameters = None
+        self.step = 0
+        self.description = 'Mean and standard deviation of updates of the network at step: '
+
+    def __pre__(self, ctx, *args, _logger_call, _args, _kwargs, **kwargs):
+        self.parameters = deepcopy(ctx.param_groups[0].get('params'))
+
+    def __post__(self, ctx, *args, _logger_call, _pypads_pre_return, _pypads_result, _args, _kwargs,
+                 **kwargs):
+        self.step += 1
+        updates = []
+        for idx, params in enumerate(ctx.param_groups[0].get('params')):
+            updates.append(((self.parameters[idx] - params).detach().numpy().mean(),
+                            (self.parameters[idx] - params).detach().numpy().mean()))
+
+        from pypads.app.pypads import get_current_pads
+        path = 'update_step_' + str(self.step)
+        return get_current_pads().api.log_mem_artifact(path=path, obj=updates, write_format=FileFormats.text,
+                                                       description=self.description + str(self.step),
+                                                       additional_data=None, holder=None)

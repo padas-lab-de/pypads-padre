@@ -15,6 +15,9 @@ mappings:
               in_context: http://www.padre-lab.eu/onto/Optimizer
           !!python/pPath __init__:
             hooks: ["pypads_params"]
+          !!python/pPath step:
+            hooks: [ "pypads_step" ]
+
     !!python/pPath utils.data.dataloader:
       !!python/rSeg '(?!^_BaseDataLoaderIter$).+':
         !!python/pPath _next_index:
