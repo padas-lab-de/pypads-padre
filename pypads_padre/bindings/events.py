@@ -5,7 +5,7 @@ from pypads_padre.injections.analysis.parameters import ParametersTorchILF
 from pypads_padre.injections.loggers.data_splitting import SplitILF, SplitILFTorch
 from pypads_padre.injections.loggers.dataset import DatasetILF
 from pypads_padre.injections.loggers.decision_tracking import SingleInstanceILF, DecisionsKerasILF, DecisionsSklearnILF, \
-    DecisionsTorchILF, PyTorchUpdateDebuggerILF
+    DecisionsTorchILF, PyTorchUpdateILF
 from pypads_padre.injections.loggers.estimator import EstimatorILF
 from pypads_padre.injections.loggers.metric import MetricTorch
 
@@ -21,5 +21,5 @@ DEFAULT_PADRE_LOGGING_FNS = {
     # "doc": DocExtractionILF(),
     "metric": [MetricTorch()],
     "estimator": EstimatorILF(),
-    "step": [PyTorchUpdateDebuggerILF()]
+    "step": [PyTorchUpdateILF()]
 }

@@ -314,7 +314,7 @@ class DecisionsTorchILF(SingleInstanceILF):
                                     _kwargs=_kwargs, **kwargs)
 
 
-class PyTorchUpdateDebuggerILF(InjectionLogger):
+class PyTorchUpdateILF(InjectionLogger):
 
     name = "PyTorch Weight Update Logger"
     category = "TorchWeighUpdateLogger"
