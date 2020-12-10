@@ -136,7 +136,7 @@ class SplitILF(MultiInjectionLogger):
         logger_call.output = output.store()
 
     def __call_wrapped__(self, ctx, *args, _pypads_env: InjectionLoggerEnv, _logger_call, _logger_output, _args,
-                         _kwargs):
+                         _kwargs, **kwargs):
         """
 
         :param ctx:
