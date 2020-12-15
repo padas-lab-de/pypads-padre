@@ -10,19 +10,17 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
+        tracker = PyPads(autostart=True)
 
         from sklearn.datasets import make_classification
         ds_name = "generated"
 
-        @tracker.decorators.dataset(name=ds_name, target=[-1])
+        @tracker.decorators.dataset(name=ds_name, output_format={'X': 'features', 'y': 'targets'})
         def load_wine():
-            import numpy as np
             X, y = make_classification(n_samples=150)
-            data = np.concatenate([X,y.reshape(len(y),1)], axis=1)
-            return data
+            return X, y
 
-        data = load_wine()
+        X, y = load_wine()
 
         # --------------------------- asserts ---------------------------
         import mlflow
@@ -167,7 +165,7 @@ class PyPadsDecoratorsTest(BaseTest):
         tracker = PyPads(uri=TEST_FOLDER, autostart=True)
 
         @tracker.decorators.track(event="pypads_metric")
-        def roc_auc(y_test,scores, n_classes):
+        def roc_auc(y_test, scores, n_classes):
             from sklearn.metrics import roc_curve, auc
             # Compute ROC curve and ROC area for each class
             fpr = dict()

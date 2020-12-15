@@ -1,11 +1,10 @@
 from abc import ABCMeta
 from enum import Enum
-from typing import Any, Tuple, Callable, Iterable
+from typing import Any, Tuple, Callable, Iterable, List
 
 from pypads import logger
 from pypads.app.base import tracking_active
 from pypads.utils.util import is_package_available
-from pypads import logger
 
 from pypads_padre.concepts.util import _tolist
 
@@ -68,6 +67,10 @@ class Crawler:
     @property
     def data(self):
         return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
 
     @property
     def format(self):
@@ -149,27 +152,28 @@ class Crawler:
 
 # TODO feature metadata extraction (type: [categorical, continuous,..] and statistics [range, freq, ...])
 # --- Numpy array object ---
-def numpy_crawler(obj: Crawler, **kwargs):
+def numpy_crawler(obj: Crawler, target_columns=None, **kwargs):
     logger.info("Detecting a dataset object of type 'numpy.ndarray'. Crawling any available metadata...")
     # , (obj.data[:, i].min(), obj.data[:, i].max())
-    features = [(str(i), str(obj.data[:, i].dtype), False) for i in
-                range(obj.data.shape[1])]
+    if len(obj.data.shape) == 2:
+        features = [(str(i), str(obj.data[:, i].dtype), False) for i in
+                    range(obj.data.shape[1])]
+    else:
+        # TODO for multidim datasets
+        features = None
     metadata = {"type": str(obj.format), "shape": obj.data.shape, "features": features}
     metadata = {**metadata, **kwargs}
     targets = None
     try:
-        targets_cols = None
-        if "target_columns" in kwargs:
-            targets_cols = kwargs.get("target_columns")
-        if targets_cols:
-            targets = obj.data[:, targets_cols]
-            if isinstance(targets_cols, Iterable):
-                for c in targets_cols:
+        if target_columns:
+            targets = obj.data[:, target_columns]
+            if isinstance(target_columns, Iterable):
+                for c in target_columns:
                     feature = metadata["features"][c]
                     metadata["features"][c] = (feature[0], feature[1], True)
             else:
-                feature = metadata["features"][targets_cols]
-                metadata["features"][targets_cols] = (feature[0], feature[1], True)
+                feature = metadata["features"][target_columns]
+                metadata["features"][target_columns] = (feature[0], feature[1], True)
     except Exception as e:
         logger.warning(str(e))
     return obj.data, metadata, targets
@@ -179,13 +183,10 @@ Crawler.register_fn(Types.ndarray.value, numpy_crawler)
 
 
 # --- Pandas Dataframe object ---
-def dataframe_crawler(obj: Crawler, **kwargs):
+def dataframe_crawler(obj: Crawler, target_columns, **kwargs):
     logger.info("Detecting a dataset object of type 'pandas.DataFrame'. Crawling any available metadata...")
     data = obj.data
     features = []
-    target_columns = None
-    if "target_columns" in kwargs and kwargs.get("target_columns") is not None:
-        target_columns = kwargs.get("target_columns")
     for i, col in enumerate(data.columns):
         flag = col in target_columns if target_columns is not None else False
         features.append((col, str(data[col].dtype), flag))
@@ -194,10 +195,8 @@ def dataframe_crawler(obj: Crawler, **kwargs):
     targets = None
     if target_columns is not None:
         targets = data[target_columns].values
-    elif "target" in data.columns:
-        targets = data[[col for col in data.columns if "target" in col]].values
     else:
-        logger.warning("Target values might be innaccurate.")
+        logger.warning("Target values might be innaccurate or not tracked.")
     return data, metadata, targets
 
 
@@ -249,7 +248,7 @@ Crawler.register_fn(Modules.sklearn.value, sklearn_crawler)
 
 
 # --- TorchVision Dataset object ---
-def torch_crawler(obj: Crawler, *args, **kwargs):
+def torch_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a torchvision dataset loaded object. Crawling any available metadata...")
     data = obj.data.data.numpy()
     targets = obj.data.targets.numpy()
@@ -266,7 +265,7 @@ if is_package_available("torchvision"):
 
 
 # --- Keras datasets ---
-def keras_crawler(obj: Crawler, *args, **kwargs):
+def keras_crawler(obj: Crawler, **kwargs):
     logger.info("Detecting a keras dataset loaded object. Crawling any available metadata...")
     (X_train, y_train), (X_test, y_test) = obj.data
     import numpy as np
@@ -292,4 +291,38 @@ def graph_crawler(obj: Crawler, **kwargs):
 
 Crawler.register_fn(Types.graph.value, graph_crawler)
 
-# --- tuple returned d
+
+# --- tuple returned dataset
+def tuple_crawler(obj: Crawler, output_format, **kwargs):
+    crawler = obj
+    data = obj.data
+    metadata = dict()
+    data_outputs = dict()
+    targets = None
+    if output_format is None:
+        # do primitive crawling
+        for i, o in enumerate(data):
+            crawler.data = o
+            crawler._identify_data_object()
+            d_o, meta, _ = crawler.crawl(**{})
+            data_outputs["part_{}".format(i)] = d_o
+            metadata["part_{}".format(i)] = meta
+        metadata = {**metadata, **kwargs}
+        return data_outputs, metadata, targets
+    else:
+        for i, (key, value) in enumerate(output_format.items()):
+            if value == "features":
+                crawler.data = data[i]
+                crawler._identify_data_object()
+                d_o, meta, _ = crawler.crawl(**{})
+                metadata[key] = meta
+                data_outputs[key] = d_o
+            elif value == "targets" or value == "labels":
+                metadata[key] = {"type": str(obj.format), "targets_shape": data[i].shape}
+                data_outputs[key] = data[i]
+                targets = data[i]
+        metadata = {**metadata, **kwargs}
+        return data_outputs, metadata, targets
+
+
+Crawler.register_fn(Types.tuple.value, tuple_crawler)

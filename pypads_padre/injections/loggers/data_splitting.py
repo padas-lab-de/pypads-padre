@@ -12,7 +12,7 @@ from pypads.importext.versioning import all_libs
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import IdReference
 from pypads_onto.arguments import ontology_uri
-from pypads_onto.model.ontology import EmbeddedOntologyModel
+# from pypads_onto.model.ontology import EmbeddedOntologyModel
 
 from pypads_padre.concepts.util import _tolist
 
@@ -56,7 +56,7 @@ class SplitTO(TrackedObject):
         """
         Model defining the values of a split for the tracked object.
         """
-        class Split(EmbeddedOntologyModel):
+        class Split(BaseModel):
             context: Union[List[str], str, dict] = Field(alias="@context", default={
                 "train_set": {
                     "@id": f"{ontology_uri}has_trainSet",
