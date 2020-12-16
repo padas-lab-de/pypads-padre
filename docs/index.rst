@@ -17,7 +17,7 @@ This includes concepts like:
 .. _PyPaDS-PaDRe: https://github.com/padre-lab-eu/pypads-padre
 
 Install PyPaDS-PaDRe
---------------
+--------------------
 
 PyPaDS-PaDRe is activated automatically if its installed into your environment and you are using PyPaDS. If you install PyPaDS-PaDRe via PIP PyPaDS will be installed too.
 
