@@ -2,6 +2,19 @@ Changelog
 =========
 
 
+0.4.0 (2020-12-16)
+------------------
+
+New
+~~~
+- Added iris as PoC into the schema mapping with rdf data. [Thomas
+  Weißgerber]
+
+Other
+~~~~~
+- Bump version: 0.3.0 → 0.4.0. [Mehdi Ben Amor]
+
+
 0.3.0 (2020-10-20)
 ------------------
 
