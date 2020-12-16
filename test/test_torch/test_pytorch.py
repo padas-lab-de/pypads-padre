@@ -17,6 +17,7 @@ class PyPadsTorchTest(BaseTest):
         # --------------------------- asserts ---------------------------
         # TODO Add asserts
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
     def test_3d_mnist(self):
         # --------------------------- setup of the tracking ---------------------------

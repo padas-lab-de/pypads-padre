@@ -146,7 +146,7 @@ class ParametersTorchILF(ParametersILF):
             value = data_path(param, "value")
             parameter_type = data_path(param, "parameter_type", default=str(type(value)))
 
-            hyper_params.persist_parameter(name, value, param_type=parameter_type, description=description,
+            hyper_params.persist_parameter(name, str(value), param_type=parameter_type, description=description,
                                            additional_data=mapping_data)
 
         _logger_output.hyper_parameter_to = hyper_params.store()

@@ -1,8 +1,4 @@
-import os
-
-from test.base_test import BaseTest, _get_mapping, TEST_FOLDER
-
-keras_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "keras_2_3_1.yml"))
+from test.base_test import BaseTest
 
 
 def keras_simple_sequential_experiment():
@@ -73,38 +69,25 @@ def keras_mlp_for_multi_class_softmax_classification():
 # noinspection PyMethodMayBeStatic
 class PypadsKerasTest(BaseTest):
 
-    def test_keras_base_class(self):
-        # --------------------------- setup of the tracking ---------------------------
-        # Activate tracking of pypads
-        from pypads.app.base import PyPads
-        PyPads(uri=TEST_FOLDER, mappings=[keras_padre], autostart=True)
-
-        import timeit
-        t = timeit.Timer(keras_simple_sequential_experiment)
-        print(t.timeit(1))
-
-        # --------------------------- asserts ---------------------------
-        # TODO Add asserts
-        # !-------------------------- asserts ---------------------------
-
-    def test_keras_mlp(self):
-        # --------------------------- setup of the tracking ---------------------------
-        # Activate tracking of pypads
-        from pypads.app.base import PyPads
-        PyPads(uri=TEST_FOLDER, mappings=[keras_padre], autostart=True)
-
-        import timeit
-        t = timeit.Timer(keras_mlp_for_multi_class_softmax_classification)
-        print(t.timeit(1))
-
-        # --------------------------- asserts ---------------------------
-        # TODO Add asserts
-        # !-------------------------- asserts ---------------------------
+    # def test_keras_mlp(self):
+    #     # --------------------------- setup of the tracking ---------------------------
+    #     # Activate tracking of pypads
+    #     from pypads.app.base import PyPads
+    #     tracker = PyPads(autostart="KerasMLP")
+    #
+    #     import timeit
+    #     t = timeit.Timer(keras_mlp_for_multi_class_softmax_classification)
+    #     print(t.timeit(1))
+    #
+    #     # --------------------------- asserts ---------------------------
+    #     # TODO Add asserts
+    #     # !-------------------------- asserts ---------------------------
+    #     tracker.api.end_run()
 
     def test_keras_autolog(self):
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        PyPads(mappings=[keras_padre], autostart=True)
+        tracker = PyPads(autostart="KerasAutolog")
 
         import timeit
         t = timeit.Timer(keras_simple_sequential_experiment)
@@ -113,3 +96,4 @@ class PypadsKerasTest(BaseTest):
         # --------------------------- asserts ---------------------------
         # TODO Add asserts
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()

@@ -110,7 +110,7 @@ class PyPadsDecoratorsTest(BaseTest):
 
             self.assertTrue(numpy.array_equal(train_idx, current_split.train_set))
             self.assertTrue(numpy.array_equal(test_idx, current_split.test_set))
-            self.assertTrue(val_idx is None and current_split.validation_set is None)
+            self.assertTrue(val_idx is None and current_split.validation_set == [])
         # !-------------------------- asserts ---------------------------
         tracker.api.end_run()
 

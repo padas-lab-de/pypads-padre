@@ -7,7 +7,7 @@ def torch_simple_example():
     from torchvision.datasets import MNIST
     from torchvision.transforms import transforms
 
-    log_interval = 103
+    log_interval = 5
 
     class Flatten(torch.nn.Module):
         __constants__ = ['start_dim', 'end_dim']
@@ -61,12 +61,14 @@ def torch_simple_example():
     ]))
 
     # N is batch size;
-    N, epochs = 5, 1
+    N, epochs = 500, 2
 
     # Training Loader
+    train_mnist.data = train_mnist.data[:2000]
     train_loader = DataLoader(train_mnist, batch_size=N)
 
     # Testing Loader
+    test_mnist.data = test_mnist.data[:500]
     test_loader = DataLoader(test_mnist, batch_size=N)
 
     # Create random Tensors to hold inputs and outputs
@@ -290,3 +292,5 @@ def torch_3d_mnist_example():
                 if count % 500 == 0:
                     # Print Loss
                     print('Iteration: {}  Loss: {}  Accuracy: {} %'.format(count, loss.data, accuracy))
+
+    tracker.api.end_run()

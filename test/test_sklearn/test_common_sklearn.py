@@ -1,11 +1,5 @@
-import os
-
-from test.base_test import _get_mapping, TEST_FOLDER
 from test.test_sklearn.base_sklearn_test import BaseSklearnTest, sklearn_pipeline_experiment, \
     sklearn_simple_decision_tree_experiment, sklearn_ensemble_learning_experiment
-
-sklearn_padre = _get_mapping(os.path.join(os.path.dirname(__file__), "bindings", "sklearn_0_19_1.yml"))
-
 
 def cross_validation_on_diabetes():
     import numpy as np
@@ -85,18 +79,10 @@ class PyPadsTest(BaseSklearnTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        hooks = {
-            "init": {"on": ["pypads_init"]},
-            "splits": {"on": ["pypads_split"]},
-            "metric": {"on": ["pypads_metric"]},
-            "parameter_search": {"on": ["pypads_param_search"]},
-            "parameter_search_executor": {"on": ["pypads_param_search_exec"]},
-            "doc": {"on": ["pypads_init", "pypads_dataset", "pypads_fit", "pypads_transform", "pypads_predict"]}
-        }
         config = {
             "mirror_git": True
         }
-        tracker = PyPads(uri=TEST_FOLDER, config=config, hooks=hooks, mappings=[sklearn_padre], autostart=True)
+        tracker = PyPads(config=config, autostart="cross_validation")
 
         import timeit
         t = timeit.Timer(cross_validation_on_diabetes)
@@ -105,6 +91,7 @@ class PyPadsTest(BaseSklearnTest):
         # --------------------------- asserts ---------------------------
         # TODO Add asserts
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
     def test_pipeline(self):
         """
@@ -114,7 +101,7 @@ class PyPadsTest(BaseSklearnTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER, mappings=[sklearn_padre], autostart=True)
+        tracker = PyPads(autostart=True)
 
         import timeit
         t = timeit.Timer(sklearn_pipeline_experiment)
@@ -123,6 +110,7 @@ class PyPadsTest(BaseSklearnTest):
         # --------------------------- asserts ---------------------------
         # TODO Add asserts
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
     def test_decision_tree(self):
         """
