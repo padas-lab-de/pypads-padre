@@ -25,7 +25,7 @@ copyright = '2020, Padre-Lab'
 author = 'Padre-Lab, Thomas Weissgerber & Mehdi Ben Amor'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.0'
+release = '0.4.0'
 
 # -- General configuration ---------------------------------------------------
 
