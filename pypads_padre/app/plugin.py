@@ -33,7 +33,7 @@ DEFAULT_PADRE_CONFIG = {
 }
 
 
-def configure_plugin(pypads):
+def configure_plugin(pypads,*args,**kwargs):
     """
     This function can be used to configure the plugin. It should be called at least once to allow for the usage of the
     plugin. Multiple executions should be possible.

@@ -14,4 +14,4 @@ def init_anchors():
         raise Exception("There seems to be an issues with adding the anchors")
 
 
-init_anchors()
+# init_anchors()

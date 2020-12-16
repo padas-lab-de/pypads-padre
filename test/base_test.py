@@ -57,6 +57,13 @@ def mac_os_disabled(f):
         return f
 
 
+@atexit.register
+def cleanup():
+    import shutil
+    if os.path.isdir(TEST_FOLDER):
+        shutil.rmtree(TEST_FOLDER)
+
+
 class BaseTest(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -73,7 +80,8 @@ class BaseTest(unittest.TestCase):
         if current_pads:
             current_pads.deactivate_tracking(run_atexits=True, reload_modules=False)
             # noinspection PyTypeChecker
-            set_current_pads(None)
+            # set_current_pads(None)
+        cleanup()
 
 
 class RunLogger(InjectionLogger):
