@@ -17,11 +17,11 @@ class PyPadsDecoratorsTest(BaseTest):
         ds_name = "generated"
 
         @tracker.decorators.dataset(name=ds_name, output_format={'X': 'features', 'y': 'targets'})
-        def load_wine():
+        def load_data():
             X, y = make_classification(n_samples=150)
             return X, y
 
-        dataset = load_wine()
+        dataset = load_data()
 
         # --------------------------- asserts ---------------------------
         datasets_repo = tracker.dataset_repository

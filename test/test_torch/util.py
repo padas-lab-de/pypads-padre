@@ -118,6 +118,7 @@ def data_transform(data, sample_shape):
 
 def torch_3d_mnist_example():
     # Activate tracking of pypads
+    import os
     from pypads.app.base import PyPads
     tracker = PyPads(autostart="3D-MNIST-Torch", setup_fns=[])
 
@@ -138,7 +139,7 @@ def torch_3d_mnist_example():
          - Lidar.
          - 3D reconstruction from multiple images.
 
-        However there is a lack of large 3D datasets (you can find a good one here based on triangular meshes); it's especially hard to find datasets based on point clouds (wich is the raw output from every 3D sensing device).
+        However there is a lack of large 3what D datasets (you can find a good one here based on triangular meshes); it's especially hard to find datasets based on point clouds (wich is the raw output from every 3D sensing device).
 
         This dataset contains 3D point clouds generated from the original images of the MNIST dataset to bring a familiar introduction to 3D to people used to work with 2D datasets (images).
 
@@ -197,7 +198,7 @@ def torch_3d_mnist_example():
     sample_shape = (16, 16, 16, 3)
 
     # Load 3d Mnist data
-    path = "full_dataset_vectors.h5"
+    path = os.path.join(os.path.dirname(__file__),"full_dataset_vectors.h5")
     data = load_3d_mnist(path)
     X_train, y_train = data[:100, :-1], data[:100, -1]
     X_test, y_test = data[11900:, :-1], data[11900:, -1]
