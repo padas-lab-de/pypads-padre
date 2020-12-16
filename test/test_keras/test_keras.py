@@ -104,10 +104,7 @@ class PypadsKerasTest(BaseTest):
     def test_keras_autolog(self):
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        PyPads(uri=TEST_FOLDER, hooks={
-            "autolog": {"on": ["pypads_fit"]},
-            "pipeline": {"on": ["pypads_fit", "pypads_predict", "pypads_transform", "pypads_metrics"]}
-        }, mappings=[keras_padre], autostart=True)
+        PyPads(mappings=[keras_padre], autostart=True)
 
         import timeit
         t = timeit.Timer(keras_simple_sequential_experiment)

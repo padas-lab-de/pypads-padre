@@ -23,7 +23,7 @@ def splitter_output(result, fn):
         if isinstance(result, Tuple):
             if "sklearn" in fn.__module__:
                 return result[0].tolist(), result[1].tolist(), None
-            elif "default_splitter" in fn.__name__:
+            elif "default_split" in fn.__name__:
                 return result
             else:
                 if len(result) < 4:
@@ -100,8 +100,8 @@ class SplitTO(TrackedObject):
             test_set = []
         if train_set is None:
             train_set = []
-        split = self.SplitModel.Split(train_set=train_set, test_set=test_set,
-                                      validation_set=val_set)
+        split = self.SplitModel.Split(train_set=_tolist(train_set), test_set=_tolist(test_set),
+                                      validation_set=_tolist(val_set))
         self.splits.update({str(split_id): split})
 
 

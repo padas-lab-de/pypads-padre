@@ -1,6 +1,7 @@
 from pypads.app.actuators import IActuators, actuator
 
 from pypads_padre.concepts.splitter import default_split
+from pypads_padre.util import get_class_that_defined_method
 
 
 class PadrePadsActuators(IActuators):
@@ -40,5 +41,10 @@ class PadrePadsActuators(IActuators):
                                    the row index of the datapoints contained in the split
         :return:
         """
-        return self.pypads.api.track_splits(default_split)(X, y=y, **kwargs)
+        ctx = get_class_that_defined_method(default_split)
+        keys = list(kwargs.keys())
+        for key in keys:
+            if key.startswith("_pypads") or key.startswith("_logger"):
+                del kwargs[key]
+        return self.pypads.api.track_splits(ctx=ctx, fn=default_split, mapping=None)(X, y=y, **kwargs)
 
