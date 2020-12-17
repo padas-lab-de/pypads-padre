@@ -10,11 +10,13 @@ from pypads.model.logger_call import InjectionLoggerCallModel
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import BaseStorageModel, ResultType, IdReference
 from pypads.utils.logging_util import FileFormats, data_str
-from pypads_onto.arguments import ontology_uri
-from pypads_onto.model.ontology import EmbeddedOntologyModel
+# from pypads_onto.arguments import ontology_uri
+# from pypads_onto.model.ontology import EmbeddedOntologyModel
 
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, validate_type
+
+ontology_uri = "https://www.padre-lab.eu/onto/"
 
 
 class DatasetRepositoryObject(BaseStorageModel):
@@ -26,7 +28,7 @@ class DatasetRepositoryObject(BaseStorageModel):
     category: str = "DatasetRepositoryEntry"
     description: str = ...
     documentation: str = ...
-    binary_reference: str = ...  # Reference to the dataset binary
+    binary_references: Union[str, List[str]] = ...  # Reference to the dataset binary
     location: str = ...  # Place where it is defined
     storage_type: Union[str, ResultType] = "dataset"
 
@@ -38,7 +40,7 @@ class DatasetOutput(OutputModel):
     dataset: IdReference = None  # Reference to dataset TO
 
 
-class DatasetPropertyValue(EmbeddedOntologyModel):
+class DatasetPropertyValue(BaseModel):
     """
     Represents the property value. This can be any dataset property which can be saved as a simple value.
     This subclass allows for valid json-ld representation with nested resources.
@@ -88,7 +90,7 @@ class DatasetTO(TrackedObject):
             }
         }
 
-        class Feature(EmbeddedOntologyModel):
+        class Feature(BaseModel):
             context: Union[List[Union[str, dict]], str, dict] = Field(alias="@context", default={
                 "type": {
                     "@id": f"{ontology_uri}has_type",
@@ -127,9 +129,11 @@ class DatasetTO(TrackedObject):
         return cls.DatasetModel
 
     def __init__(self, *args, parent, name, shape, metadata, **kwargs):
+        if shape is None:
+            shape = ["Unknown", "Unknown"]
         super().__init__(*args, parent=parent, name=name,
                          number_of_instances=DatasetPropertyValue(has_value=str(shape[0])),
-                         number_of_features=DatasetPropertyValue(has_value=shape[1]), **kwargs)
+                         number_of_features=DatasetPropertyValue(has_value=str(shape[1])), **kwargs)
         features = metadata.get("features", None)
         if features is not None:
             for name, value_type, default_target in features:
@@ -153,6 +157,11 @@ class DatasetILF(InjectionLogger):
     name = "Dataset Logger"
     type: str = "DatasetLogger"
     supported_libraries = {all_libs}
+
+    def __init__(self, *args, store_binary=True, size_threshold=100, **kwargs):
+        super(DatasetILF, self).__init__(*args, *kwargs)
+        self.store_binary = store_binary
+        self.size_threshold = size_threshold
 
     @classmethod
     def output_schema_class(cls) -> Type[OutputModel]:
@@ -178,7 +187,8 @@ class DatasetILF(InjectionLogger):
                           callback=_logger_call.original_call.call_id.wrappee,
                           kw=_kwargs)
         data, metadata, targets = crawler.crawl(**_dataset_kwargs)
-        pads.cache.run_add("targets", targets)
+        if targets is not None:
+            pads.cache.run_add("targets", targets)
 
         # Look for metadata information given by the user when using the decorators
         if pads.cache.run_exists("dataset_metadata"):
@@ -187,7 +197,7 @@ class DatasetILF(InjectionLogger):
         # getting the dataset object name
         if hasattr(dataset_object, "name"):
             ds_name = dataset_object.name
-        elif pads.cache.run_exists("dataset_name") and pads.cache.run_exists("dataset_name") is not None:
+        elif pads.cache.run_exists("dataset_name") and pads.cache.run_get("dataset_name") is not None:
             ds_name = pads.cache.run_get("dataset_name")
         else:
             ds_name = _logger_call.original_call.call_id.wrappee.__qualname__
@@ -197,28 +207,43 @@ class DatasetILF(InjectionLogger):
             data_hash = persistent_hash(str(dataset_object))
         except Exception:
             logger.warning("Could not compute the hash of the dataset object, falling back to dataset name hash...")
-            data_hash = persistent_hash(str(self.name))
+            data_hash = persistent_hash((str(ds_name), str(metadata)))
 
         # create referencing object
-        dto = DatasetTO(parent=_logger_output, name=ds_name, shape=metadata.get("shape"), metadata=metadata,
+        dto = DatasetTO(parent=_logger_output, name=ds_name, shape=metadata.get("shape", None), metadata=metadata,
                         repository_reference=data_hash, repository_type=_pypads_env.pypads.dataset_repository.name)
 
         # Add to repo if needed
         if not pads.dataset_repository.has_object(uid=data_hash):
             logger.info("Detected Dataset was not found in the store. Adding an entry...")
             repo_obj = pads.dataset_repository.get_object(uid=data_hash)
-            binary_ref = repo_obj.log_mem_artifact(dto.name, dataset_object, write_format=_pypads_write_format,
-                                                   description="Dataset binary",
-                                                   additional_data=metadata, holder=dto)
+            if isinstance(data, dict):
+                binary_refs = []
+                for k, v in data.items():
+                    binary_refs.append(
+                        repo_obj.log_mem_artifact(dto.name + "_" + k, v, write_format=_pypads_write_format,
+                                                  description="Dataset binary part: {}".format(k),
+                                                  additional_data=metadata, holder=dto))
+            else:
+                binary_refs = repo_obj.log_mem_artifact(dto.name, dataset_object, write_format=_pypads_write_format,
+                                                        description="Dataset binary",
+                                                        additional_data=metadata, holder=dto)
+
             logger.info("Entry added in the dataset repository.")
+
+            documentation = "Documentation missing"
+            if ctx:
+                documentation = ctx.__doc__
+            elif _logger_call.original_call.call_id.wrappee.__doc__:
+                documentation = _logger_call.original_call.call_id.wrappee.__doc__
             # create repository object
-            dro = DatasetRepositoryObject(name=data_str(dataset_data, "rdfs:label", default=self.name),
+            dro = DatasetRepositoryObject(name=data_str(dataset_data, "rdfs:label", default=dto.name),
                                           uid=data_hash,
                                           description=data_str(dataset_data, "rdfs:description",
                                                                default="Some unkonwn Dataset"),
                                           documentation=data_str(dataset_data, "padre:documentation",
-                                                                 default=ctx.__doc__ if ctx else _logger_call.original_call.call_id.wrappee.__doc__),
-                                          binary_reference=binary_ref,
+                                                                 default=documentation),
+                                          binary_references=binary_refs,
                                           location=_logger_call.original_call.call_id.context.reference,
                                           additional_data=dataset_data)
             repo_obj.log_json(dro)

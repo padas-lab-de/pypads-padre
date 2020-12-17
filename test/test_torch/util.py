@@ -7,7 +7,7 @@ def torch_simple_example():
     from torchvision.datasets import MNIST
     from torchvision.transforms import transforms
 
-    log_interval = 103
+    log_interval = 5
 
     class Flatten(torch.nn.Module):
         __constants__ = ['start_dim', 'end_dim']
@@ -61,12 +61,14 @@ def torch_simple_example():
     ]))
 
     # N is batch size;
-    N, epochs = 5, 1
+    N, epochs = 500, 2
 
     # Training Loader
+    train_mnist.data = train_mnist.data[:2000]
     train_loader = DataLoader(train_mnist, batch_size=N)
 
     # Testing Loader
+    test_mnist.data = test_mnist.data[:500]
     test_loader = DataLoader(test_mnist, batch_size=N)
 
     # Create random Tensors to hold inputs and outputs
@@ -116,6 +118,7 @@ def data_transform(data, sample_shape):
 
 def torch_3d_mnist_example():
     # Activate tracking of pypads
+    import os
     from pypads.app.base import PyPads
     tracker = PyPads(autostart="3D-MNIST-Torch", setup_fns=[])
 
@@ -136,7 +139,7 @@ def torch_3d_mnist_example():
          - Lidar.
          - 3D reconstruction from multiple images.
 
-        However there is a lack of large 3D datasets (you can find a good one here based on triangular meshes); it's especially hard to find datasets based on point clouds (wich is the raw output from every 3D sensing device).
+        However there is a lack of large 3what D datasets (you can find a good one here based on triangular meshes); it's especially hard to find datasets based on point clouds (wich is the raw output from every 3D sensing device).
 
         This dataset contains 3D point clouds generated from the original images of the MNIST dataset to bring a familiar introduction to 3D to people used to work with 2D datasets (images).
 
@@ -195,7 +198,7 @@ def torch_3d_mnist_example():
     sample_shape = (16, 16, 16, 3)
 
     # Load 3d Mnist data
-    path = "full_dataset_vectors.h5"
+    path = os.path.join(os.path.dirname(__file__),"full_dataset_vectors.h5")
     data = load_3d_mnist(path)
     X_train, y_train = data[:100, :-1], data[:100, -1]
     X_test, y_test = data[11900:, :-1], data[11900:, -1]
@@ -290,3 +293,5 @@ def torch_3d_mnist_example():
                 if count % 500 == 0:
                     # Print Loss
                     print('Iteration: {}  Loss: {}  Accuracy: {} %'.format(count, loss.data, accuracy))
+
+    tracker.api.end_run()

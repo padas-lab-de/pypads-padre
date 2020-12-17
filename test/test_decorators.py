@@ -1,3 +1,4 @@
+from pypads_padre.concepts.util import persistent_hash
 from test.base_test import BaseTest, TEST_FOLDER
 
 
@@ -10,34 +11,26 @@ class PyPadsDecoratorsTest(BaseTest):
         # --------------------------- setup of the tracking ---------------------------
         # Activate tracking of pypads
         from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
+        tracker = PyPads(autostart=True)
 
         from sklearn.datasets import make_classification
         ds_name = "generated"
 
-        @tracker.decorators.dataset(name=ds_name, target=[-1])
-        def load_wine():
-            import numpy as np
+        @tracker.decorators.dataset(name=ds_name, output_format={'X': 'features', 'y': 'targets'})
+        def load_data():
             X, y = make_classification(n_samples=150)
-            data = np.concatenate([X,y.reshape(len(y),1)], axis=1)
-            return data
+            return X, y
 
-        data = load_wine()
+        dataset = load_data()
 
         # --------------------------- asserts ---------------------------
-        import mlflow
-        from pypads_padre.concepts.util import get_by_tag
-        datasets_repo = mlflow.get_experiment_by_name("datasets")
-        datasets = get_by_tag("pypads.dataset", experiment_id=datasets_repo.experiment_id)
+        datasets_repo = tracker.dataset_repository
+        hash_id = persistent_hash(str(dataset))
 
-        def get_name(run):
-            tags = run.data.tags
-            return tags.get("pypads.dataset", None)
-
-        ds_names = [get_name(ds) for ds in datasets]
-        assert ds_name in ds_names
+        self.assertTrue(datasets_repo.has_object(uid=hash_id))
 
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
     def test_custom_splitter(self):
         # --------------------------- setup of the tracking ---------------------------
@@ -62,16 +55,22 @@ class PyPadsDecoratorsTest(BaseTest):
         train_idx, test_idx = splitter(data.data, training=0.7)
 
         # --------------------------- asserts ---------------------------
-        import numpy
-        assert tracker.cache.run_exists("current_split")
-        split = tracker.cache.run_get("current_split")
-        assert tracker.cache.run_get(split).get("split_info", None) is not None
-        split_info = tracker.cache.run_get(split).get("split_info")
-        train, test = split_info.get("train"), split_info.get("test")
+        datasets_repo = tracker.dataset_repository
+        hash_id = persistent_hash(str(data))
+        self.assertTrue(datasets_repo.has_object(uid=hash_id))
 
-        assert numpy.array_equal(train_idx, train)
-        assert numpy.array_equal(test_idx, test)
+        self.assertTrue(tracker.cache.run_exists("current_split"))
+        split_id = tracker.cache.run_get("current_split")
+        from pypads_padre.bindings.events import DEFAULT_PADRE_LOGGING_FNS
+        SplitILF = DEFAULT_PADRE_LOGGING_FNS["splits"][0]
+        _id = id(SplitILF)
+        self.assertTrue(tracker.cache.run_exists(_id))
+        logger_cached = tracker.cache.run_get(_id)
+        output = logger_cached.get('output')
+        splits = output.splits
+        self.assertTrue(str(split_id) in splits.splits.keys())
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
     def test_default_splitter_with_no_params(self):
         # --------------------------- setup of the tracking ---------------------------
@@ -89,22 +88,31 @@ class PyPadsDecoratorsTest(BaseTest):
         splits = tracker.actuators.default_splitter(data.data)
 
         # --------------------------- asserts ---------------------------
-        import numpy
-        num = -1
-        for train_idx, test_idx, val_idx in splits:
-            num += 1
-            print("train: {}\n test: {}\n val: {}".format(train_idx, test_idx, val_idx))
-            assert tracker.cache.run_exists("current_split")
-            split = tracker.cache.run_get("current_split")
-            assert num == split
-            assert tracker.cache.run_get(split).get("split_info", None) is not None
-            split_info = tracker.cache.run_get(split).get("split_info")
-            train, test, val = split_info.get("train"), split_info.get("test"), split_info.get("val")
+        # id of the splits logger
+        from pypads_padre.bindings.events import DEFAULT_PADRE_LOGGING_FNS
+        SplitILF = DEFAULT_PADRE_LOGGING_FNS["splits"][0]
+        _id = id(SplitILF)
 
-            assert numpy.array_equal(train_idx, train)
-            assert numpy.array_equal(test_idx, test)
-            assert val_idx is None and val is None
+        import numpy
+
+        for train_idx, test_idx, val_idx in splits:
+
+            print("train: {}\n test: {}\n val: {}".format(train_idx, test_idx, val_idx))
+            self.assertTrue(tracker.cache.run_exists("current_split"))
+            split_id = tracker.cache.run_get("current_split")
+            self.assertTrue(tracker.cache.run_exists(_id))
+            logger_cached = tracker.cache.run_get(_id)
+            output = logger_cached.get('output')
+            splits = output.splits
+            self.assertTrue(str(split_id) in splits.splits.keys())
+
+            current_split = splits.splits[str(split_id)]
+
+            self.assertTrue(numpy.array_equal(train_idx, current_split.train_set))
+            self.assertTrue(numpy.array_equal(test_idx, current_split.test_set))
+            self.assertTrue(val_idx is None and current_split.validation_set == [])
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
     def test_default_splitter_with_params(self):
         # --------------------------- setup of the tracking ---------------------------
@@ -122,64 +130,51 @@ class PyPadsDecoratorsTest(BaseTest):
         splits = tracker.actuators.default_splitter(data.data, strategy="cv", n_folds=3, val_ratio=0.2)
 
         # --------------------------- asserts ---------------------------
+        # id of the splits logger
+        from pypads_padre.bindings.events import DEFAULT_PADRE_LOGGING_FNS
+        SplitILF = DEFAULT_PADRE_LOGGING_FNS["splits"][0]
+        _id = id(SplitILF)
         import numpy
-        num = -1
+
         for train_idx, test_idx, val_idx in splits:
-            num += 1
             print("train: {}\n test: {}\n val: {}".format(train_idx, test_idx, val_idx))
-            assert tracker.cache.run_exists("current_split")
-            split = tracker.cache.run_get("current_split")
-            assert num == split
-            assert tracker.cache.run_get(split).get("split_info", None) is not None
-            split_info = tracker.cache.run_get(split).get("split_info")
-            train, test, val = split_info.get("train"), split_info.get("test"), split_info.get("val")
+            self.assertTrue(tracker.cache.run_exists("current_split"))
+            split_id = tracker.cache.run_get("current_split")
+            self.assertTrue(tracker.cache.run_exists(_id))
+            logger_cached = tracker.cache.run_get(_id)
+            output = logger_cached.get('output')
+            splits = output.splits
+            self.assertTrue(str(split_id) in splits.splits.keys())
 
-            assert numpy.array_equal(train_idx, train)
-            assert numpy.array_equal(test_idx, test)
-            assert numpy.array_equal(val_idx, val)
+            current_split = splits.splits[str(split_id)]
+
+            self.assertTrue(numpy.array_equal(train_idx, current_split.train_set))
+            self.assertTrue(numpy.array_equal(test_idx, current_split.test_set))
+            self.assertTrue(numpy.array_equal(val_idx, current_split.validation_set))
         # !-------------------------- asserts ---------------------------
+        tracker.api.end_run()
 
-    def test_hyperparameters(self):
-        # --------------------------- setup of the tracking ---------------------------
-        # Activate tracking of pypads
-        from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
-
-        @tracker.decorators.hyperparameters()
-        def parameters():
-            param1: int = 0
-            param2 = "test"
-            return
-
-        parameters()
-
-        # --------------------------- asserts ---------------------------
-        # assert tracker.cache.run_exists(parameters.__qualname__)
-        # params = tracker.cache.run_get(parameters.__qualname__)
-        # assert "param1" in params.keys() and "param2" in params.keys()
-        # assert params.get("param1") == 0 and params.get("param2") == "test"
-        # !-------------------------- asserts ---------------------------
-
-    def test_track(self):
-        # --------------------------- setup of the tracking ---------------------------
-        # Activate tracking of pypads
-        from pypads.app.base import PyPads
-        tracker = PyPads(uri=TEST_FOLDER, autostart=True)
-
-        @tracker.decorators.track(event="pypads_metric")
-        def roc_auc(y_test,scores, n_classes):
-            from sklearn.metrics import roc_curve, auc
-            # Compute ROC curve and ROC area for each class
-            fpr = dict()
-            tpr = dict()
-            roc_auc = dict()
-            for i in range(n_classes):
-                fpr[i], tpr[i], _ = roc_curve(y_test[:, i], scores[:, i])
-                roc_auc[i] = auc(fpr[i], tpr[i])
-
-            # Compute micro-average ROC curve and ROC area
-            fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), scores.ravel())
-            roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-            return roc_auc
-
-        # !-------------------------- asserts ---------------------------
+    # def test_track(self):
+    #     # --------------------------- setup of the tracking ---------------------------
+    #     # Activate tracking of pypads
+    #     from pypads.app.base import PyPads
+    #     tracker = PyPads(uri=TEST_FOLDER, autostart=True)
+    #
+    #     @tracker.decorators.track(event="pypads_metric")
+    #     def roc_auc(y_test, scores, n_classes):
+    #         from sklearn.metrics import roc_curve, auc
+    #         # Compute ROC curve and ROC area for each class
+    #         fpr = dict()
+    #         tpr = dict()
+    #         roc_auc = dict()
+    #         for i in range(n_classes):
+    #             fpr[i], tpr[i], _ = roc_curve(y_test[:, i], scores[:, i])
+    #             roc_auc[i] = auc(fpr[i], tpr[i])
+    #
+    #         # Compute micro-average ROC curve and ROC area
+    #         fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), scores.ravel())
+    #         roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+    #         return roc_auc
+    #
+    #     # !-------------------------- asserts ---------------------------
+    #     tracker.api.end_run()

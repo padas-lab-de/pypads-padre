@@ -72,7 +72,9 @@ def _len(x):
 
 def _tolist(x):
     """Return a list representation of any array-like/Iterable x """
-    if isinstance(x, list):
+    if x is None:
+        return None
+    elif isinstance(x, list):
         return x
     elif hasattr(x, 'tolist'):
         return x.tolist()

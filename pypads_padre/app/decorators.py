@@ -22,10 +22,35 @@ class PadrePadsDecorators(IDecorators):
 
     # ------------------------------------------- decorators --------------------------------
     @decorator
-    def dataset(self, mapping=None, name=None, target_columns=None, metadata=None, **kwargs):
+    def dataset(self, mapping=None, name=None, target_columns=None, output_format=None, metadata=None, **kwargs):
+        """
+        Decorator for your custom dataset loading function for automatic logging.
+        :param name: Name of your given dataset.
+        :param mapping: A mapping for additional injection.
+        :param target_columns: indices/names of targets or labels columns in case the returned dataset is a single object.
+        :param output_format: A dict describing the outputs of your custom function in case of multiple returned objects.
+
+        Example:
+            def load_data():
+                X, y = make_classification(n_samples=150)
+                return X,y
+
+            For this function we have to give the output_format as follows:
+                output_format = {'X': 'features', 'y': 'targets'} such that entries of the dict have the same order
+                as the outputs. Keys of the dict would dictate the names of the stored binaries:
+                    - Generated_Dataset_X.pickle, Generated_Dataset_y.pickle
+
+            @tracker.decorators.dataset(name="Generated Dataset", output_format={'X': 'features', 'y': 'targets'})
+            def load_data():
+                X, y = make_classification(n_samples=150)
+                return X,y
+        """
+
         def track_decorator(fn):
             ctx = get_class_that_defined_method(fn)
-            return self.api.track_dataset(ctx=ctx, fn=fn, name=name, target_columns=target_columns, metadata=metadata,
+            return self.api.track_dataset(ctx=ctx, fn=fn, name=name, target_columns=target_columns,
+                                          output_format=output_format,
+                                          metadata=metadata,
                                           mapping=mapping,
                                           **kwargs)
 

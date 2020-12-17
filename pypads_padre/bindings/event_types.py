@@ -15,4 +15,4 @@ def init_event_types():
         raise Exception("There seems to be an issues with adding the anchors")
 
 
-init_event_types()
+# init_event_types()
