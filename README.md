@@ -3,7 +3,7 @@ An extension of pypads that implements and tracks other concepts from machine le
 
 [![Documentation Status](https://readthedocs.org/projects/pypads-onto/badge/?version=latest)](https://pypads.readthedocs.io/projects/pypads-onto/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/pypads-padre.svg)](https://badge.fury.io/py/pypads-padre)  
-
+[![pipeline status](https://gitlab.padim.fim.uni-passau.de/RP-17-PaDReP/pypads-client/padre-pads/badges/master/pipeline.svg)](https://gitlab.padim.fim.uni-passau.de/RP-17-PaDReP/pypads-client/padre-pads/-/commits/master)
 <!--- ![Build status](https://gitlab.padim.fim.uni-passau.de/RP-17-PaDReP/padre-pads/badges/master/pipeline.svg) --->
 
 # Intalling
@@ -42,7 +42,7 @@ The unit tests can be found under 'test/' and can be executed using
 
 # Documentation
 
-For more information, look into the [official documentation of PadrePads](https://pypads.readthedocs.io/en/latest/projects/pypads-padre.html).
+For more information, look into the [official documentation of PadrePads](https://pypads.readthedocs.io/projects/pypads-padre/en/latest/).
 
 # Scientific work disclaimer
 This was created in scope of scientific work of the Data Science Chair at the University of Passau. If you want to use this tool or any of its resources in your scientific work include a citation.
