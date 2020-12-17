@@ -10,11 +10,13 @@ from pypads.model.logger_call import InjectionLoggerCallModel
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import BaseStorageModel, ResultType, IdReference
 from pypads.utils.logging_util import FileFormats, data_str
-from pypads_onto.arguments import ontology_uri
+# from pypads_onto.arguments import ontology_uri
 # from pypads_onto.model.ontology import EmbeddedOntologyModel
 
 from pypads_padre.concepts.dataset import Crawler
 from pypads_padre.concepts.util import persistent_hash, validate_type
+
+ontology_uri = "https://www.padre-lab.eu/onto/"
 
 
 class DatasetRepositoryObject(BaseStorageModel):

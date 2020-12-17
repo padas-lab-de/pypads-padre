@@ -8,9 +8,11 @@ from pypads.app.injections.injection import InjectionLogger
 from pypads.importext.versioning import LibSelector
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import BaseStorageModel, ResultType, IdReference
-from pypads_onto.arguments import ontology_uri
+# from pypads_onto.arguments import ontology_uri
 
 from pypads_padre.concepts.util import _tolist, validate_type, _len
+
+ontology_uri = "https://www.padre-lab.eu/onto/"
 
 
 class SingleInstanceTO(TrackedObject):
@@ -33,10 +35,10 @@ class SingleInstanceTO(TrackedObject):
             """
             Model defining the values for a individual model decision.
             """
-            context:  Union[List[str], str, dict] = Field(alias="@context", default={
+            context: Union[List[str], str, dict] = Field(alias="@context", default={
                 "instance": {
                     "@id": f"{ontology_uri}is_instance",
-                    "@type" : "rdf:XMLLiteral"
+                    "@type": "rdf:XMLLiteral"
                 },
                 "truth": {
                     "@id": f"{ontology_uri}labeled_as",

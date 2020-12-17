@@ -11,10 +11,12 @@ from pypads.importext.mappings import LibSelector
 from pypads.importext.versioning import all_libs
 from pypads.model.logger_output import TrackedObjectModel, OutputModel
 from pypads.model.models import IdReference
-from pypads_onto.arguments import ontology_uri
+# from pypads_onto.arguments import ontology_uri
 # from pypads_onto.model.ontology import EmbeddedOntologyModel
 
 from pypads_padre.concepts.util import _tolist
+
+ontology_uri = "https://www.padre-lab.eu/onto/"
 
 
 def splitter_output(result, fn):
@@ -28,13 +30,13 @@ def splitter_output(result, fn):
             else:
                 if len(result) < 4:
                     result_ = [_tolist(r) for r in result]
-                    return tuple(result_ + [None]*(3-len(result_)))
+                    return tuple(result_ + [None] * (3 - len(result_)))
                 else:
                     return None, None, None
         else:
             if "torch" in fn.__module__:
                 if hasattr(fn, "_dataset"):
-                    if hasattr(fn._dataset,"train"):
+                    if hasattr(fn._dataset, "train"):
                         if fn._dataset.train:
                             return _tolist(result), None, None
                         else:
@@ -56,6 +58,7 @@ class SplitTO(TrackedObject):
         """
         Model defining the values of a split for the tracked object.
         """
+
         class Split(BaseModel):
             context: Union[List[str], str, dict] = Field(alias="@context", default={
                 "train_set": {
