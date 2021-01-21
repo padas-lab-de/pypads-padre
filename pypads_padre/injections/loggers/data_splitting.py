@@ -153,6 +153,8 @@ class SplitILF(MultiInjectionLogger):
         pads = get_current_pads()
         _return, time = OriginalExecutor(fn=_pypads_env.callback)(*_args, **_kwargs)
 
+        pads.cache.run_add('split_tracker', id(self))
+
         if isinstance(_return, GeneratorType):
             items = list(_return)
 

@@ -1,10 +1,10 @@
 # ---- Experiments ----
+from pypads.app.pypads import get_current_pads
 
 from test.base_test import BaseTest
 
 
 def sklearn_simple_decision_tree_experiment(min_samples_leaf=1):
-
     from sklearn import datasets
     from sklearn.metrics.classification import f1_score
     from sklearn.tree import DecisionTreeClassifier
@@ -12,14 +12,21 @@ def sklearn_simple_decision_tree_experiment(min_samples_leaf=1):
     # load the iris datasets
     dataset = datasets.load_iris()
 
+    pads = get_current_pads()
+
+    splits = pads.actuators.default_splitter(dataset.data)
+
     # fit a model to the data
-    model = DecisionTreeClassifier(min_samples_leaf=min_samples_leaf)
-    model.fit(dataset.data, dataset.target)
-    # make predictions
-    expected = dataset.target
-    predicted = model.predict(dataset.data)
-    # summarize the fit of the model
-    print("Score: " + str(f1_score(expected, predicted, average="macro")))
+    for train, test, val in splits:
+        X_train, y_train = dataset.data[train], dataset.target[train]
+        X_test, y_test = dataset.data[test], dataset.target[test]
+        model = DecisionTreeClassifier(min_samples_leaf=min_samples_leaf)
+        model.fit(X_train, y_train)
+        # make predictions
+        expected = y_test
+        predicted = model.predict(X_test)
+        # summarize the fit of the model
+        print("Score: " + str(f1_score(expected, predicted, average="macro")))
 
 
 def sklearn_pipeline_experiment():
@@ -68,6 +75,7 @@ def sklearn_ensemble_learning_experiment():
     predicted = model.predict(dataset.data)
     # summarize the fit of the model
     print("Score: " + str(f1_score(expected, predicted, average="macro")))
+
 
 # !---- Experiments ----
 

@@ -13,7 +13,7 @@ from pypads_padre.injections.loggers.metric import MetricTorch
 DEFAULT_PADRE_LOGGING_FNS = {
     "dataset": DatasetILF(),
     "hyperparameters": ParametersTorchILF(),
-    # "model": TorchModelILF(),
+    "model": TorchModelILF(),
     "predictions": [DecisionsSklearnILF(), DecisionsTorchILF(), DecisionsKerasILF(), SingleInstanceILF()],
     # "parameter_search": ParameterSearchILF(),
     # "parameter_search_executor": ParameterSearchExecutor(),

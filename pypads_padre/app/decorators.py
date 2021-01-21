@@ -80,9 +80,8 @@ class PadrePadsDecorators(IDecorators):
 
         return track_decorator
 
-    #
     @decorator
-    def watch(self, track="hyper-parameters", debugging=False, mappings=None):
+    def watch(self, track="hyper-parameters", debugging=False, averaging_window=None, mappings=None):
         def track_decorator(cls):
             ctx = get_module_that_defined_class(cls)
             fn_anchors = dict()
@@ -98,7 +97,8 @@ class PadrePadsDecorators(IDecorators):
                 if hasattr(ctx, "forward"):
                     fn_anchors.update({"forward": ["pypads_predict"]})
             if fn_anchors != {}:
-                return self.api.track_model(cls, ctx=ctx, fn_anchors=fn_anchors, mappings=mappings)
+                return self.api.track_model(cls, ctx=ctx, fn_anchors=fn_anchors, averaging_window=averaging_window,
+                                            mappings=mappings)
             else:
                 return cls
 

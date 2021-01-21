@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from pypads.app.env import InjectionLoggerEnv
 from pypads.app.injections.injection import MultiInjectionLogger
 from pypads.app.injections.tracked_object import TrackedObject, LoggerOutput
+from pypads.app.pypads import get_current_pads
 from pypads.model.logger_output import OutputModel, TrackedObjectModel
 from pypads.model.models import IdReference
 
@@ -59,14 +60,48 @@ class TorchModelILF(MultiInjectionLogger):
         """
         Function logging information about the logger
         """
+        import torch
+
+        pads = get_current_pads()
 
         mapping_data = _pypads_env.data
 
-        # Todo registering hooks and extracting information on the torch model.
-        def gradient_hook():
-            pass
+        # Initialize epoch value
+        epoch = 0
+        if not pads.cache.run_exists('epoch'):
+            pads.cache.run_add('epoch', epoch)
 
-        def weights_hook():
-            pass
+        _pypads_avg_window = 5
+        if pads.cache.run_exists('pypads_averaging_window'):
+            _pypads_avg_window = pads.cache.run_get('pypads_averaging_window')
+
+        hooks = []
+
+        def register_forward_hook(module):
+            def hook(module, input, output):
+                #TODO
+                pass
+            if (
+                    not isinstance(module, torch.nn.Sequential)
+                    and not isinstance(module, torch.nn.ModuleList)
+            ):
+                hooks.append(module.register_forward_hook(hook))
+
+        # Todo registering hooks and extracting information on the torch model.
+
+        def register_backward_hook(module):
+            def hook(module, grad_in, grad_out):
+                #TODO
+                pass
+            if (
+                    not isinstance(module, torch.nn.Sequential)
+                    and not isinstance(module, torch.nn.ModuleList)
+            ):
+                hooks.append(module.register_backward_hook(hook))
+
+
+        def cleanup_hooks(hooks):
+            for hook in hooks:
+                hook.remove()
 
         pass

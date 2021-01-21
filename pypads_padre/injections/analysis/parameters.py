@@ -18,7 +18,7 @@ def _get_relevant_parameters(model):
         if i == 0:
             continue
         else:
-            if isinstance(m, torch.nn.Sequential):
+            if isinstance(m, torch.nn.Sequential) or isinstance(m, torch.nn.ModuleList):
                 continue
             else:
                 n += 1
