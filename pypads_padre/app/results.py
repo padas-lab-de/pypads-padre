@@ -1,4 +1,4 @@
-from pypads.app.results import IResults
+from pypads.app.results import IResults, result
 
 
 class PadrePadsResults(IResults):

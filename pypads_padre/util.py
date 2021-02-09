@@ -60,3 +60,22 @@ def dependencies(packages=None, message=None):
         return fn
 
     return track_decorator
+
+
+def track_init(freq):
+    """
+    create the counter dict
+    """
+    d = {'count': 0, 'threshold': freq}
+    return d
+
+
+def update_track(track_counter):
+    """count track_counter['count'] up to threshold (track_counter['threshold']), reset count (track_counter['count'])
+    and return true when reached
+    """
+    track_counter['count'] += 1
+    if track_counter['count'] < track_counter['threshold']:
+        return False
+    track_counter['count'] = 0
+    return True

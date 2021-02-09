@@ -160,7 +160,7 @@ def torch_3d_mnist_example():
             data = np.concatenate([train_data, test_data], axis=0)
         return data
 
-    @tracker.decorators.watch(track="hyper-parameters", debugging=True)
+    @tracker.decorators.watch(track="model", debugging=True)
     class CNNModel(nn.Module):
         def __init__(self, dim_output):
             super(CNNModel, self).__init__()
@@ -198,7 +198,7 @@ def torch_3d_mnist_example():
     sample_shape = (16, 16, 16, 3)
 
     # Load 3d Mnist data
-    path = os.path.join(os.path.dirname(__file__),"full_dataset_vectors.h5")
+    path = os.path.join(os.path.dirname(__file__), "full_dataset_vectors.h5")
     data = load_3d_mnist(path)
     X_train, y_train = data[:100, :-1], data[:100, -1]
     X_test, y_test = data[11900:, :-1], data[11900:, -1]
@@ -226,9 +226,15 @@ def torch_3d_mnist_example():
     train_loader = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=False)
     test_loader = torch.utils.data.DataLoader(test, batch_size=batch_size, shuffle=False)
 
+    if torch.cuda.is_available():
+        dev = "cuda:0"
+    else:
+        dev = "cpu"
+
+    device = torch.device(dev)
     # Create CNN
     model = CNNModel(10)
-    # model.cuda()
+    model.to(device)
     print(model)
 
     # Cross Entropy Loss
@@ -240,22 +246,17 @@ def torch_3d_mnist_example():
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     # CNN model training
-    count = 0
     loss_list = []
-    iteration_list = []
     accuracy_list = []
     for epoch in range(num_epochs):
-        training = True
         model.train()
         for i, (images, labels) in enumerate(train_loader):
-            if not training:
-                model.train()
-            train = Variable(images.view(batch_size, 3, 16, 16, 16))
-            labels = Variable(labels)
+            train_input = Variable(images.view(batch_size, 3, 16, 16, 16), requires_grad=True).to(device)
+            labels = Variable(labels).to(device)
             # Clear gradients
             optimizer.zero_grad()
             # Forward propagation
-            outputs = model(train)
+            outputs = model(train_input)
             # Calculate softmax and ross entropy loss
             loss = error(outputs, labels)
             # Calculating gradients
@@ -263,35 +264,29 @@ def torch_3d_mnist_example():
             # Update parameters
             optimizer.step()
 
-            count += 1
-            if count % 50 == 0:
-                # Calculate Accuracy
-                correct = 0
-                total = 0
-                # Iterate through test dataset
-                for images, labels in test_loader:
-                    model.eval()
-                    training = False
-                    test = Variable(images.view(batch_size, 3, 16, 16, 16))
-                    # Forward propagation
-                    outputs = model(test)
+        loss_list.append(loss.data)
 
-                    # Get predictions from the maximum value
-                    predicted = torch.max(outputs.data, 1)[1]
+        # Calculate TEST Accuracy
+        correct = 0
+        total = 0
+        # Iterate through test dataset
+        for images, labels in test_loader:
+            model.eval()
+            test_input = Variable(images.view(batch_size, 3, 16, 16, 16)).to(device)
+            # Forward propagation
+            outputs = model(test_input)
 
-                    # Total number of labels
-                    total += len(labels)
-                    correct += (predicted == labels).sum()
+            # Get predictions from the maximum value
+            predicted = torch.max(outputs.data, 1)[1]
 
-                accuracy = 100 * correct / float(total)
+            # Total number of labels
+            total += len(labels)
+            correct += (predicted.cpu() == labels).sum().item()
 
-                # store loss and iteration
-                loss_list.append(loss.data)
-                iteration_list.append(count)
-                accuracy_list.append(accuracy)
+        accuracy = 100 * correct / float(total)
 
-                if count % 500 == 0:
-                    # Print Loss
-                    print('Iteration: {}  Loss: {}  Accuracy: {} %'.format(count, loss.data, accuracy))
+        accuracy_list.append(accuracy)
+
+        print('Epoch: {}  Loss: {}  Accuracy: {} %'.format(epoch, loss.data, accuracy))
 
     tracker.api.end_run()

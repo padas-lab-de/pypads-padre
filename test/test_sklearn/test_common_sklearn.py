@@ -114,7 +114,7 @@ class PyPadsTest(BaseSklearnTest):
 
     def test_decision_tree(self):
         """
-        This example will track the experiment exection with the default configuration.
+        This example will track the experiment execution with the default configuration.
         :return:
         """
         # --------------------------- setup of the tracking ---------------------------

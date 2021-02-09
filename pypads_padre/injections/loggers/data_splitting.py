@@ -212,6 +212,11 @@ class SplitILFTorch(MultiInjectionLogger):
 
     def _handle_error(self, *args, ctx, _pypads_env, error, **kwargs):
         if isinstance(error, StopIteration):
+            if hasattr(ctx, "_dataset"):
+                if hasattr(ctx._dataset, "train"):
+                    if ctx._dataset.train:
+                        global _epoch
+                        _epoch += 1
             logger.warning("Ignoring recovery of this StopIteration error: {}".format(error))
             original = _pypads_env.call.call_id.context.original(_pypads_env.callback)
             return original(ctx, *args, **kwargs)

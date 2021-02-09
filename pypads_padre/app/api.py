@@ -48,8 +48,10 @@ class PadrePadsApi(IApi):
         return self.pypads.api.track(fn, ctx, ["pypads_param_search"], mapping=mapping)
 
     @cmd
-    def track_model(self, cls, ctx=None, fn_anchors: dict = None, mappings: Dict[str, Mapping] = None):
+    def track_model(self, cls, ctx=None, fn_anchors: dict = None, tracking_freq=None,
+                    mappings: Dict[str, Mapping] = None):
         """
         Manually wrap a pytorch model to track its layers, dimensions
         """
+        self.pypads.cache.run_add("_pypads_tracking_freq", tracking_freq)
         return self.pypads.api.track_class(cls, ctx, fn_anchors, mappings=mappings)
