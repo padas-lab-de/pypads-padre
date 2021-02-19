@@ -91,11 +91,14 @@ class PadrePadsDecorators(IDecorators):
                     fn_anchors.update({"forward": ["pypads_predict"]})
             elif track == "hyper-parameters":
                 fn_anchors.update({"__init__": ["pypads_params"]})
-            elif track == "model" or debugging:
-                fn_anchors.update({"__init__": ["pypads_model"]})
             elif track == "output":
                 if hasattr(ctx, "forward"):
                     fn_anchors.update({"forward": ["pypads_predict"]})
+            if debugging:
+                if "__init__" in fn_anchors:
+                    fn_anchors["__init__"].append("pypads_model")
+                else:
+                    fn_anchors.update({"__init__": ["pypads_model"]})
             if fn_anchors != {}:
                 return self.api.track_model(cls, ctx=ctx, fn_anchors=fn_anchors, tracking_freq=tracking_freq,
                                             mappings=mappings)
