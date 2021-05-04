@@ -218,9 +218,13 @@ def bunch_crawler(obj: Crawler, **kwargs):
     bunch = obj.data
     data = np.concatenate([bunch.get('data'), bunch.get("target").reshape(len(bunch.get("target")), 1)], axis=1)
     features = []
-    for i, name in enumerate(bunch.get("feature_names")):
-        features.append((name, str(data[:, i].dtype), False))
-    features.append(("class", str(data[:, -1].dtype), True))
+    try:
+        for i, name in enumerate(bunch.get("feature_names")):
+            features.append((name, str(data[:, i].dtype), False))
+        features.append(("class", str(data[:, -1].dtype), True))
+    except Exception as e:
+        logger.error("There is no information on dataset features {}".format(str(e)))
+
     metadata = {"type": str(obj.format), "features": features, "classes": _tolist(bunch.get("target_names")),
                 "description": bunch.get("DESCR"), "shape": data.shape}
     metadata = {**metadata, **kwargs}

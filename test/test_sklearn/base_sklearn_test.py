@@ -10,11 +10,11 @@ def sklearn_simple_decision_tree_experiment(min_samples_leaf=1):
     from sklearn.tree import DecisionTreeClassifier
 
     # load the iris datasets
-    dataset = datasets.load_iris()
+    dataset = datasets.load_digits()
 
     pads = get_current_pads()
 
-    splits = pads.actuators.default_splitter(dataset.data)
+    splits = pads.actuators.default_splitter(dataset.data, strategy="cv", test_ratio=0.25)
 
     # fit a model to the data
     for train, test, val in splits:
